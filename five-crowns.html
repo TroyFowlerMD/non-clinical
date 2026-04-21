@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Five Crowns Scorekeeper</title>
+  <link rel="manifest" href="/non-clinical/manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Five Crowns">
 <style>
 /* ===== THEMES ===== */
 
@@ -1718,6 +1722,11 @@ function showToast(msg) {
   document.body.setAttribute('data-theme', 'light');
   themeToggle.textContent = '☀️ Light';
 })();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/non-clinical/sw.js');
+}
 </script>
 </body>
 </html>
