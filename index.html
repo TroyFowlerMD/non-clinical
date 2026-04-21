@@ -1067,21 +1067,14 @@ const themeToggle = document.getElementById('theme-toggle');
 const reorderBtnHeader = document.getElementById('reorder-btn-header');
 
 function computeHighestVisible() {
-  // Always show at least 2 rows.
-  // Show row i+1 if row i has content. Cap at 6 (0-indexed).
-  let hv = 1; // always show 0 and 1
-  for (let i = 0; i < MAX_PLAYERS - 1; i++) {
-    if (setupSlots[i].length > 0 && i + 1 < MAX_PLAYERS) {
-      hv = Math.max(hv, i + 1);
-    }
+  // Find the last filled slot, then show one empty row beyond it.
+  // Always show at least rows 0 and 1 (index hv=1).
+  let lastFilled = -1;
+  for (let i = 0; i < MAX_PLAYERS; i++) {
+    if (setupSlots[i].length > 0) lastFilled = i;
   }
-  // Also show one empty row beyond the last filled if not at max
-  for (let i = 0; i <= hv; i++) {
-    if (setupSlots[i].length > 0 && i + 1 < MAX_PLAYERS) {
-      hv = Math.max(hv, i + 1);
-    }
-  }
-  return Math.min(hv, MAX_PLAYERS - 1);
+  const hv = Math.min(lastFilled + 1, MAX_PLAYERS - 1);
+  return Math.max(hv, 1);
 }
 
 function renderSetupPlayers(focusIndex) {
@@ -1113,10 +1106,10 @@ function renderSetupPlayers(focusIndex) {
     inp.setAttribute('data-slot', i);
 
     inp.addEventListener('input', e => {
-      setupSlots[i] = e.target.value.trim();
       const prevHv = computeHighestVisible();
+      setupSlots[i] = e.target.value.trim();
       updateStartBtn();
-      // Re-render only if visible rows changed
+      // Re-render if a new row should appear
       const newHv = computeHighestVisible();
       if (newHv !== prevHv) {
         renderSetupPlayers(i);
