@@ -12,8 +12,8 @@
   --bg: #0d0d12;
   --surface: #16161f;
   --surface2: #20202e;
-  --accent: #9b72f5;
-  --accent2: #3ec6cc;
+  --accent: #8b63e0;
+  --accent2: #2aa8ae;
   --text: #ededf0;
   --text-dim: #6e6e88;
   --text-dark: #0d0d12;
@@ -29,8 +29,8 @@
   --rank-row: #13141c;
   --btn-bg: #22222e;
   --btn-hover: #2c2c3e;
-  --dealer-badge: #9b72f5;
-  --wild-badge: #3ec6cc;
+  --dealer-badge: #8b63e0;
+  --wild-badge: #2aa8ae;
   --setup-card: #16161f;
   --modal-bg: rgba(0,0,0,0.82);
   --modal-surface: #18181f;
@@ -335,14 +335,14 @@ select.header-btn { font-size: 0.75rem; }
 .info-chip strong { color: var(--text); }
 
 #current-round-chip {
-  background: rgba(155,114,245,0.12);
+  background: rgba(139,99,224,0.12);
   color: var(--accent);
   border: 1px solid var(--accent);
   font-weight: 700;
 }
 
 #wild-chip {
-  background: rgba(62,198,204,0.10);
+  background: rgba(42,168,174,0.10);
   color: var(--accent2);
   border: 1px solid var(--accent2);
   font-weight: 600;
@@ -1011,8 +1011,8 @@ hr.rules-divider {
     <div class="rules-section">
       <h4>Books &amp; Runs</h4>
       <ul>
-        <li><strong>Book:</strong> 3 or more cards of the same value (any suits)</li>
-        <li><strong>Run:</strong> 3 or more consecutive cards of the same suit</li>
+        <li><strong>Book:</strong> 3 or more cards <strong>of the same value</strong> (any suits)</li>
+        <li><strong>Run:</strong> 3 or more consecutive cards <strong>of the same suit</strong></li>
         <li>Wild cards and Jokers can sub for any card in a book or run</li>
         <li>You cannot play on another player's books or runs</li>
       </ul>
@@ -1022,14 +1022,14 @@ hr.rules-divider {
 
     <div class="rules-section">
       <h4>Going Out</h4>
-      <p>When your entire hand can be arranged into books and/or runs, you may <strong>go out</strong>: draw normally, lay down all your cards in books/runs, then discard your last card. After someone goes out, every other player gets <strong>one more turn</strong> to improve their hand before scoring.</p>
+      <p>When your entire hand can be arranged into books and/or runs, you may <strong>go out</strong>: lay down all your cards in books and/or runs — using exactly the number of cards you were dealt — then discard your last card. After someone goes out, every other player gets <strong>one more turn</strong> to improve their hand before scoring. Any cards that cannot be played into a book or run will count against the player's score.</p>
     </div>
 
     <hr class="rules-divider">
 
     <div class="rules-section">
       <h4>Wild Cards</h4>
-      <p>Each round, the card matching the number dealt is wild — 3s in Round 1, 4s in Round 2, and so on through Kings in Round 11. Jokers are always wild regardless of round.</p>
+      <p>The wild card changes each round based on how many cards are dealt: Round 1 deals 3 cards, so <strong>3s are wild</strong>. Round 2 deals 4 cards, so <strong>4s are wild</strong>. This continues through Round 11, which deals 13 cards and makes <strong>Kings wild</strong>. Jokers are always wild in every round.</p>
     </div>
 
     <hr class="rules-divider">
@@ -1037,8 +1037,7 @@ hr.rules-divider {
     <div class="rules-section">
       <h4>Scoring</h4>
       <ul>
-        <li>Cards in completed books/runs = <strong>0 points</strong></li>
-        <li>Player who went out = <strong>0 points</strong></li>
+        <li>All cards played in completed books or runs do <strong>not</strong> count against your score</li>
         <li>Remaining cards count against you:</li>
         <li>Number cards = face value &nbsp;|&nbsp; J = 11 &nbsp;|&nbsp; Q = 12 &nbsp;|&nbsp; K = 13</li>
         <li>Wild cards (the round's wild) = <strong>20 pts each</strong></li>
