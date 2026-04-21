@@ -70,36 +70,7 @@
   --header-title-sub: #cbd5e1;
 }
 
-[data-theme="felt"] {
-  --bg: #0a3d0a;
-  --surface: #0d4d0d;
-  --surface2: #0f5c0f;
-  --accent: #f5c842;
-  --accent2: #ff6b35;
-  --text: #f0f0e0;
-  --text-dim: #9ab89a;
-  --text-dark: #0a3d0a;
-  --cell-bg: #0c4a0c;
-  --cell-border: #1a6b1a;
-  --cell-hover: #0e5a0e;
-  --cell-active: #104f10;
-  --cell-locked: #092e09;
-  --header-bg: #061f06;
-  --dealer-col: #082808;
-  --round-col: #071e07;
-  --total-row: #072d07;
-  --rank-row: #071a07;
-  --btn-bg: #0e5010;
-  --btn-hover: #126012;
-  --dealer-badge: #f5c842;
-  --wild-badge: #ff6b35;
-  --setup-card: #0d4a0d;
-  --modal-bg: rgba(0,0,0,0.75);
-  --modal-surface: #0d4d0d;
-  --green-flash: #4ade80;
-  --shadow: 0 4px 20px rgba(0,0,0,0.6);
-  --header-title-sub: #f0f0e0;
-}
+
 
 /* ===== RESET & BASE ===== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -892,11 +863,7 @@ hr.rules-divider {
   <h1>♛ Five Crowns <span>Scorekeeper</span></h1>
   <div class="header-controls">
     <button class="header-btn" id="rules-btn" title="How to Play">📖 Rules</button>
-    <select id="theme-select" class="header-btn" aria-label="Theme">
-      <option value="midnight" selected>🔮 Midnight</option>
-      <option value="light">☀️ Light</option>
-      <option value="felt">🃏 Felt</option>
-    </select>
+    <button id="theme-toggle" class="header-btn" aria-label="Toggle theme">🔮 Midnight</button>
     <button class="header-btn" id="reorder-btn-header" style="display:none;" title="Reorder Players">⇅ Order</button>
   </div>
 </header>
@@ -1096,7 +1063,7 @@ const scoreScreen = document.getElementById('score-screen');
 const playersList = document.getElementById('players-list');
 const startGameBtn = document.getElementById('start-game-btn');
 const resetBtn = document.getElementById('reset-btn');
-const themeSelect = document.getElementById('theme-select');
+const themeToggle = document.getElementById('theme-toggle');
 const reorderBtnHeader = document.getElementById('reorder-btn-header');
 
 function computeHighestVisible() {
@@ -1702,8 +1669,15 @@ function resetGame() {
 // ============================================================
 // THEME
 // ============================================================
-themeSelect.addEventListener('change', () => {
-  document.body.setAttribute('data-theme', themeSelect.value);
+themeToggle.addEventListener('click', () => {
+  const isLight = document.body.getAttribute('data-theme') === 'light';
+  if (isLight) {
+    document.body.removeAttribute('data-theme'); // back to midnight (:root)
+    themeToggle.textContent = '🔮 Midnight';
+  } else {
+    document.body.setAttribute('data-theme', 'light');
+    themeToggle.textContent = '☀️ Light';
+  }
 });
 
 // ============================================================
@@ -1747,8 +1721,9 @@ function showToast(msg) {
   setupSlots = ['', '', '', '', '', '', ''];
   renderSetupPlayers();
   updateStartBtn();
-  // Default theme = midnight (no data-theme attr needed, :root = midnight)
-  document.body.removeAttribute('data-theme');
+  // Default theme = light
+  document.body.setAttribute('data-theme', 'light');
+  themeToggle.textContent = '☀️ Light';
 })();
 </script>
 </body>
