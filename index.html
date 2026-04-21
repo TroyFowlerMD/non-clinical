@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Five Crowns Scorekeeper</title>
+<style>
+  /* ===== CSS VARIABLES / THEMES ===== */
+  :root {
+    --bg: #1a1a2e;
+    --surface: #16213e;
+    --surface2: #0f3460;
+    --accent: #e94560;
+    --accent2: #f5a623;
+    --text: #e0e0e0;
+    --text-dim: #8892a4;
+    --text-dark: #111;
+    --cell-bg: #1e2a3a;
+    --cell-border: #2d4060;
+    --cell-hover: #253550;
+    --cell-active: #1a3a5c;
+    --cell-locked: #141c28;
+    --header-bg: #0f2033;
+    --dealer-col: #162035;
+    --round-col: #0d1a2b;
+    --total-row: #0b2a1a;
+    --rank-row: #0a1f2e;
+    --btn-bg: #253550;
+    --btn-hover: #2e4470;
+    --dealer-badge: #e94560;
+    --wild-badge: #f5a623;
+    --setup-card: #192642;
+    --modal-bg: rgba(0,0,0,0.75);
+    --modal-surface: #1a2a40;
+    --green-flash: #27ae60;
+    --shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
+
+  [data-theme="light"] {
+    --bg: #f0f4f8;
+    --surface: #ffffff;
+    --surface2: #e2eaf5;
+    --accent: #c0392b;
+    --accent2: #e67e22;
+    --text: #1a1a2e;
+    --text-dim: #5a6a7a;
+    --text-dark: #ffffff;
+    --cell-bg: #ffffff;
+    --cell-border: #c8d6e5;
+    --cell-hover: #eaf0f8;
+    --cell-active: #d6e8f8;
+    --cell-locked: #f5f7fa;
+    --header-bg: #2c3e50;
+    --dealer-col: #eaf4ea;
+    --round-col: #e8edf5;
+    --total-row: #e6f5ee;
+    --rank-row: #eef5fb;
+    --btn-bg: #dde8f5;
+    --btn-hover: #c5d8f0;
+    --dealer-badge: #c0392b;
+    --wild-badge: #e67e22;
+    --setup-card: #ffffff;
+    --modal-bg: rgba(0,0,0,0.5);
+    --modal-surface: #ffffff;
+    --shadow: 0 4px 20px rgba(0,0,0,0.15);
+  }
+
+  [data-theme="felt"] {
+    --bg: #0a3d0a;
+    --surface: #0d4d0d;
+    --surface2: #0f5c0f;
+    --accent: #f5c842;
+    --accent2: #ff6b35;
+    --text: #f0f0e0;
+    --text-dim: #9ab89a;
+    --text-dark: #0a3d0a;
+    --cell-bg: #0c4a0c;
+    --cell-border: #1a6b1a;
+    --cell-hover: #0e5a0e;
+    --cell-active: #104f10;
+    --cell-locked: #092e09;
+    --header-bg: #061f06;
+    --dealer-col: #082808;
+    --round-col: #071e07;
+    --total-row: #072d07;
+    --rank-row: #071a07;
+    --btn-bg: #0e5010;
+    --btn-hover: #126012;
+    --dealer-badge: #f5c842;
+    --wild-badge: #ff6b35;
+    --setup-card: #0d4a0d;
+    --modal-bg: rgba(0,0,0,0.75);
+    --modal-surface: #0d4d0d;
+    --shadow: 0 4px 20px rgba(0,0,0,0.6);
+  }
+
+  [data-theme="midnight"] {
+    --bg: #0d0d0d;
+    --surface: #1a1a1a;
+    --surface2: #252525;
+    --accent: #7c4dff;
+    --accent2: #00e5ff;
+    --text: #f0f0f0;
+    --text-dim: #707070;
+    --text-dark: #0d0d0d;
+    --cell-bg: #1e1e1e;
+    --cell-border: #333333;
+    --cell-hover: #2a2a2a;
+    --cell-active: #2f2f2f;
+    --cell-locked: #161616;
+    --header-bg: #111111;
+    --dealer-col: #1a1a22;
+    --round-col: #181818;
+    --total-row: #1a1e1a;
+    --rank-row: #181a1e;
+    --btn-bg: #2a2a2a;
+    --btn-hover: #383838;
+    --dealer-badge: #7c4dff;
+    --wild-badge: #00e5ff;
+    --setup-card: #1a1a1a;
+    --modal-bg: rgba(0,0,0,0.85);
+    --modal-surface: #1e1e1e;
+    --shadow: 0 4px 24px rgba(0,0,0,0.8);
+  }
+
+  /* ===== RESET & BASE ===== */
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  /* ===== HEADER ===== */
+  #app-header {
+    background: var(--header-bg);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  #app-header h1 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+  }
+
+  #app-header h1 span {
+    color: var(--text);
+    font-weight: 300;
+  }
+
+  .header-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .theme-btn, .icon-btn {
+    background: var(--btn-bg);
+    border: none;
+    border-radius: 8px;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 6px 10px;
+    transition: background 0.2s;
+  }
+
+  .theme-btn:hover, .icon-btn:hover { background: var(--btn-hover); }
+
+  /* ===== SETUP SCREEN ===== */
+  #setup-screen {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 24px 16px;
+  }
+
+  .setup-card {
+    background: var(--setup-card);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+  }
+
+  .setup-card h2 {
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+    color: var(--accent);
+  }
+
+  .setup-card p {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  .setup-card p strong {
+    color: var(--accent2);
+  }
+
+  #players-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .player-entry {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .player-number {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .player-number.dealer-indicator {
+    background: var(--dealer-badge);
+    color: var(--text-dark);
+  }
+
+  .player-entry input {
+    flex: 1;
+    background: var(--cell-bg);
+    border: 1.5px solid var(--cell-border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 0.95rem;
+    padding: 8px 12px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .player-entry input:focus { border-color: var(--accent); }
+  .player-entry input::placeholder { color: var(--text-dim); }
+
+  .remove-player-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+  }
+
+  .remove-player-btn:hover { color: var(--accent); background: var(--btn-bg); }
+
+  #add-player-btn {
+    width: 100%;
+    background: var(--btn-bg);
+    border: 2px dashed var(--cell-border);
+    border-radius: 10px;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 10px;
+    transition: all 0.2s;
+    margin-bottom: 8px;
+  }
+
+  #add-player-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--btn-hover);
+  }
+
+  .dealer-note {
+    font-size: 0.78rem;
+    color: var(--accent2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 20px;
+    background: rgba(245,166,35,0.08);
+    padding: 8px 12px;
+    border-radius: 8px;
+  }
+
+  #start-game-btn {
+    width: 100%;
+    background: var(--accent);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 14px;
+    transition: opacity 0.2s, transform 0.1s;
+    letter-spacing: 0.5px;
+  }
+
+  #start-game-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  #start-game-btn:active { transform: translateY(0); }
+  #start-game-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* ===== SCORE SCREEN ===== */
+  #score-screen { display: none; padding: 0 0 60px 0; }
+
+  /* Game info bar */
+  #game-info-bar {
+    background: var(--surface);
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--cell-border);
+  }
+
+  .info-chip {
+    background: var(--surface2);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+  }
+
+  .info-chip strong { color: var(--text); }
+
+  #current-round-chip {
+    background: rgba(233,69,96,0.15);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    font-weight: 700;
+  }
+
+  #wild-chip {
+    background: rgba(245,166,35,0.12);
+    color: var(--accent2);
+    border: 1px solid var(--accent2);
+    font-weight: 600;
+  }
+
+  /* Score table wrapper */
+  #table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 12px 8px;
+  }
+
+  #score-table {
+    border-collapse: collapse;
+    min-width: 100%;
+    font-size: 0.88rem;
+  }
+
+  /* Column widths */
+  .col-dealer { width: 90px; min-width: 80px; }
+  .col-round  { width: 46px; min-width: 40px; }
+  .col-player { min-width: 72px; }
+
+  /* Header row */
+  #score-table thead tr {
+    background: var(--header-bg);
+  }
+
+  #score-table thead th {
+    padding: 8px 6px;
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.3px;
+    text-align: center;
+    border: 1px solid var(--cell-border);
+    color: var(--text-dim);
+    text-transform: uppercase;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--header-bg);
+  }
+
+  #score-table thead th.player-header {
+    color: var(--text);
+    font-size: 0.85rem;
+    text-transform: none;
+  }
+
+  #score-table thead th.player-header.is-first-dealer {
+    color: var(--dealer-badge);
+  }
+
+  /* Body rows */
+  #score-table tbody tr {
+    transition: background 0.15s;
+  }
+
+  #score-table tbody tr:hover { background: var(--cell-hover); }
+
+  #score-table tbody td {
+    border: 1px solid var(--cell-border);
+    text-align: center;
+    vertical-align: middle;
+    padding: 0;
+  }
+
+  /* Dealer cell */
+  td.dealer-cell {
+    background: var(--dealer-col);
+    padding: 4px 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--dealer-badge);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90px;
+  }
+
+  /* Round label cell */
+  td.round-cell {
+    background: var(--round-col);
+    padding: 4px 4px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: var(--text-dim);
+  }
+
+  td.round-cell .wild-indicator {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 400;
+    color: var(--wild-badge);
+    margin-top: 1px;
+  }
+
+  /* Score input cells */
+  td.score-cell {
+    background: var(--cell-bg);
+    cursor: pointer;
+    position: relative;
+    height: 44px;
+    min-width: 72px;
+  }
+
+  td.score-cell:hover { background: var(--cell-hover); }
+
+  td.score-cell.locked {
+    background: var(--cell-locked);
+    cursor: default;
+  }
+
+  td.score-cell.active-round {
+    background: var(--cell-active);
+  }
+
+  td.score-cell .score-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    padding: 4px 2px;
+  }
+
+  td.score-cell.zero-score .score-display {
+    color: var(--green-flash);
+  }
+
+  td.score-cell.locked .score-display {
+    color: var(--text-dim);
+    font-size: 0.75rem;
+  }
+
+  /* Totals row */
+  tr.totals-row td {
+    background: var(--total-row) !important;
+    padding: 7px 6px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--accent2);
+  }
+
+  tr.totals-row td.label-cell {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    letter-spacing: 0.3px;
+  }
+
+  /* Rank row */
+  tr.rank-row td {
+    background: var(--rank-row) !important;
+    padding: 6px 6px;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  tr.rank-row td.label-cell {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    letter-spacing: 0.3px;
+  }
+
+  .rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    font-weight: 800;
+    font-size: 0.85rem;
+  }
+
+  .rank-1 { background: #f5c842; color: #111; }
+  .rank-2 { background: #aaa; color: #111; }
+  .rank-3 { background: #cd7f32; color: #111; }
+  .rank-other { background: var(--surface2); color: var(--text); }
+
+  /* ===== NUMBER PAD MODAL ===== */
+  #numpad-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--modal-bg);
+    z-index: 500;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  #numpad-modal.open {
+    display: flex;
+  }
+
+  #numpad-container {
+    background: var(--modal-surface);
+    border-radius: 20px 20px 0 0;
+    padding: 20px 16px 32px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
+    animation: slideUp 0.25s ease;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  #numpad-title {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  #numpad-title strong { color: var(--text); }
+
+  #numpad-display {
+    background: var(--cell-bg);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    font-size: 2rem;
+    font-weight: 700;
+    text-align: center;
+    padding: 10px;
+    margin-bottom: 14px;
+    color: var(--text);
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #numpad-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .numpad-key {
+    background: var(--btn-bg);
+    border: none;
+    border-radius: 12px;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 1.3rem;
+    font-weight: 600;
+    padding: 16px;
+    transition: background 0.15s, transform 0.1s;
+    touch-action: manipulation;
+  }
+
+  .numpad-key:hover { background: var(--btn-hover); }
+  .numpad-key:active { transform: scale(0.95); }
+  .numpad-key.key-del { font-size: 1rem; color: var(--accent); }
+  .numpad-key.key-confirm {
+    background: var(--accent);
+    color: white;
+    font-size: 1rem;
+    grid-column: span 2;
+  }
+  .numpad-key.key-confirm:hover { opacity: 0.9; }
+  .numpad-key.key-cancel { background: var(--surface2); font-size: 0.9rem; }
+
+  /* ===== GAME OVER BANNER ===== */
+  #game-over-banner {
+    display: none;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white;
+    text-align: center;
+    padding: 20px 16px;
+    margin: 12px 8px;
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+  }
+
+  #game-over-banner h2 { font-size: 1.4rem; margin-bottom: 4px; }
+  #game-over-banner p { font-size: 0.9rem; opacity: 0.9; }
+
+  /* ===== FLOATING ACTION BUTTONS ===== */
+  #fab-area {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 200;
+  }
+
+  .fab {
+    background: var(--accent);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    font-size: 1.2rem;
+    width: 50px;
+    height: 50px;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+
+  .fab.secondary { background: var(--surface2); font-size: 1rem; }
+  .fab:hover { opacity: 0.9; transform: scale(1.05); }
+
+  /* ===== TOAST ===== */
+  #toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(40px);
+    background: var(--surface2);
+    color: var(--text);
+    padding: 10px 20px;
+    border-radius: 24px;
+    font-size: 0.85rem;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 400;
+    white-space: nowrap;
+    box-shadow: var(--shadow);
+    pointer-events: none;
+  }
+
+  #toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ===== RESET CONFIRM ===== */
+  #confirm-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--modal-bg);
+    z-index: 600;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #confirm-modal.open { display: flex; }
+
+  #confirm-box {
+    background: var(--modal-surface);
+    border-radius: 16px;
+    padding: 24px 20px;
+    max-width: 340px;
+    width: 90%;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+
+  #confirm-box h3 { margin-bottom: 10px; font-size: 1.1rem; }
+  #confirm-box p { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 20px; }
+
+  .confirm-btns { display: flex; gap: 10px; }
+
+  .confirm-btns button {
+    flex: 1;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 12px;
+    transition: opacity 0.2s;
+  }
+
+  .confirm-btns button:hover { opacity: 0.85; }
+  .btn-cancel-confirm { background: var(--btn-bg); color: var(--text); }
+  .btn-confirm-yes { background: var(--accent); color: white; }
+
+  /* ===== RESPONSIVE ===== */
+  @media (min-width: 600px) {
+    #score-table { font-size: 0.92rem; }
+    td.score-cell { min-width: 88px; }
+    #numpad-container { padding: 24px 24px 36px; }
+  }
+
+  /* ===== ANIMATIONS ===== */
+  .flash-green {
+    animation: flashGreen 0.4s ease;
+  }
+
+  @keyframes flashGreen {
+    0% { background: var(--green-flash); }
+    100% { background: inherit; }
+  }
+
+  .current-round-row td.score-cell:not(.locked) {
+    box-shadow: inset 0 0 0 2px var(--accent);
+  }
+</style>
+</head>
+<body data-theme="dark">
+
+<!-- HEADER -->
+<header id="app-header">
+  <h1>♛ Five Crowns <span>Scorekeeper</span></h1>
+  <div class="header-controls">
+    <select id="theme-select" class="theme-btn" aria-label="Theme">
+      <option value="dark">🌙 Dark</option>
+      <option value="light">☀️ Light</option>
+      <option value="felt">🃏 Felt</option>
+      <option value="midnight">🔮 Midnight</option>
+    </select>
+  </div>
+</header>
+
+<!-- SETUP SCREEN -->
+<div id="setup-screen">
+  <div class="setup-card">
+    <h2>New Game Setup</h2>
+    <p>Enter players <strong>in turn order</strong>. The <strong>first player listed is the starting dealer</strong> and will deal the 3s round. Dealer rotates left each round automatically.</p>
+    <p style="margin-top: 8px;">2–7 players supported.</p>
+
+    <div class="dealer-note">
+      <span>🃏</span>
+      <span>Player 1 = Starting Dealer — add players in clockwise seating order</span>
+    </div>
+
+    <div id="players-list"></div>
+    <button id="add-player-btn">+ Add Player</button>
+    <button id="start-game-btn" disabled>Start Game</button>
+  </div>
+</div>
+
+<!-- SCORE SCREEN -->
+<div id="score-screen">
+  <div id="game-info-bar">
+    <div class="info-chip" id="current-round-chip">Round: —</div>
+    <div class="info-chip" id="wild-chip">Wild: —</div>
+    <div class="info-chip" id="players-chip">Players: —</div>
+  </div>
+
+  <div id="game-over-banner">
+    <h2 id="winner-text">🏆 Game Over!</h2>
+    <p id="winner-sub"></p>
+  </div>
+
+  <div id="table-wrapper">
+    <table id="score-table">
+      <thead><tr id="table-header-row"></tr></thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- FAB Buttons -->
+<div id="fab-area">
+  <button class="fab secondary" id="reset-btn" title="New Game" style="display:none;">↺</button>
+</div>
+
+<!-- Number Pad Modal -->
+<div id="numpad-modal" role="dialog" aria-modal="true">
+  <div id="numpad-container">
+    <div id="numpad-title">Enter score for <strong id="numpad-player-name">—</strong> · <strong id="numpad-round-label">—</strong></div>
+    <div id="numpad-display">0</div>
+    <div id="numpad-grid">
+      <button class="numpad-key" data-val="7">7</button>
+      <button class="numpad-key" data-val="8">8</button>
+      <button class="numpad-key" data-val="9">9</button>
+      <button class="numpad-key" data-val="4">4</button>
+      <button class="numpad-key" data-val="5">5</button>
+      <button class="numpad-key" data-val="6">6</button>
+      <button class="numpad-key" data-val="1">1</button>
+      <button class="numpad-key" data-val="2">2</button>
+      <button class="numpad-key" data-val="3">3</button>
+      <button class="numpad-key key-del" data-val="del">⌫</button>
+      <button class="numpad-key" data-val="0">0</button>
+      <button class="numpad-key key-cancel" data-val="cancel">✕</button>
+      <button class="numpad-key key-confirm" data-val="confirm">Confirm ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Reset Modal -->
+<div id="confirm-modal" role="dialog" aria-modal="true">
+  <div id="confirm-box">
+    <h3>Start New Game?</h3>
+    <p>This will clear all scores and return to setup. This cannot be undone.</p>
+    <div class="confirm-btns">
+      <button class="btn-cancel-confirm" id="confirm-cancel-btn">Cancel</button>
+      <button class="btn-confirm-yes" id="confirm-yes-btn">New Game</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ============================================================
+// CONSTANTS
+// ============================================================
+const ROUNDS = ['3','4','5','6','7','8','9','10','J','Q','K'];
+const WILD_LABELS = {
+  '3': '3s Wild', '4': '4s Wild', '5': '5s Wild', '6': '6s Wild',
+  '7': '7s Wild', '8': '8s Wild', '9': '9s Wild', '10': '10s Wild',
+  'J': 'Jacks Wild', 'Q': 'Queens Wild', 'K': 'Kings Wild'
+};
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  players: [],        // [{name}]
+  scores: {},         // { roundIndex: { playerIndex: value|null } }
+  currentRound: 0,    // index into ROUNDS (0 = round of 3s)
+  gameOver: false,
+  theme: 'dark'
+};
+
+// ============================================================
+// SETUP SCREEN
+// ============================================================
+const setupScreen   = document.getElementById('setup-screen');
+const scoreScreen   = document.getElementById('score-screen');
+const playersList   = document.getElementById('players-list');
+const addPlayerBtn  = document.getElementById('add-player-btn');
+const startGameBtn  = document.getElementById('start-game-btn');
+const resetBtn      = document.getElementById('reset-btn');
+const themeSelect   = document.getElementById('theme-select');
+
+function renderSetupPlayers() {
+  playersList.innerHTML = '';
+  state.players.forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'player-entry';
+
+    const num = document.createElement('div');
+    num.className = 'player-number' + (i === 0 ? ' dealer-indicator' : '');
+    num.textContent = i + 1;
+    num.title = i === 0 ? 'Starting Dealer' : `Player ${i + 1}`;
+
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.value = p.name;
+    inp.placeholder = i === 0 ? 'Player 1 (Starting Dealer)' : `Player ${i + 1}`;
+    inp.maxLength = 14;
+    inp.setAttribute('data-index', i);
+    inp.addEventListener('input', e => {
+      state.players[i].name = e.target.value.trim();
+      updateStartBtn();
+    });
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (state.players.length < 7) addPlayer();
+        else startGameBtn.focus();
+      }
+    });
+
+    const del = document.createElement('button');
+    del.className = 'remove-player-btn';
+    del.textContent = '✕';
+    del.title = 'Remove player';
+    del.addEventListener('click', () => {
+      if (state.players.length > 2) {
+        state.players.splice(i, 1);
+        renderSetupPlayers();
+        updateStartBtn();
+      } else {
+        showToast('Minimum 2 players required');
+      }
+    });
+
+    row.appendChild(num);
+    row.appendChild(inp);
+    if (state.players.length > 2) row.appendChild(del);
+    playersList.appendChild(row);
+  });
+  addPlayerBtn.style.display = state.players.length >= 7 ? 'none' : 'block';
+  // Focus last input
+  const inputs = playersList.querySelectorAll('input');
+  if (inputs.length) inputs[inputs.length - 1].focus();
+}
+
+function addPlayer() {
+  if (state.players.length >= 7) return;
+  state.players.push({ name: '' });
+  renderSetupPlayers();
+  updateStartBtn();
+}
+
+function updateStartBtn() {
+  const allFilled = state.players.length >= 2 && state.players.every(p => p.name.length > 0);
+  startGameBtn.disabled = !allFilled;
+}
+
+addPlayerBtn.addEventListener('click', addPlayer);
+
+startGameBtn.addEventListener('click', () => {
+  if (state.players.length < 2 || !state.players.every(p => p.name)) return;
+  initGame();
+});
+
+// ============================================================
+// GAME INIT
+// ============================================================
+function initGame() {
+  // Initialize scores
+  state.scores = {};
+  ROUNDS.forEach((_, ri) => {
+    state.scores[ri] = {};
+    state.players.forEach((_, pi) => {
+      state.scores[ri][pi] = null;
+    });
+  });
+  state.currentRound = 0;
+  state.gameOver = false;
+
+  setupScreen.style.display = 'none';
+  scoreScreen.style.display = 'block';
+  resetBtn.style.display = 'flex';
+
+  buildTable();
+  updateInfoBar();
+}
+
+// ============================================================
+// TABLE BUILDING
+// ============================================================
+function buildTable() {
+  const n = state.players.length;
+  const headerRow = document.getElementById('table-header-row');
+  const tbody = document.getElementById('table-body');
+  headerRow.innerHTML = '';
+  tbody.innerHTML = '';
+
+  // Header: Dealer | Round | Player1 ... PlayerN
+  const thDealer = document.createElement('th');
+  thDealer.textContent = 'Dealer';
+  thDealer.className = 'col-dealer';
+  headerRow.appendChild(thDealer);
+
+  const thRound = document.createElement('th');
+  thRound.textContent = 'Round';
+  thRound.className = 'col-round';
+  headerRow.appendChild(thRound);
+
+  state.players.forEach((p, pi) => {
+    const th = document.createElement('th');
+    th.textContent = p.name;
+    th.className = 'player-header col-player' + (pi === 0 ? ' is-first-dealer' : '');
+    th.id = `th-player-${pi}`;
+    headerRow.appendChild(th);
+  });
+
+  // Round rows
+  ROUNDS.forEach((round, ri) => {
+    const tr = document.createElement('tr');
+    tr.id = `row-${ri}`;
+
+    // Dealer cell — rotates by round index mod playerCount
+    const dealerIndex = ri % n;
+    const tdDealer = document.createElement('td');
+    tdDealer.className = 'dealer-cell col-dealer';
+    tdDealer.textContent = state.players[dealerIndex].name;
+    tdDealer.title = `Dealer: ${state.players[dealerIndex].name}`;
+    tr.appendChild(tdDealer);
+
+    // Round label cell
+    const tdRound = document.createElement('td');
+    tdRound.className = 'round-cell col-round';
+    tdRound.innerHTML = `${round}<span class="wild-indicator">${round}s★</span>`;
+    tr.appendChild(tdRound);
+
+    // Score cells
+    state.players.forEach((_, pi) => {
+      const td = document.createElement('td');
+      td.className = 'score-cell col-player';
+      td.id = `cell-${ri}-${pi}`;
+      td.setAttribute('data-round', ri);
+      td.setAttribute('data-player', pi);
+
+      const disp = document.createElement('div');
+      disp.className = 'score-display';
+      disp.textContent = '';
+      td.appendChild(disp);
+
+      td.addEventListener('click', () => onCellClick(ri, pi));
+      tr.appendChild(td);
+    });
+
+    tbody.appendChild(tr);
+  });
+
+  // Totals row
+  const trTotals = document.createElement('tr');
+  trTotals.className = 'totals-row';
+  trTotals.id = 'totals-row';
+
+  const tdTotLabel = document.createElement('td');
+  tdTotLabel.colSpan = 2;
+  tdTotLabel.className = 'label-cell';
+  tdTotLabel.textContent = 'Totals';
+  trTotals.appendChild(tdTotLabel);
+
+  state.players.forEach((_, pi) => {
+    const td = document.createElement('td');
+    td.id = `total-${pi}`;
+    td.textContent = '0';
+    trTotals.appendChild(td);
+  });
+
+  tbody.appendChild(trTotals);
+
+  // Rank row
+  const trRank = document.createElement('tr');
+  trRank.className = 'rank-row';
+  trRank.id = 'rank-row';
+
+  const tdRankLabel = document.createElement('td');
+  tdRankLabel.colSpan = 2;
+  tdRankLabel.className = 'label-cell';
+  tdRankLabel.textContent = 'Rank';
+  trRank.appendChild(tdRankLabel);
+
+  state.players.forEach((_, pi) => {
+    const td = document.createElement('td');
+    td.id = `rank-${pi}`;
+    td.textContent = '—';
+    trRank.appendChild(td);
+  });
+
+  tbody.appendChild(trRank);
+
+  refreshTableDisplay();
+}
+
+// ============================================================
+// TABLE DISPLAY REFRESH
+// ============================================================
+function refreshTableDisplay() {
+  const n = state.players.length;
+
+  // Update each score cell
+  ROUNDS.forEach((_, ri) => {
+    const tr = document.getElementById(`row-${ri}`);
+
+    state.players.forEach((_, pi) => {
+      const td = document.getElementById(`cell-${ri}-${pi}`);
+      const disp = td.querySelector('.score-display');
+      const val = state.scores[ri][pi];
+
+      // Determine lock state
+      const isCurrentRound = ri === state.currentRound;
+      const isPastRound = ri < state.currentRound;
+      const isFutureRound = ri > state.currentRound;
+
+      td.classList.remove('locked', 'active-round', 'zero-score', 'current-round-row');
+
+      if (state.gameOver) {
+        // All cells locked after game over
+        if (val !== null) {
+          disp.textContent = val;
+          if (val === 0) td.classList.add('zero-score');
+        } else {
+          disp.textContent = '—';
+          td.classList.add('locked');
+        }
+      } else if (isPastRound) {
+        disp.textContent = val !== null ? val : '—';
+        if (val === 0) td.classList.add('zero-score');
+      } else if (isCurrentRound) {
+        td.classList.add('active-round');
+        disp.textContent = val !== null ? val : '';
+        if (val === 0) td.classList.add('zero-score');
+      } else {
+        // Future round
+        td.classList.add('locked');
+        disp.textContent = '';
+      }
+
+      // Mark current round row
+      if (isCurrentRound) {
+        tr.classList.add('current-round-row');
+      } else {
+        tr.classList.remove('current-round-row');
+      }
+    });
+  });
+
+  // Compute totals
+  const totals = state.players.map((_, pi) => {
+    return ROUNDS.reduce((sum, _, ri) => {
+      const v = state.scores[ri][pi];
+      return sum + (v !== null ? v : 0);
+    }, 0);
+  });
+
+  totals.forEach((t, pi) => {
+    const el = document.getElementById(`total-${pi}`);
+    if (el) el.textContent = t;
+  });
+
+  // Compute ranks (lower is better)
+  const scored = totals.map((t, pi) => ({ pi, t }));
+  const sorted = [...scored].sort((a, b) => a.t - b.t);
+
+  // Assign ranks with ties
+  let rank = 1;
+  const ranks = new Array(n);
+  for (let i = 0; i < sorted.length; i++) {
+    if (i > 0 && sorted[i].t !== sorted[i-1].t) rank = i + 1;
+    ranks[sorted[i].pi] = rank;
+  }
+
+  ranks.forEach((r, pi) => {
+    const el = document.getElementById(`rank-${pi}`);
+    if (!el) return;
+    const badge = document.createElement('span');
+    badge.className = `rank-badge rank-${r <= 3 ? r : 'other'}`;
+    badge.textContent = r === 1 ? '🥇' : r === 2 ? '🥈' : r === 3 ? '🥉' : `#${r}`;
+    el.innerHTML = '';
+    el.appendChild(badge);
+  });
+
+  updateInfoBar();
+}
+
+// ============================================================
+// INFO BAR
+// ============================================================
+function updateInfoBar() {
+  const roundChip = document.getElementById('current-round-chip');
+  const wildChip = document.getElementById('wild-chip');
+  const playersChip = document.getElementById('players-chip');
+
+  if (!state.gameOver && state.currentRound < ROUNDS.length) {
+    const round = ROUNDS[state.currentRound];
+    const dealerIdx = state.currentRound % state.players.length;
+    roundChip.innerHTML = `Round: <strong>${round}s</strong> &nbsp;·&nbsp; Dealer: <strong>${state.players[dealerIdx].name}</strong>`;
+    wildChip.innerHTML = `Wild: <strong>${WILD_LABELS[round]}</strong>`;
+  } else if (state.gameOver) {
+    roundChip.innerHTML = `<strong>Game Complete</strong>`;
+    wildChip.innerHTML = `<strong>Kings Wild 👑</strong>`;
+  }
+
+  playersChip.innerHTML = `Players: <strong>${state.players.length}</strong>`;
+}
+
+// ============================================================
+// CELL CLICK / NUMPAD
+// ============================================================
+let currentEditRound = null;
+let currentEditPlayer = null;
+let numpadValue = '';
+
+function onCellClick(ri, pi) {
+  if (state.gameOver) return;
+  if (ri > state.currentRound) {
+    showToast(`Complete round ${ROUNDS[state.currentRound]}s first`);
+    return;
+  }
+  if (ri < state.currentRound) {
+    // Allow editing past rounds
+    openNumpad(ri, pi);
+    return;
+  }
+  openNumpad(ri, pi);
+}
+
+function openNumpad(ri, pi) {
+  currentEditRound = ri;
+  currentEditPlayer = pi;
+
+  const existingVal = state.scores[ri][pi];
+  numpadValue = existingVal !== null ? String(existingVal) : '';
+
+  document.getElementById('numpad-player-name').textContent = state.players[pi].name;
+  document.getElementById('numpad-round-label').textContent = `Round ${ROUNDS[ri]}s`;
+  updateNumpadDisplay();
+
+  document.getElementById('numpad-modal').classList.add('open');
+}
+
+function updateNumpadDisplay() {
+  const disp = document.getElementById('numpad-display');
+  disp.textContent = numpadValue === '' ? '0' : numpadValue;
+}
+
+document.getElementById('numpad-grid').addEventListener('click', e => {
+  const key = e.target.closest('.numpad-key');
+  if (!key) return;
+  const val = key.getAttribute('data-val');
+
+  if (val === 'cancel') {
+    closeNumpad();
+    return;
+  }
+  if (val === 'confirm') {
+    confirmScore();
+    return;
+  }
+  if (val === 'del') {
+    numpadValue = numpadValue.slice(0, -1);
+    updateNumpadDisplay();
+    return;
+  }
+  // Number
+  if (numpadValue === '0' || numpadValue === '') {
+    numpadValue = val === '0' ? '' : val;
+  } else {
+    if (numpadValue.length < 4) numpadValue += val;
+  }
+  updateNumpadDisplay();
+});
+
+// Close on backdrop click
+document.getElementById('numpad-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('numpad-modal')) closeNumpad();
+});
+
+function closeNumpad() {
+  document.getElementById('numpad-modal').classList.remove('open');
+  currentEditRound = null;
+  currentEditPlayer = null;
+  numpadValue = '';
+}
+
+function confirmScore() {
+  const val = numpadValue === '' ? 0 : parseInt(numpadValue, 10);
+  if (isNaN(val) || val < 0) {
+    showToast('Enter a valid score (0 or higher)');
+    return;
+  }
+
+  state.scores[currentEditRound][currentEditPlayer] = val;
+
+  // Flash the cell
+  const td = document.getElementById(`cell-${currentEditRound}-${currentEditPlayer}`);
+  td.classList.add('flash-green');
+  setTimeout(() => td.classList.remove('flash-green'), 400);
+
+  closeNumpad();
+
+  // Check if all players in current round are scored
+  checkRoundComplete();
+  refreshTableDisplay();
+}
+
+function checkRoundComplete() {
+  const n = state.players.length;
+  const allScored = state.players.every((_, pi) => state.scores[state.currentRound][pi] !== null);
+
+  if (allScored && state.currentRound < ROUNDS.length - 1) {
+    state.currentRound++;
+    showToast(`Round ${ROUNDS[state.currentRound]}s — ${state.players[state.currentRound % n].name} deals`);
+  } else if (allScored && state.currentRound === ROUNDS.length - 1) {
+    // Game over
+    state.gameOver = true;
+    showGameOver();
+  }
+}
+
+// ============================================================
+// GAME OVER
+// ============================================================
+function showGameOver() {
+  const n = state.players.length;
+  const totals = state.players.map((_, pi) => {
+    return ROUNDS.reduce((sum, _, ri) => {
+      const v = state.scores[ri][pi];
+      return sum + (v !== null ? v : 0);
+    }, 0);
+  });
+
+  const minScore = Math.min(...totals);
+  const winners = state.players.filter((_, pi) => totals[pi] === minScore).map(p => p.name);
+
+  const banner = document.getElementById('game-over-banner');
+  const winnerText = document.getElementById('winner-text');
+  const winnerSub = document.getElementById('winner-sub');
+
+  banner.style.display = 'block';
+  if (winners.length === 1) {
+    winnerText.textContent = `🏆 ${winners[0]} Wins!`;
+    winnerSub.textContent = `With ${minScore} total points — the lowest score wins!`;
+  } else {
+    winnerText.textContent = `🏆 It's a Tie!`;
+    winnerSub.textContent = `${winners.join(' & ')} tied with ${minScore} points each.`;
+  }
+
+  banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  refreshTableDisplay();
+}
+
+// ============================================================
+// RESET
+// ============================================================
+resetBtn.addEventListener('click', () => {
+  document.getElementById('confirm-modal').classList.add('open');
+});
+
+document.getElementById('confirm-cancel-btn').addEventListener('click', () => {
+  document.getElementById('confirm-modal').classList.remove('open');
+});
+
+document.getElementById('confirm-yes-btn').addEventListener('click', () => {
+  document.getElementById('confirm-modal').classList.remove('open');
+  resetGame();
+});
+
+function resetGame() {
+  state.players = [];
+  state.scores = {};
+  state.currentRound = 0;
+  state.gameOver = false;
+
+  scoreScreen.style.display = 'none';
+  document.getElementById('game-over-banner').style.display = 'none';
+  resetBtn.style.display = 'none';
+
+  // Reset setup screen
+  setupScreen.style.display = 'block';
+  state.players = [{ name: '' }, { name: '' }];
+  renderSetupPlayers();
+  updateStartBtn();
+}
+
+// ============================================================
+// THEME
+// ============================================================
+themeSelect.addEventListener('change', () => {
+  const t = themeSelect.value;
+  document.body.setAttribute('data-theme', t);
+  state.theme = t;
+});
+
+// ============================================================
+// TOAST
+// ============================================================
+let toastTimer = null;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ============================================================
+// KEYBOARD SUPPORT FOR NUMPAD
+// ============================================================
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('numpad-modal').classList.contains('open')) return;
+
+  if (e.key >= '0' && e.key <= '9') {
+    if (numpadValue === '0' || numpadValue === '') {
+      numpadValue = e.key === '0' ? '' : e.key;
+    } else {
+      if (numpadValue.length < 4) numpadValue += e.key;
+    }
+    updateNumpadDisplay();
+  } else if (e.key === 'Backspace') {
+    numpadValue = numpadValue.slice(0, -1);
+    updateNumpadDisplay();
+  } else if (e.key === 'Enter') {
+    confirmScore();
+  } else if (e.key === 'Escape') {
+    closeNumpad();
+  }
+});
+
+// ============================================================
+// INIT SETUP
+// ============================================================
+(function init() {
+  state.players = [{ name: '' }, { name: '' }];
+  renderSetupPlayers();
+  updateStartBtn();
+})();
+</script>
+</body>
+</html>
