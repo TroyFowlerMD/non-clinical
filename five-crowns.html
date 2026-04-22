@@ -65,7 +65,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   font-size:1.05rem;font-weight:700;color:var(--accent);letter-spacing:0.3px;
 }
 .header-title .title-sub {
-  font-size:0.7rem;font-weight:300;color:var(--player-header);opacity:0.7;letter-spacing:0.2px;
+  font-size:0.82rem;font-weight:300;color:var(--player-header);opacity:0.8;letter-spacing:0.2px;
 }
 .header-controls {
   display:flex;gap:5px;align-items:center;flex-shrink:0;flex-wrap:nowrap;
@@ -246,6 +246,36 @@ tr.rank-row td.label-cell{font-size:0.72rem;text-transform:uppercase;color:var(-
 .rules-close-btn:hover{opacity:0.83}
 hr.rules-divider{border:none;border-top:1px solid var(--cell-border);margin:12px 0}
 
+
+/* Add player row inside order modal */
+#reorder-add-row {
+  display:flex;align-items:center;gap:10px;
+  background:transparent;border:1.5px dashed var(--cell-border);
+  border-radius:10px;padding:9px 12px;margin-top:4px;cursor:pointer;
+  color:var(--text-dim);font-size:0.84rem;transition:all 0.2s;
+}
+#reorder-add-row:hover{border-color:var(--accent);color:var(--accent)}
+#reorder-add-row .add-icon{font-size:1.1rem;width:24px;text-align:center}
+
+.reorder-row input.rr-edit {
+  flex:1;background:var(--cell-bg);border:1.5px solid var(--accent);
+  border-radius:7px;color:var(--text);font-size:0.9rem;padding:4px 8px;
+  outline:none;min-width:0;
+}
+
+/* Reset choice modal */
+#reset-choice-modal{display:none;position:fixed;inset:0;background:var(--modal-bg);z-index:600;align-items:center;justify-content:center}
+#reset-choice-modal.open{display:flex}
+#reset-choice-box{background:var(--modal-surface);border-radius:16px;padding:22px 18px;max-width:340px;width:92%;box-shadow:var(--shadow);text-align:center}
+#reset-choice-box h3{margin-bottom:8px;font-size:1.05rem}
+#reset-choice-box p{font-size:0.82rem;color:var(--text-dim);margin-bottom:18px}
+.reset-choice-btns{display:flex;flex-direction:column;gap:8px}
+.reset-choice-btns button{border:none;border-radius:10px;cursor:pointer;font-size:0.93rem;font-weight:600;padding:12px;transition:opacity 0.2s}
+.reset-choice-btns button:hover{opacity:0.83}
+.btn-same-players{background:var(--accent);color:white}
+.btn-change-players{background:var(--btn-bg);color:var(--text);border:1px solid var(--cell-border)!important}
+.btn-cancel-reset{background:transparent;color:var(--text-dim);font-size:0.85rem;padding:8px!important}
+
 .flash-green{animation:flashGreen 0.35s ease}
 @keyframes flashGreen{0%{background:var(--green-flash)}100%{background:inherit}}
 </style>
@@ -328,14 +358,15 @@ hr.rules-divider{border:none;border-top:1px solid var(--cell-border);margin:12px
   </div>
 </div>
 
-<!-- CONFIRM RESET -->
-<div id="confirm-modal" role="dialog" aria-modal="true">
-  <div id="confirm-box">
-    <h3>Start New Game?</h3>
-    <p>This will clear all scores and return to setup. This cannot be undone.</p>
-    <div class="confirm-btns">
-      <button class="btn-cancel-confirm" id="confirm-cancel-btn">Cancel</button>
-      <button class="btn-confirm-yes" id="confirm-yes-btn">New Game</button>
+<!-- RESET CHOICE MODAL -->
+<div id="reset-choice-modal" role="dialog" aria-modal="true">
+  <div id="reset-choice-box">
+    <h3>New Game</h3>
+    <p>Keep the same players or change them?</p>
+    <div class="reset-choice-btns">
+      <button class="btn-same-players" id="btn-same-players">Same Players ✓</button>
+      <button class="btn-change-players" id="btn-change-players">Change Players</button>
+      <button class="btn-cancel-reset" id="btn-cancel-reset">Cancel</button>
     </div>
   </div>
 </div>
@@ -343,9 +374,13 @@ hr.rules-divider{border:none;border-top:1px solid var(--cell-border);margin:12px
 <!-- REORDER MODAL -->
 <div id="reorder-modal" role="dialog" aria-modal="true">
   <div id="reorder-container">
-    <h3>Reorder Players</h3>
-    <p>Drag to change turn order. Player 1 becomes dealer for future rounds.</p>
+    <h3 id="reorder-title">Reorder Players</h3>
+    <p id="reorder-subtitle">Drag to change turn order. Player 1 becomes dealer for future rounds.</p>
     <div id="reorder-list"></div>
+    <div id="reorder-add-row" style="display:none;">
+      <span class="add-icon">＋</span>
+      <span>Add player</span>
+    </div>
     <button id="reorder-apply-btn">Apply Order</button>
     <button id="reorder-cancel-btn">Cancel</button>
   </div>
@@ -983,12 +1018,42 @@ function showGameOver() {
 // ============================================================
 // IN-GAME REORDER
 // ============================================================
+// IN-GAME REORDER / CHANGE PLAYERS
+// ============================================================
 let reorderList = [];
-reorderBtnHeader.addEventListener('click', openReorderModal);
+let reorderChangePlayers = false; // true when opened from "Change Players" reset flow
 
-function openReorderModal() {
+reorderBtnHeader.addEventListener('click', () => openReorderModal(false));
+
+function hasAnyScores() {
+  return ROUNDS.some((_,ri) => state.players.some((_,pi) => state.scores[ri][pi] !== null));
+}
+
+function openReorderModal(changePlayers = false) {
+  reorderChangePlayers = changePlayers;
   const totals = state.players.map((_,pi)=>ROUNDS.reduce((s,_,ri)=>{const v=state.scores[ri][pi];return s+(v!==null?v:0);},0));
   reorderList = state.players.map((p,pi)=>({name:p.name,origIndex:pi,total:totals[pi]}));
+
+  // Update modal title/subtitle/button based on mode
+  const title    = document.getElementById('reorder-title');
+  const subtitle = document.getElementById('reorder-subtitle');
+  const applyBtn = document.getElementById('reorder-apply-btn');
+  const addRow   = document.getElementById('reorder-add-row');
+
+  if (changePlayers) {
+    title.textContent    = 'Change Players';
+    subtitle.textContent = 'Edit names, drag to reorder, or add players. Player 1 deals first.';
+    applyBtn.textContent = 'Start New Game ✓';
+  } else {
+    title.textContent    = 'Reorder Players';
+    subtitle.textContent = 'Drag to change turn order. Player 1 becomes dealer for future rounds.';
+    applyBtn.textContent = 'Apply Order';
+  }
+
+  // Show Add Player button only if no scores recorded AND under 7 players, OR in changePlayers mode
+  const showAdd = (changePlayers || !hasAnyScores()) && reorderList.length < 7;
+  addRow.style.display = showAdd ? 'flex' : 'none';
+
   renderReorderList();
   document.getElementById('reorder-modal').classList.add('open');
 }
@@ -996,20 +1061,45 @@ function openReorderModal() {
 function renderReorderList() {
   const container = document.getElementById('reorder-list');
   container.innerHTML = '';
-  reorderList.forEach((p,idx) => {
+  reorderList.forEach((p, idx) => {
     const row = document.createElement('div');
     row.className = 'reorder-row';
     row.setAttribute('data-idx', idx);
 
     const handle = document.createElement('span'); handle.className='drag-handle'; handle.textContent='⠿';
-    const num = document.createElement('div'); num.className='rr-num'+(idx===0?' dealer':''); num.textContent=idx+1;
-    const name = document.createElement('span'); name.className='rr-name'; name.textContent=p.name;
-    const score = document.createElement('span'); score.className='rr-score'; score.textContent=`${p.total} pts`;
+    const num    = document.createElement('div');  num.className='rr-num'+(idx===0?' dealer':''); num.textContent=idx+1;
 
-    row.appendChild(handle); row.appendChild(num); row.appendChild(name); row.appendChild(score);
+    // In changePlayers mode, show editable input; otherwise show static name
+    let nameEl;
+    if (reorderChangePlayers) {
+      nameEl = document.createElement('input');
+      nameEl.type = 'text';
+      nameEl.className = 'rr-edit';
+      nameEl.value = p.name;
+      nameEl.maxLength = 14;
+      nameEl.placeholder = `Player ${idx+1}`;
+      nameEl.addEventListener('input', e => { reorderList[idx].name = e.target.value.trim(); });
+    } else {
+      nameEl = document.createElement('span');
+      nameEl.className = 'rr-name';
+      nameEl.textContent = p.name;
+    }
+
+    const score = document.createElement('span');
+    score.className = 'rr-score';
+    score.textContent = reorderChangePlayers ? '' : `${p.total} pts`;
+
+    row.appendChild(handle); row.appendChild(num); row.appendChild(nameEl);
+    if (!reorderChangePlayers) row.appendChild(score);
     container.appendChild(row);
   });
 
+  // Update Add Player visibility after each render
+  const addRow = document.getElementById('reorder-add-row');
+  const showAdd = (reorderChangePlayers || !hasAnyScores()) && reorderList.length < 7;
+  addRow.style.display = showAdd ? 'flex' : 'none';
+
+  // Re-attach Sortable
   Sortable.create(container, {
     handle:'.drag-handle', animation:150, ghostClass:'dragging', chosenClass:'dragging',
     onEnd(evt) {
@@ -1020,20 +1110,58 @@ function renderReorderList() {
   });
 }
 
-document.getElementById('reorder-apply-btn').addEventListener('click', () => {
-  const newPlayers = reorderList.map(p=>({name:p.name}));
-  const newScores = {};
-  ROUNDS.forEach((_,ri)=>{
-    newScores[ri]={};
-    reorderList.forEach((p,npi)=>{ newScores[ri][npi]=state.scores[ri][p.origIndex]; });
-  });
-  state.players = newPlayers; state.scores = newScores;
-  document.getElementById('reorder-modal').classList.remove('open');
-  buildTable(); updateInfoBar(); showToast('Player order updated');
+// Add player button inside reorder modal
+document.getElementById('reorder-add-row').addEventListener('click', () => {
+  if (reorderList.length >= 7) return;
+  reorderList.push({ name: '', origIndex: -1, total: 0 });
+  reorderChangePlayers = true; // force edit mode when adding
+  renderReorderList();
+  // Focus the new input
+  const inputs = document.getElementById('reorder-list').querySelectorAll('input.rr-edit');
+  if (inputs.length) setTimeout(() => inputs[inputs.length-1].focus(), 50);
 });
 
-document.getElementById('reorder-cancel-btn').addEventListener('click', ()=>document.getElementById('reorder-modal').classList.remove('open'));
-document.getElementById('reorder-modal').addEventListener('click', e=>{ if(e.target===document.getElementById('reorder-modal')) document.getElementById('reorder-modal').classList.remove('open'); });
+document.getElementById('reorder-apply-btn').addEventListener('click', () => {
+  if (reorderChangePlayers) {
+    // Validate: need at least 2 named players
+    const named = reorderList.filter(p => p.name.length > 0);
+    if (named.length < 2) { showToast('Need at least 2 players'); return; }
+
+    // Full reset with new player list
+    closeNumpad();
+    state.players = named.map(p => ({ name: p.name }));
+    state.scores = {};
+    ROUNDS.forEach((_,ri) => {
+      state.scores[ri] = {};
+      state.players.forEach((_,pi) => { state.scores[ri][pi] = null; });
+    });
+    state.currentRound = 0;
+    state.gameOver = false;
+    document.getElementById('game-over-banner').style.display = 'none';
+    document.getElementById('reorder-modal').classList.remove('open');
+    buildTable(); updateInfoBar();
+    showToast('New game started');
+  } else {
+    // Normal reorder — remap existing scores
+    const newPlayers = reorderList.map(p=>({name:p.name}));
+    const newScores  = {};
+    ROUNDS.forEach((_,ri)=>{
+      newScores[ri]={};
+      reorderList.forEach((p,npi)=>{ newScores[ri][npi]=state.scores[ri][p.origIndex]; });
+    });
+    state.players = newPlayers; state.scores = newScores;
+    document.getElementById('reorder-modal').classList.remove('open');
+    buildTable(); updateInfoBar(); showToast('Player order updated');
+  }
+});
+
+document.getElementById('reorder-cancel-btn').addEventListener('click', () => {
+  document.getElementById('reorder-modal').classList.remove('open');
+});
+document.getElementById('reorder-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('reorder-modal'))
+    document.getElementById('reorder-modal').classList.remove('open');
+});
 
 // ============================================================
 // RULES
@@ -1043,11 +1171,44 @@ document.getElementById('rules-close-btn').addEventListener('click', ()=>documen
 document.getElementById('rules-modal').addEventListener('click', e=>{ if(e.target===document.getElementById('rules-modal')) document.getElementById('rules-modal').classList.remove('open'); });
 
 // ============================================================
-// RESET
+// RESET FLOW
 // ============================================================
-resetBtn.addEventListener('click', ()=>document.getElementById('confirm-modal').classList.add('open'));
-document.getElementById('confirm-cancel-btn').addEventListener('click', ()=>document.getElementById('confirm-modal').classList.remove('open'));
-document.getElementById('confirm-yes-btn').addEventListener('click', ()=>{ document.getElementById('confirm-modal').classList.remove('open'); resetGame(); });
+resetBtn.addEventListener('click', () => {
+  document.getElementById('reset-choice-modal').classList.add('open');
+});
+
+document.getElementById('btn-cancel-reset').addEventListener('click', () => {
+  document.getElementById('reset-choice-modal').classList.remove('open');
+});
+
+document.getElementById('reset-choice-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('reset-choice-modal'))
+    document.getElementById('reset-choice-modal').classList.remove('open');
+});
+
+// Same players — restart game with existing player list
+document.getElementById('btn-same-players').addEventListener('click', () => {
+  document.getElementById('reset-choice-modal').classList.remove('open');
+  closeNumpad();
+  // Keep state.players, reset scores only
+  state.scores = {};
+  ROUNDS.forEach((_,ri) => {
+    state.scores[ri] = {};
+    state.players.forEach((_,pi) => { state.scores[ri][pi] = null; });
+  });
+  state.currentRound = 0;
+  state.gameOver = false;
+  document.getElementById('game-over-banner').style.display = 'none';
+  buildTable();
+  updateInfoBar();
+  showToast('Scores cleared — same players');
+});
+
+// Change players — open the Order/Reorder modal in "change players" mode
+document.getElementById('btn-change-players').addEventListener('click', () => {
+  document.getElementById('reset-choice-modal').classList.remove('open');
+  openReorderModal(true); // true = change-players mode
+});
 
 function resetGame() {
   closeNumpad();
