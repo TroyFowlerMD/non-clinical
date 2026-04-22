@@ -94,6 +94,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .player-entry input{flex:1;background:var(--cell-bg);border:1.5px solid var(--cell-border);border-radius:8px;color:var(--text);font-size:0.93rem;padding:8px 11px;outline:none;transition:border-color 0.2s;min-width:0}
 .player-entry input:focus{border-color:var(--accent)}
 .player-entry input::placeholder{color:var(--text-dim)}
+.btn-remove-player {
+  background:none;border:none;cursor:pointer;color:var(--text-dim);
+  font-size:1.1rem;padding:4px 6px;border-radius:6px;line-height:1;
+  flex-shrink:0;transition:color 0.18s,background 0.18s;
+}
+.btn-remove-player:hover{color:#e05555;background:rgba(224,85,85,0.12)}
+/* Dropped player column — greyed out unscored cells */
+td.score-cell.dropped-cell {
+  background:var(--cell-locked)!important;opacity:0.38;pointer-events:none;
+}
+td.score-cell.dropped-cell .score-display{color:var(--text-dim)}
+/* Dropped player header */
+th.player-header.dropped-header {
+  opacity:0.4;text-decoration:line-through;
+}
+/* Reorder row remove btn */
+.rr-remove {
+  background:none;border:none;cursor:pointer;color:var(--text-dim);
+  font-size:1.05rem;padding:3px 6px;border-radius:6px;line-height:1;
+  flex-shrink:0;transition:color 0.18s,background 0.18s;
+  margin-left:auto;
+}
+.rr-remove:hover{color:#e05555;background:rgba(224,85,85,0.12)}
 #start-game-btn{width:100%;background:var(--accent);border:none;border-radius:12px;color:white;cursor:pointer;font-size:1rem;font-weight:700;padding:13px;transition:opacity 0.2s,transform 0.1s;letter-spacing:0.4px;margin-top:4px}
 #start-game-btn:hover{opacity:0.88;transform:translateY(-1px)}
 #start-game-btn:active{transform:translateY(0)}
@@ -520,9 +543,28 @@ function renderSetupPlayers(focusIndex) {
       }
     });
 
+    // Remove button — only visible when ≥3 filled slots (keep minimum 2)
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'btn-remove-player';
+    removeBtn.title = 'Remove player';
+    removeBtn.textContent = '✕';
+    removeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Need at least 2 players
+      const filledCount = setupSlots.filter(s => s.length > 0).length;
+      if (filledCount <= 2 && setupSlots[i].length > 0) {
+        showToast('Need at least 2 players'); return;
+      }
+      // Remove slot i, shift remaining down
+      setupSlots.splice(i, 1);
+      setupSlots.push('');
+      renderSetupPlayers();
+    });
+
     row.appendChild(handle);
     row.appendChild(num);
     row.appendChild(inp);
+    row.appendChild(removeBtn);
     playersList.appendChild(row);
   }
 
@@ -606,7 +648,7 @@ function buildTable() {
     // Truncate long names in header
     th.textContent = p.name.length > 8 ? p.name.slice(0,7)+'…' : p.name;
     th.title = p.name;
-    th.className = 'player-header' + (pi === 0 ? ' is-first-dealer' : '');
+    th.className = 'player-header' + (pi === 0 ? ' is-first-dealer' : '') + (p.dropped ? ' dropped-header' : '');
     th.id = `th-player-${pi}`;
     headerRow.appendChild(th);
   });
@@ -640,6 +682,10 @@ function buildTable() {
       td.appendChild(disp);
       td.addEventListener('click', () => onCellClick(ri, pi));
       tr.appendChild(td);
+      // If player was already dropped before table rebuild, mark immediately
+      if (state.players[pi] && state.players[pi].dropped && state.scores[ri][pi] === null) {
+        td.classList.add('dropped-cell');
+      }
     });
 
     tbody.appendChild(tr);
@@ -720,20 +766,32 @@ function refreshTableDisplay() {
       const disp = td.querySelector('.score-display');
       const val = state.scores[ri][pi];
 
-      td.classList.remove('locked','active-round','zero-score','typing');
+      td.classList.remove('locked','active-round','zero-score','typing','dropped-cell');
       // Don't remove numpad-active here — managed by numpad logic
 
-      if (state.gameOver) {
+      const isDropped = state.players[pi] && state.players[pi].dropped;
+
+      if (isDropped && val === null) {
+        // Unscored cell for dropped player — grey out
+        td.classList.add('dropped-cell');
+        disp.textContent = '';
+      } else if (state.gameOver) {
         if (val !== null) { disp.textContent = val; if (val===0) td.classList.add('zero-score'); }
         else { disp.textContent = '—'; td.classList.add('locked'); }
       } else if (isPastRound) {
         disp.textContent = val !== null ? val : '—';
         if (val===0) td.classList.add('zero-score');
       } else if (isCurrentRound) {
-        td.classList.add('active-round');
-        if (!td.classList.contains('numpad-active')) {
-          disp.textContent = val !== null ? val : '';
-          if (val===0) td.classList.add('zero-score');
+        if (isDropped) {
+          // Dropped player, current round — grey out too
+          td.classList.add('dropped-cell');
+          disp.textContent = '';
+        } else {
+          td.classList.add('active-round');
+          if (!td.classList.contains('numpad-active')) {
+            disp.textContent = val !== null ? val : '';
+            if (val===0) td.classList.add('zero-score');
+          }
         }
       } else {
         td.classList.add('locked');
@@ -742,22 +800,30 @@ function refreshTableDisplay() {
     });
   });
 
-  // Totals
-  const totals = state.players.map((_, pi) =>
-    ROUNDS.reduce((sum,_,ri) => { const v=state.scores[ri][pi]; return sum+(v!==null?v:0); }, 0)
-  );
-  totals.forEach((t,pi) => { const el=document.getElementById(`total-${pi}`); if(el) el.textContent=t; });
+  // Totals — dropped players get '—' and are excluded from ranking
+  const totals = state.players.map((p, pi) => {
+    if (p.dropped) return null; // excluded
+    return ROUNDS.reduce((sum,_,ri) => { const v=state.scores[ri][pi]; return sum+(v!==null?v:0); }, 0);
+  });
+  totals.forEach((t,pi) => {
+    const el=document.getElementById(`total-${pi}`);
+    if(el) el.textContent = (t === null) ? '—' : t;
+  });
 
-  // Ranks
-  const sorted = [...totals.map((t,pi)=>({pi,t}))].sort((a,b)=>a.t-b.t);
+  // Ranks — only active (non-dropped) players ranked
+  const activeTotals = totals
+    .map((t,pi) => ({pi, t}))
+    .filter(x => x.t !== null);
+  activeTotals.sort((a,b)=>a.t-b.t);
+  const ranks = new Array(state.players.length).fill(null);
   let rank=1;
-  const ranks=new Array(state.players.length);
-  for(let i=0;i<sorted.length;i++){
-    if(i>0&&sorted[i].t!==sorted[i-1].t) rank=i+1;
-    ranks[sorted[i].pi]=rank;
+  for(let i=0;i<activeTotals.length;i++){
+    if(i>0&&activeTotals[i].t!==activeTotals[i-1].t) rank=i+1;
+    ranks[activeTotals[i].pi]=rank;
   }
   ranks.forEach((r,pi)=>{
     const el=document.getElementById(`rank-${pi}`); if(!el) return;
+    if (r === null) { el.textContent='—'; return; } // dropped
     const inner=document.createElement('div'); inner.className='rank-cell-inner';
     if(r<=3){const m=document.createElement('span');m.className='rank-medal';m.textContent=MEDAL[r];inner.appendChild(m);}
     const num=document.createElement('span');num.className=`rank-num rank-${r<=3?r:'other'}`;num.textContent=`#${r}`;inner.appendChild(num);
@@ -796,6 +862,7 @@ let selectAllMode     = false; // true = next digit replaces entire value
 
 function onCellClick(ri, pi) {
   if (state.gameOver) return;
+  if (state.players[pi] && state.players[pi].dropped) return; // dropped player
   if (ri > state.currentRound) {
     showToast(`Finish round ${ROUNDS[state.currentRound]}s first`);
     return;
@@ -881,21 +948,23 @@ function confirmScore() {
   const pi = currentEditPlayer;
   const n  = state.players.length;
 
-  // Advance to next player in this round
-  const nextPi = pi + 1;
+  // Find next active (non-dropped) player after current
+  let nextPi = -1;
+  for (let p = pi + 1; p < n; p++) {
+    if (!state.players[p].dropped) { nextPi = p; break; }
+  }
 
-  if (nextPi < n) {
-    // Move to next player, same round — keep numpad open
+  if (nextPi !== -1) {
+    // Move to next active player, same round — keep numpad open
     numpadValue = '';
     selectAllMode = false;
-    // Remove old highlight before opening next
     currentEditRound  = null;
     currentEditPlayer = null;
     refreshTableDisplay();
     openNumpad(ri, nextPi);
   } else {
-    // All players scored in this round — check if round complete
-    const allScored = state.players.every((_, p) => state.scores[ri][p] !== null);
+    // No more active players to score in this round — check if round complete
+    const allScored = state.players.every((p, idx) => p.dropped || state.scores[ri][idx] !== null);
     if (allScored) {
       // Close numpad, advance round
       currentEditRound  = null;
@@ -905,7 +974,6 @@ function confirmScore() {
       refreshTableDisplay();
       checkRoundComplete(ri);
     } else {
-      // Some cells still null (shouldn't happen left-to-right, but safety)
       closeNumpad();
       refreshTableDisplay();
     }
@@ -913,7 +981,7 @@ function confirmScore() {
 }
 
 function checkRoundComplete(ri) {
-  const allScored = state.players.every((_, pi) => state.scores[ri][pi] !== null);
+  const allScored = state.players.every((p, pi) => p.dropped || state.scores[ri][pi] !== null);
   if (!allScored) return;
 
   if (ri < ROUNDS.length - 1) {
@@ -1032,7 +1100,7 @@ function hasAnyScores() {
 function openReorderModal(changePlayers = false) {
   reorderChangePlayers = changePlayers;
   const totals = state.players.map((_,pi)=>ROUNDS.reduce((s,_,ri)=>{const v=state.scores[ri][pi];return s+(v!==null?v:0);},0));
-  reorderList = state.players.map((p,pi)=>({name:p.name,origIndex:pi,total:totals[pi]}));
+  reorderList = state.players.map((p,pi)=>({name:p.name,origIndex:pi,total:(p.dropped?null:totals[pi]),dropped:p.dropped||false}));
 
   // Update modal title/subtitle/button based on mode
   const title    = document.getElementById('reorder-title');
@@ -1063,8 +1131,9 @@ function renderReorderList() {
   container.innerHTML = '';
   reorderList.forEach((p, idx) => {
     const row = document.createElement('div');
-    row.className = 'reorder-row';
+    row.className = 'reorder-row' + (p.dropped ? ' dropped-reorder-row' : '');
     row.setAttribute('data-idx', idx);
+    row.style.opacity = p.dropped ? '0.4' : '1';
 
     const handle = document.createElement('span'); handle.className='drag-handle'; handle.textContent='⠿';
     const num    = document.createElement('div');  num.className='rr-num'+(idx===0?' dealer':''); num.textContent=idx+1;
@@ -1087,10 +1156,45 @@ function renderReorderList() {
 
     const score = document.createElement('span');
     score.className = 'rr-score';
-    score.textContent = reorderChangePlayers ? '' : `${p.total} pts`;
+    score.textContent = reorderChangePlayers ? '' : (p.dropped ? '(removed)' : `${p.total} pts`);
+
+    // Remove button — always visible, min 2 active players
+    const rrRemove = document.createElement('button');
+    rrRemove.className = 'rr-remove';
+    rrRemove.title = 'Remove player';
+    rrRemove.textContent = '✕';
+    rrRemove.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Count active (non-dropped) players remaining
+      const activeCount = reorderList.filter(pl => !pl.dropped).length;
+      if (activeCount <= 2) { showToast('Need at least 2 players'); return; }
+
+      if (hasAnyScores() && !reorderChangePlayers) {
+        // Mid-game normal reorder: mark as dropped rather than deleting
+        const removedName = reorderList[idx].name || 'Player';
+        const origIdx = reorderList[idx].origIndex;
+        if (origIdx >= 0 && origIdx < state.players.length) {
+          state.players[origIdx].dropped = true;
+        }
+        reorderList[idx].dropped = true;
+        // Rebuild table to grey out cells, then close modal
+        document.getElementById('reorder-modal').classList.remove('open');
+        buildTable();
+        updateInfoBar();
+        showToast(`${removedName} removed from scoring`);
+      } else {
+        // Pre-game or changePlayers mode: actually remove from list
+        reorderList.splice(idx, 1);
+        const addRow = document.getElementById('reorder-add-row');
+        const showAdd = (reorderChangePlayers || !hasAnyScores()) && reorderList.length < 7;
+        addRow.style.display = showAdd ? 'flex' : 'none';
+        renderReorderList();
+      }
+    });
 
     row.appendChild(handle); row.appendChild(num); row.appendChild(nameEl);
     if (!reorderChangePlayers) row.appendChild(score);
+    row.appendChild(rrRemove);
     container.appendChild(row);
   });
 
@@ -1142,8 +1246,8 @@ document.getElementById('reorder-apply-btn').addEventListener('click', () => {
     buildTable(); updateInfoBar();
     showToast('New game started');
   } else {
-    // Normal reorder — remap existing scores
-    const newPlayers = reorderList.map(p=>({name:p.name}));
+    // Normal reorder — remap existing scores and preserve dropped status
+    const newPlayers = reorderList.map(p=>({ name: p.name, dropped: p.dropped || false }));
     const newScores  = {};
     ROUNDS.forEach((_,ri)=>{
       newScores[ri]={};
@@ -1190,7 +1294,8 @@ document.getElementById('reset-choice-modal').addEventListener('click', e => {
 document.getElementById('btn-same-players').addEventListener('click', () => {
   document.getElementById('reset-choice-modal').classList.remove('open');
   closeNumpad();
-  // Keep state.players, reset scores only
+  // Keep state.players but clear dropped flags; reset scores only
+  state.players.forEach(p => { p.dropped = false; });
   state.scores = {};
   ROUNDS.forEach((_,ri) => {
     state.scores[ri] = {};
