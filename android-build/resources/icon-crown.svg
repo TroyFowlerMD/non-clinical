@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="gold" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#FFE27A"/>
+      <stop offset="50%" stop-color="#E0B03A"/>
+      <stop offset="100%" stop-color="#8A6A1C"/>
+    </linearGradient>
+    <radialGradient id="bg" cx="50%" cy="45%" r="70%">
+      <stop offset="0%" stop-color="#4A2894"/>
+      <stop offset="100%" stop-color="#1A0A3C"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <path d="M64 210 L128 340 L192 210 L256 360 L320 210 L384 340 L448 210 L448 410 Q448 430 428 430 L84 430 Q64 430 64 410 Z" fill="url(#gold)" stroke="#5C4410" stroke-width="8" stroke-linejoin="round"/>
+  <rect x="70" y="380" width="372" height="14" fill="#FFD95C" opacity="0.7"/>
+  <path d="M64 210 l-20 24 l20 24 l20 -24 z" fill="#F4C430" stroke="#000" stroke-width="3"/>
+  <g transform="translate(192 210) scale(0.9)" fill="#1B7A3A" stroke="#000" stroke-width="3">
+    <circle cx="-16" cy="2" r="12"/>
+    <circle cx="16" cy="2" r="12"/>
+    <circle cx="0" cy="-14" r="12"/>
+    <path d="M-8 10 L0 28 L8 10 Z"/>
+  </g>
+  <path d="M256 188 C244 172 220 172 220 196 C220 218 256 240 256 240 C256 240 292 218 292 196 C292 172 268 172 256 188 Z" fill="#D2222D" stroke="#000" stroke-width="3"/>
+  <g transform="translate(320 210)" fill="#1A1A1A" stroke="#000" stroke-width="3">
+    <path d="M0 -20 C-20 0 -20 28 0 28 C-4 32 -8 40 -8 44 L8 44 C8 40 4 32 0 28 C20 28 20 0 0 -20 Z"/>
+  </g>
+  <polygon points="448,186 456,208 480,208 460,222 468,246 448,232 428,246 436,222 416,208 440,208" fill="#2B6FD6" stroke="#000" stroke-width="3"/>
+</svg>
