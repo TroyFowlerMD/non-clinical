@@ -1,27 +1,81 @@
-const CACHE = 'five-crowns-v1';
+/* Five Crowns Scorekeeper — Service Worker
+ * Strategy: precache-all + cache-first with network-update fallback.
+ * Bump CACHE_VERSION any time five-crowns.html or assets change to force update.
+ */
+const CACHE_VERSION = 'v7-2026-04-22';
+const CACHE = `five-crowns-${CACHE_VERSION}`;
+
+// Everything the app needs to run fully offline.
+// Paths are scoped to /non-clinical/ (GitHub Pages project path).
 const ASSETS = [
+  '/non-clinical/',
+  '/non-clinical/index.html',
   '/non-clinical/five-crowns.html',
-  '/non-clinical/manifest.json'
+  '/non-clinical/manifest.json',
+  '/non-clinical/icon-192.png',
+  '/non-clinical/icon-512.png',
+  '/non-clinical/icon-maskable-192.png',
+  '/non-clinical/icon-maskable-512.png'
 ];
 
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(ASSETS))
+// ── INSTALL: precache everything, then take over immediately ─────────────
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE).then((cache) =>
+      // addAll is atomic — if any asset fails the whole install fails, which
+      // is what we want (no half-cached state).
+      cache.addAll(ASSETS)
+    )
   );
   self.skipWaiting();
 });
 
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    )
+// ── ACTIVATE: purge old caches, claim clients ────────────────────────────
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))
+      )
+    ).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
+// ── FETCH: cache-first for same-origin GETs, with background refresh ─────
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+
+  // Only handle GET. POSTs etc. go straight to network.
+  if (req.method !== 'GET') return;
+
+  const url = new URL(req.url);
+  // Only handle same-origin requests. Cross-origin (CDN, analytics) bypass SW.
+  if (url.origin !== self.location.origin) return;
+
+  event.respondWith(
+    caches.match(req).then((cached) => {
+      // Fire off a background fetch to refresh the cache for next time.
+      const networkFetch = fetch(req)
+        .then((response) => {
+          // Only cache successful basic responses.
+          if (response && response.ok && response.type === 'basic') {
+            const clone = response.clone();
+            caches.open(CACHE).then((cache) => cache.put(req, clone));
+          }
+          return response;
+        })
+        .catch(() => null);
+
+      // Cache-first: serve cached immediately if available, otherwise wait for network.
+      return cached || networkFetch || new Response(
+        '<h1>Offline</h1><p>This resource is not cached and the network is unavailable.</p>',
+        { status: 503, headers: { 'Content-Type': 'text/html' } }
+      );
+    })
   );
+});
+
+// ── MESSAGE: allow the page to trigger an immediate update ───────────────
+self.addEventListener('message', (event) => {
+  if (event.data === 'SKIP_WAITING') self.skipWaiting();
 });

@@ -1365,8 +1365,30 @@ window.addEventListener('resize', ()=>{ if(state.players.length) setDynamicColum
 </script>
 
 <script>
+// Service worker registration with auto-update.
+// When a new SW is installed, ask it to skipWaiting, then reload once it takes over
+// so users always see the latest version of the app without manual cache clears.
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/non-clinical/sw.js');
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/non-clinical/sw.js').then((reg) => {
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener('statechange', () => {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+            // New version available — activate it immediately.
+            nw.postMessage('SKIP_WAITING');
+          }
+        });
+      });
+    }).catch(() => { /* no-op: app still works without SW */ });
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    });
+  });
 }
 </script>
 </body>

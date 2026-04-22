@@ -1,25 +1,43 @@
 {
   "name": "Five Crowns Scorekeeper",
   "short_name": "Five Crowns",
-  "description": "Score tracker for the Five Crowns card game with auto dealer rotation and touch-friendly input.",
+  "description": "Score tracker for the Five Crowns card game with auto dealer rotation and touch-friendly input. Works fully offline after first launch.",
+  "id": "/non-clinical/five-crowns.html",
   "start_url": "/non-clinical/five-crowns.html",
   "scope": "/non-clinical/",
   "display": "standalone",
+  "display_override": ["standalone", "fullscreen"],
   "orientation": "portrait",
-  "background_color": "#f0f4f8",
+  "background_color": "#1e3a8a",
   "theme_color": "#2563eb",
+  "categories": ["games", "utilities"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
