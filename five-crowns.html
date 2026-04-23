@@ -20,7 +20,7 @@
   --total-row:#141820;--rank-row:#13141c;
   --btn-bg:#22222e;--btn-hover:#2c2c3e;
   --dealer-badge:#8b63e0;--wild-badge:#2aa8ae;
-  --setup-card:#16161f;--modal-bg:rgba(0,0,0,0.82);--modal-surface:#18181f;
+  --setup-card:#16161f;--modal-bg:rgba(0,0,0,0.28);--modal-surface:#18181f;
   --green-flash:#27ae60;--shadow:0 4px 24px rgba(0,0,0,0.75);
   --player-header:#c8ccd8;
 }
@@ -121,6 +121,8 @@ th.player-header.dropped-header {
 #start-game-btn:hover{opacity:0.88;transform:translateY(-1px)}
 #start-game-btn:active{transform:translateY(0)}
 #start-game-btn:disabled{opacity:0.35;cursor:not-allowed;transform:none}
+.setup-add-player-btn{width:100%;background:none;border:1.5px dashed var(--cell-border);border-radius:10px;color:var(--text-dim);cursor:pointer;font-size:0.87rem;padding:9px;transition:all 0.18s;margin-bottom:8px;display:block}
+.setup-add-player-btn:hover{border-color:var(--accent);color:var(--accent)}
 
 /* ===== SCORE SCREEN ===== */
 #score-screen{display:none;padding:0 0 70px 0}
@@ -191,7 +193,7 @@ tr.rank-row td.label-cell{font-size:0.72rem;text-transform:uppercase;color:var(-
 .rank-num.rank-1{color:#f5c842}.rank-num.rank-2{color:#b0b8c8}.rank-num.rank-3{color:#cd7f32}.rank-num.rank-other{color:var(--text-dim)}
 
 /* ===== NUMPAD (no display — score shows live in cell) ===== */
-#numpad-modal{display:none;position:fixed;inset:0;background:var(--modal-bg);z-index:500;align-items:flex-end;justify-content:center}
+#numpad-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.18);z-index:500;align-items:flex-end;justify-content:center}
 #numpad-modal.open{display:flex}
 #numpad-container{background:var(--modal-surface);border-radius:20px 20px 0 0;padding:14px 14px 26px;width:100%;max-width:460px;box-shadow:0 -8px 32px rgba(0,0,0,0.5);animation:slideUp 0.22s ease}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
@@ -301,6 +303,21 @@ hr.rules-divider{border:none;border-top:1px solid var(--cell-border);margin:12px
 
 .flash-green{animation:flashGreen 0.35s ease}
 @keyframes flashGreen{0%{background:var(--green-flash)}100%{background:inherit}}
+.sound-toggle-btn{background:none;border:none;cursor:pointer;font-size:0.9rem;padding:5px 6px;border-radius:7px;color:var(--text-dim);transition:color .18s,background .18s;flex-shrink:0}
+.sound-toggle-btn:hover{background:var(--btn-hover);color:var(--text)}
+.sound-toggle-btn.muted{opacity:0.4}
+/* Leaderboard */
+#leaderboard-modal{display:none;position:fixed;inset:0;background:var(--modal-bg);z-index:550;align-items:flex-end;justify-content:center}
+#leaderboard-modal.open{display:flex}
+#leaderboard-container{background:var(--modal-surface);border-radius:20px 20px 0 0;padding:20px 18px 36px;width:100%;max-width:560px;max-height:75vh;overflow-y:auto;box-shadow:0 -8px 32px rgba(0,0,0,0.5);animation:slideUp 0.22s ease}
+#leaderboard-container h3{font-size:1.05rem;color:var(--accent);margin-bottom:14px;text-align:center}
+.lb-section{margin-bottom:16px}
+.lb-section h4{font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent2);margin-bottom:7px}
+.lb-entry{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--cell-bg);border-radius:8px;margin-bottom:4px;border:1px solid var(--cell-border)}
+.lb-name{font-size:0.9rem;font-weight:600}
+.lb-score{font-size:0.88rem;color:var(--accent);font-weight:700}
+.lb-date{font-size:0.7rem;color:var(--text-dim)}
+.lb-empty{font-size:0.82rem;color:var(--text-dim);text-align:center;padding:10px}
 </style>
 </head>
 <body>
@@ -313,8 +330,10 @@ hr.rules-divider{border:none;border-top:1px solid var(--cell-border);margin:12px
   </div>
   <div class="header-controls">
     <button class="header-btn" id="rules-btn">📖 Rules</button>
+    <button class="sound-toggle-btn" id="sound-toggle-btn" title="Sound">🔊</button>
+    <button class="header-btn" id="leaderboard-btn" style="display:none;">🏆</button>
     <button id="theme-toggle" class="header-btn">🔮 Midnight</button>
-    <button class="header-btn" id="reorder-btn-header" style="display:none;">⇅ Order</button>
+    <button class="header-btn" id="reorder-btn-header" style="display:none;">✏️ Edit</button>
   </div>
 </header>
 
@@ -356,6 +375,15 @@ hr.rules-divider{border:none;border-top:1px solid var(--cell-border);margin:12px
   <button class="fab secondary" id="reset-btn" title="New Game" style="display:none;">↺</button>
 </div>
 
+<!-- LEADERBOARD MODAL -->
+<div id="leaderboard-modal" role="dialog" aria-modal="true">
+  <div id="leaderboard-container">
+    <h3>🏆 All-Time Records</h3>
+    <div id="leaderboard-content"></div>
+    <button class="rules-close-btn" id="leaderboard-close-btn">Close</button>
+    <button class="rules-close-btn" id="leaderboard-clear-btn" style="background:transparent;color:var(--text-dim);font-size:0.8rem;margin-top:4px">Clear Records</button>
+  </div>
+</div>
 <!-- NUMPAD (no separate score display — live in cell) -->
 <div id="numpad-modal" role="dialog" aria-modal="true">
   <div id="numpad-container">
@@ -479,6 +507,7 @@ const MAX_PLAYERS = 7;
 // ============================================================
 let state = { players:[], scores:{}, currentRound:0, gameOver:false };
 let setupSlots = ['','','','','','',''];
+let numSetupSlots = 2;
 
 // ============================================================
 // DOM REFS
@@ -494,26 +523,16 @@ const reorderBtnHeader  = document.getElementById('reorder-btn-header');
 // ============================================================
 // SETUP — PROGRESSIVE ROW REVEAL
 // ============================================================
-function computeHighestVisible() {
-  let lastFilled = -1;
-  for (let i = 0; i < MAX_PLAYERS; i++) {
-    if (setupSlots[i].length > 0) lastFilled = i;
-  }
-  const hv = Math.min(lastFilled + 1, MAX_PLAYERS - 1);
-  return Math.max(hv, 1);
-}
-
 function renderSetupPlayers(focusIndex) {
   playersList.innerHTML = '';
-  const hv = computeHighestVisible();
-  for (let i = 0; i <= hv; i++) {
+  for (let i = 0; i < numSetupSlots; i++) {
     const row = document.createElement('div');
     row.className = 'player-entry';
     row.setAttribute('data-slot', i);
 
     const handle = document.createElement('span');
     handle.className = 'drag-handle';
-    handle.textContent = '⠿';
+    handle.textContent = '⠃';
 
     const num = document.createElement('div');
     num.className = 'player-number' + (i === 0 ? ' dealer-indicator' : '');
@@ -525,54 +544,51 @@ function renderSetupPlayers(focusIndex) {
     inp.placeholder = i === 0 ? 'Player 1 — Starting Dealer' : `Player ${i + 1}`;
     inp.maxLength = 14;
     inp.setAttribute('data-slot', i);
-
-    inp.addEventListener('input', e => {
-      const prevHv = computeHighestVisible();
-      setupSlots[i] = e.target.value.trim();
-      updateStartBtn();
-      const newHv = computeHighestVisible();
-      if (newHv !== prevHv) renderSetupPlayers(i);
-    });
-
+    inp.addEventListener('input', e => { setupSlots[i] = e.target.value.trim(); updateStartBtn(); });
     inp.addEventListener('keydown', e => {
       if (e.key === 'Enter') {
         e.preventDefault();
-        const newHv = computeHighestVisible();
         const next = playersList.querySelector(`input[data-slot="${i+1}"]`);
         if (next) next.focus(); else startGameBtn.focus();
       }
     });
 
-    // Remove button — only visible when ≥3 filled slots (keep minimum 2)
     const removeBtn = document.createElement('button');
     removeBtn.className = 'btn-remove-player';
     removeBtn.title = 'Remove player';
     removeBtn.textContent = '✕';
-    removeBtn.addEventListener('click', (e) => {
+    removeBtn.addEventListener('click', e => {
       e.stopPropagation();
-      // Need at least 2 players
-      const filledCount = setupSlots.filter(s => s.length > 0).length;
-      if (filledCount <= 2 && setupSlots[i].length > 0) {
-        showToast('Need at least 2 players'); return;
-      }
-      // Remove slot i, shift remaining down
-      setupSlots.splice(i, 1);
-      setupSlots.push('');
+      if (numSetupSlots <= 2) { showToast('Need at least 2 players'); return; }
+      setupSlots.splice(i, 1); setupSlots.push('');
+      numSetupSlots--;
       renderSetupPlayers();
     });
 
-    row.appendChild(handle);
-    row.appendChild(num);
-    row.appendChild(inp);
-    row.appendChild(removeBtn);
+    row.appendChild(handle); row.appendChild(num); row.appendChild(inp); row.appendChild(removeBtn);
     playersList.appendChild(row);
+  }
+
+  // + Add Player button (when < 7)
+  const existingAdd = document.getElementById('setup-add-player-btn');
+  if (existingAdd) existingAdd.remove();
+  if (numSetupSlots < MAX_PLAYERS) {
+    const addBtn = document.createElement('button');
+    addBtn.id = 'setup-add-player-btn';
+    addBtn.className = 'setup-add-player-btn';
+    addBtn.textContent = '＋ Add Player';
+    addBtn.addEventListener('click', () => {
+      if (numSetupSlots >= MAX_PLAYERS) return;
+      numSetupSlots++;
+      renderSetupPlayers(numSetupSlots - 1);
+    });
+    playersList.parentNode.insertBefore(addBtn, startGameBtn);
   }
 
   if (focusIndex !== undefined) {
     const t = playersList.querySelector(`input[data-slot="${focusIndex}"]`);
     if (t) setTimeout(() => t.focus(), 30);
   }
-
   setupDragSetup();
   updateStartBtn();
 }
@@ -619,9 +635,11 @@ function initGame() {
   scoreScreen.style.display = 'block';
   resetBtn.style.display = 'flex';
   reorderBtnHeader.style.display = 'block';
+  document.getElementById('leaderboard-btn').style.display = 'block';
 
   buildTable();
   updateInfoBar();
+  saveState();
 }
 
 // ============================================================
@@ -898,6 +916,22 @@ function openNumpad(ri, pi) {
   document.getElementById('numpad-round-label').textContent  = ROUNDS[ri] + 's';
 
   document.getElementById('numpad-modal').classList.add('open');
+
+  // Scroll active cell above keyboard after animation starts
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      const activeTd = document.getElementById(`cell-${ri}-${pi}`);
+      if (activeTd) {
+        const rect = activeTd.getBoundingClientRect();
+        const kbdH = document.getElementById('numpad-container').offsetHeight || 280;
+        const visBottom = window.innerHeight - kbdH - 24;
+        if (rect.bottom > visBottom || rect.top < 56) {
+          const target = window.scrollY + rect.top - Math.max(60, (visBottom - rect.height) / 2);
+          window.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+        }
+      }
+    }, 60);
+  });
 }
 
 function updateCellDisplay() {
@@ -933,52 +967,32 @@ function confirmScore() {
   const val = numpadValue === '' ? 0 : parseInt(numpadValue, 10);
   if (isNaN(val) || val < 0) { showToast('Enter a valid score'); return; }
 
-  // Save score to state
-  state.scores[currentEditRound][currentEditPlayer] = val;
+  const ri = currentEditRound;
+  const pi = currentEditPlayer;
 
-  // Flash the cell green
-  const td = document.getElementById(`cell-${currentEditRound}-${currentEditPlayer}`);
+  state.scores[ri][pi] = val;
+
+  const td = document.getElementById(`cell-${ri}-${pi}`);
   if (td) {
     td.classList.remove('numpad-active','typing');
     td.classList.add('flash-green');
-    setTimeout(()=>td.classList.remove('flash-green'), 350);
+    setTimeout(() => td.classList.remove('flash-green'), 350);
   }
 
-  const ri = currentEditRound;
-  const pi = currentEditPlayer;
-  const n  = state.players.length;
+  playSoundForScore(val, pi, ri);
 
-  // Find next active (non-dropped) player after current
-  let nextPi = -1;
-  for (let p = pi + 1; p < n; p++) {
-    if (!state.players[p].dropped) { nextPi = p; break; }
-  }
+  // Close numpad — no auto-advance
+  currentEditRound  = null;
+  currentEditPlayer = null;
+  numpadValue       = '';
+  selectAllMode     = false;
+  document.getElementById('numpad-modal').classList.remove('open');
 
-  if (nextPi !== -1) {
-    // Move to next active player, same round — keep numpad open
-    numpadValue = '';
-    selectAllMode = false;
-    currentEditRound  = null;
-    currentEditPlayer = null;
-    refreshTableDisplay();
-    openNumpad(ri, nextPi);
-  } else {
-    // No more active players to score in this round — check if round complete
-    const allScored = state.players.every((p, idx) => p.dropped || state.scores[ri][idx] !== null);
-    if (allScored) {
-      // Close numpad, advance round
-      currentEditRound  = null;
-      currentEditPlayer = null;
-      numpadValue = '';
-      document.getElementById('numpad-modal').classList.remove('open');
-      refreshTableDisplay();
-      checkRoundComplete(ri);
-    } else {
-      closeNumpad();
-      refreshTableDisplay();
-    }
-  }
+  refreshTableDisplay();
+  checkRoundComplete(ri);
+  saveState();
 }
+
 
 function checkRoundComplete(ri) {
   const allScored = state.players.every((p, pi) => p.dropped || state.scores[ri][pi] !== null);
@@ -989,10 +1003,12 @@ function checkRoundComplete(ri) {
     const di = state.currentRound % state.players.length;
     showToast(`Round ${ROUNDS[state.currentRound]}s — ${state.players[di].name} deals`);
     refreshTableDisplay();
+    saveState();
   } else {
     state.gameOver = true;
     refreshTableDisplay();
     showGameOver();
+    saveState();
   }
 }
 
@@ -1071,6 +1087,7 @@ document.addEventListener('keydown', e => {
 // GAME OVER
 // ============================================================
 function showGameOver() {
+  updateLeaderboardOnGameOver();
   const totals = state.players.map((_,pi) => ROUNDS.reduce((s,_,ri)=>{const v=state.scores[ri][pi];return s+(v!==null?v:0);},0));
   const min = Math.min(...totals);
   const winners = state.players.filter((_,pi)=>totals[pi]===min).map(p=>p.name);
@@ -1081,6 +1098,7 @@ function showGameOver() {
     : `${winners.join(' & ')} tied with ${min} points each.`;
   banner.style.display = 'block';
   banner.scrollIntoView({behavior:'smooth',block:'center'});
+  if(soundEnabled) setTimeout(playWinFanfare,400);
 }
 
 // ============================================================
@@ -1092,6 +1110,7 @@ let reorderList = [];
 let reorderChangePlayers = false; // true when opened from "Change Players" reset flow
 
 reorderBtnHeader.addEventListener('click', () => openReorderModal(false));
+document.getElementById('leaderboard-btn').addEventListener('click', openLeaderboard);
 
 function hasAnyScores() {
   return ROUNDS.some((_,ri) => state.players.some((_,pi) => state.scores[ri][pi] !== null));
@@ -1113,9 +1132,9 @@ function openReorderModal(changePlayers = false) {
     subtitle.textContent = 'Edit names, drag to reorder, or add players. Player 1 deals first.';
     applyBtn.textContent = 'Start New Game ✓';
   } else {
-    title.textContent    = 'Reorder Players';
-    subtitle.textContent = 'Drag to change turn order. Player 1 becomes dealer for future rounds.';
-    applyBtn.textContent = 'Apply Order';
+    title.textContent    = 'Edit Players';
+    subtitle.textContent = 'Edit names, drag to reorder. Player 1 deals next round.';
+    applyBtn.textContent = 'Apply';
   }
 
   // Show Add Player button only if no scores recorded AND under 7 players, OR in changePlayers mode
@@ -1138,21 +1157,15 @@ function renderReorderList() {
     const handle = document.createElement('span'); handle.className='drag-handle'; handle.textContent='⠿';
     const num    = document.createElement('div');  num.className='rr-num'+(idx===0?' dealer':''); num.textContent=idx+1;
 
-    // In changePlayers mode, show editable input; otherwise show static name
+    // Always editable — names can be corrected any time
     let nameEl;
-    if (reorderChangePlayers) {
-      nameEl = document.createElement('input');
-      nameEl.type = 'text';
-      nameEl.className = 'rr-edit';
-      nameEl.value = p.name;
-      nameEl.maxLength = 14;
-      nameEl.placeholder = `Player ${idx+1}`;
-      nameEl.addEventListener('input', e => { reorderList[idx].name = e.target.value.trim(); });
-    } else {
-      nameEl = document.createElement('span');
-      nameEl.className = 'rr-name';
-      nameEl.textContent = p.name;
-    }
+    nameEl = document.createElement('input');
+    nameEl.type = 'text';
+    nameEl.className = 'rr-edit';
+    nameEl.value = p.name;
+    nameEl.maxLength = 14;
+    nameEl.placeholder = `Player ${idx+1}`;
+    nameEl.addEventListener('input', e => { reorderList[idx].name = e.target.value.trim(); });
 
     const score = document.createElement('span');
     score.className = 'rr-score';
@@ -1246,7 +1259,9 @@ document.getElementById('reorder-apply-btn').addEventListener('click', () => {
     buildTable(); updateInfoBar();
     showToast('New game started');
   } else {
-    // Normal reorder — remap existing scores and preserve dropped status
+    // Normal reorder — remap scores, preserve dropped, update names
+    const inputEls = document.getElementById('reorder-list').querySelectorAll('input.rr-edit');
+    inputEls.forEach((inp, i) => { if (reorderList[i]) reorderList[i].name = inp.value.trim() || reorderList[i].name; });
     const newPlayers = reorderList.map(p=>({ name: p.name, dropped: p.dropped || false }));
     const newScores  = {};
     ROUNDS.forEach((_,ri)=>{
@@ -1255,7 +1270,8 @@ document.getElementById('reorder-apply-btn').addEventListener('click', () => {
     });
     state.players = newPlayers; state.scores = newScores;
     document.getElementById('reorder-modal').classList.remove('open');
-    buildTable(); updateInfoBar(); showToast('Player order updated');
+    buildTable(); updateInfoBar(); showToast('Players updated');
+    saveState();
   }
 });
 
@@ -1295,6 +1311,7 @@ document.getElementById('btn-same-players').addEventListener('click', () => {
   document.getElementById('reset-choice-modal').classList.remove('open');
   closeNumpad();
   // Keep state.players but clear dropped flags; reset scores only
+  clearSavedState();
   state.players.forEach(p => { p.dropped = false; });
   state.scores = {};
   ROUNDS.forEach((_,ri) => {
@@ -1322,10 +1339,194 @@ function resetGame() {
   document.getElementById('game-over-banner').style.display='none';
   resetBtn.style.display='none';
   reorderBtnHeader.style.display='none';
+  document.getElementById('leaderboard-btn').style.display='none';
   setupScreen.style.display='block';
   setupSlots=['','','','','','',''];
+  numSetupSlots=2;
   renderSetupPlayers();
 }
+
+// ============================================================
+// SOUND ENGINE
+// ============================================================
+let soundEnabled = true;
+let _audioCtx = null;
+
+function getACtx() {
+  if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (_audioCtx.state === 'suspended') _audioCtx.resume();
+  return _audioCtx;
+}
+
+function playTone(freq, dur, type, vol, delay) {
+  type=type||'sine'; vol=vol||0.25; delay=delay||0;
+  try {
+    const ctx=getACtx(), osc=ctx.createOscillator(), g=ctx.createGain();
+    osc.connect(g); g.connect(ctx.destination);
+    osc.type=type;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime+delay);
+    g.gain.setValueAtTime(vol, ctx.currentTime+delay);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+delay+dur);
+    osc.start(ctx.currentTime+delay); osc.stop(ctx.currentTime+delay+dur+0.05);
+  } catch(e){}
+}
+
+function playGasp() {
+  try {
+    const ctx=getACtx(), osc=ctx.createOscillator(), g=ctx.createGain();
+    osc.connect(g); g.connect(ctx.destination);
+    osc.type='sawtooth';
+    osc.frequency.setValueAtTime(780, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(110, ctx.currentTime+0.42);
+    g.gain.setValueAtTime(0.16, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.45);
+    osc.start(); osc.stop(ctx.currentTime+0.5);
+  } catch(e){}
+}
+
+function playChime100() {
+  [523.25, 415.30, 349.23].forEach((f,i)=>playTone(f,0.3,'triangle',0.22,i*0.2));
+}
+
+function playChime200() {
+  [220,185,155].forEach((f,i)=>playTone(f,0.5,'sawtooth',0.20,i*0.25));
+  setTimeout(()=>playTone(110,0.7,'sawtooth',0.25),800);
+}
+
+function playWinFanfare() {
+  [523.25,659.25,783.99,1046.50].forEach((f,i)=>playTone(f,0.32,'triangle',0.28,i*0.15));
+}
+
+function playSoundForScore(val, pi, ri) {
+  if (!soundEnabled) return;
+  if (val > 60) setTimeout(playGasp, 80);
+  const prev = ROUNDS.reduce((s,_,r)=>{
+    if(r===ri) return s; const v=state.scores[r][pi]; return s+(v!==null?v:0);
+  }, 0);
+  const next = prev+val;
+  if      (next>=200 && prev<200) setTimeout(playChime200,160);
+  else if (next>=100 && prev<100) setTimeout(playChime100,160);
+}
+
+document.getElementById('sound-toggle-btn').addEventListener('click', ()=>{
+  soundEnabled = !soundEnabled;
+  const btn = document.getElementById('sound-toggle-btn');
+  btn.textContent = soundEnabled ? '🔊' : '🔇';
+  btn.classList.toggle('muted', !soundEnabled);
+  saveState();
+});
+
+// ============================================================
+// PERSISTENCE
+// ============================================================
+const SAVE_KEY = 'fc_game_v1';
+const LB_KEY   = 'fc_lb_v1';
+
+function saveState() {
+  if (!state.players || !state.players.length) return;
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify({
+      players: state.players, scores: state.scores,
+      currentRound: state.currentRound, gameOver: state.gameOver,
+      theme: document.body.getAttribute('data-theme') || 'midnight',
+      soundOn: soundEnabled
+    }));
+  } catch(e){}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return false;
+    const s = JSON.parse(raw);
+    if (!s.players || s.players.length < 2) return false;
+    state.players=s.players; state.scores=s.scores;
+    state.currentRound=s.currentRound??0; state.gameOver=s.gameOver||false;
+    if (s.theme==='light') {
+      document.body.setAttribute('data-theme','light');
+      document.getElementById('theme-toggle').textContent='☀️ Light';
+    }
+    if (s.soundOn===false) {
+      soundEnabled=false;
+      const b=document.getElementById('sound-toggle-btn');
+      if(b){b.textContent='🔇';b.classList.add('muted');}
+    }
+    return true;
+  } catch(e){ return false; }
+}
+
+function clearSavedState() {
+  try { localStorage.removeItem(SAVE_KEY); } catch(e){}
+}
+
+// ============================================================
+// LEADERBOARD
+// ============================================================
+function loadLB() { try{return JSON.parse(localStorage.getItem(LB_KEY)||'{}');}catch(e){return{};} }
+function saveLB(lb){ try{localStorage.setItem(LB_KEY,JSON.stringify(lb));}catch(e){} }
+
+function updateLeaderboardOnGameOver() {
+  const lb=loadLB(), now=new Date().toLocaleDateString();
+  const pts = state.players.map((p,pi)=>{
+    if(p.dropped) return null;
+    return {name:p.name, total:ROUNDS.reduce((s,_,ri)=>{const v=state.scores[ri][pi];return s+(v!==null?v:0);},0)};
+  }).filter(Boolean);
+  if(!pts.length) return;
+  const minT=Math.min(...pts.map(p=>p.total));
+  const maxT=Math.max(...pts.map(p=>p.total));
+  const minN=pts.find(p=>p.total===minT)?.name||'?';
+  const maxN=pts.find(p=>p.total===maxT)?.name||'?';
+  let best=null;
+  state.players.forEach((p,pi)=>{
+    if(p.dropped) return;
+    ROUNDS.forEach((r,ri)=>{
+      const v=state.scores[ri][pi];
+      if(v!==null&&(!best||v>best.score)) best={score:v,name:p.name,round:r+'s'};
+    });
+  });
+  if(!lb.lowestFinal||minT<lb.lowestFinal.score) lb.lowestFinal={score:minT,name:minN,date:now};
+  if(!lb.highestFinal||maxT>lb.highestFinal.score) lb.highestFinal={score:maxT,name:maxN,date:now};
+  if(best&&(!lb.highestHand||best.score>lb.highestHand.score)) lb.highestHand={score:best.score,name:best.name,round:best.round,date:now};
+  saveLB(lb);
+}
+
+function openLeaderboard() {
+  const lb=loadLB();
+  const content=document.getElementById('leaderboard-content');
+  content.innerHTML='';
+  [
+    {key:'lowestFinal', label:'🥇 Lowest Final'},
+    {key:'highestFinal',label:'💀 Highest Final'},
+    {key:'highestHand', label:'🃏 Best Single Hand',extra:'round'},
+  ].forEach(s=>{
+    const sec=document.createElement('div'); sec.className='lb-section';
+    const h4=document.createElement('h4'); h4.textContent=s.label; sec.appendChild(h4);
+    const rec=lb[s.key];
+    if(!rec){
+      const em=document.createElement('div');em.className='lb-empty';em.textContent='No record yet';sec.appendChild(em);
+    } else {
+      const row=document.createElement('div');row.className='lb-entry';
+      const nm=document.createElement('span');nm.className='lb-name';nm.textContent=rec.name;row.appendChild(nm);
+      const sc=document.createElement('span');sc.className='lb-score';
+      sc.textContent=rec.score+' pts'+(s.extra&&rec[s.extra]?' · '+rec[s.extra]:'');row.appendChild(sc);
+      const dt=document.createElement('span');dt.className='lb-date';dt.textContent=rec.date||'';row.appendChild(dt);
+      sec.appendChild(row);
+    }
+    content.appendChild(sec);
+  });
+  document.getElementById('leaderboard-modal').classList.add('open');
+}
+
+document.getElementById('leaderboard-close-btn').addEventListener('click',()=>{
+  document.getElementById('leaderboard-modal').classList.remove('open');
+});
+document.getElementById('leaderboard-clear-btn').addEventListener('click',()=>{
+  if(confirm('Clear all leaderboard records?')){localStorage.removeItem(LB_KEY);openLeaderboard();}
+});
+document.getElementById('leaderboard-modal').addEventListener('click',e=>{
+  if(e.target===document.getElementById('leaderboard-modal'))
+    document.getElementById('leaderboard-modal').classList.remove('open');
+});
 
 // ============================================================
 // THEME
@@ -1334,6 +1535,7 @@ themeToggle.addEventListener('click', ()=>{
   const isLight = document.body.getAttribute('data-theme')==='light';
   if (isLight) { document.body.removeAttribute('data-theme'); themeToggle.textContent='🔮 Midnight'; }
   else { document.body.setAttribute('data-theme','light'); themeToggle.textContent='☀️ Light'; }
+  saveState();
 });
 
 // ============================================================
@@ -1356,9 +1558,19 @@ window.addEventListener('resize', ()=>{ if(state.players.length) setDynamicColum
 // INIT
 // ============================================================
 (function init(){
+  if (loadState()) {
+    setupScreen.style.display    = 'none';
+    scoreScreen.style.display    = 'block';
+    resetBtn.style.display       = 'flex';
+    reorderBtnHeader.style.display = 'block';
+    document.getElementById('leaderboard-btn').style.display = 'block';
+    buildTable(); updateInfoBar();
+    if (state.gameOver) showGameOver();
+    return;
+  }
   setupSlots=['','','','','','',''];
-  renderSetupPlayers();
-  updateStartBtn();
+  numSetupSlots=2;
+  renderSetupPlayers(); updateStartBtn();
   document.body.setAttribute('data-theme','light');
   themeToggle.textContent='☀️ Light';
 })();
