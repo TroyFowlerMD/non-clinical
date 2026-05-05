@@ -292,7 +292,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
          background: #fff !important; color: #111 !important; zoom: 1 !important; }
 
   /* Hide nav/chrome */
-  .sidebar, .mob-menu-btn, .sidebar-overlay, .font-ctrl, .filter-bar, .col-panel, .col-toggle-btn,
+  .sidebar, .font-ctrl, .filter-bar, .col-panel, .col-toggle-btn,
   .pag, .parse-btn, .cal-export-btn, .cal-nav-btn, .parse-result,
   #clear-btn, .footer-btn, .cal-filter-group, .sec-hd + .table-wrap + .sec-hd,
   .topbar-right { display: none !important; }
@@ -424,94 +424,76 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
 .drive-uncfg code{font-family:var(--mono);font-size:10px;background:var(--amber-bg);
   padding:1px 4px;border-radius:3px}
 
+/* Provider selector — visible interactive dropdown */
+.provider-select-wrap{display:inline-flex;align-items:center;gap:5px;margin-top:6px;
+  padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--surface2);cursor:pointer;transition:all 140ms ease;max-width:100%}
+.provider-select-wrap:hover{border-color:var(--primary);background:var(--primary-bg)}
+.provider-select-wrap:focus-within{border-color:var(--primary);outline:2px solid var(--primary);outline-offset:1px}
+.provider-select-icon{flex-shrink:0;color:var(--primary);opacity:0.85}
+.provider-select-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;flex-shrink:0}
+.provider-select{flex:1;min-width:0;background:transparent;border:none;cursor:pointer;outline:none;
+  font-family:inherit;font-size:12px;font-weight:600;color:var(--primary);
+  -webkit-appearance:none;appearance:none;padding:0 2px}
+.provider-select-chevron{flex-shrink:0;color:var(--primary);opacity:0.75;pointer-events:none}
+.provider-select-wrap:hover .provider-select-chevron{opacity:1}
 
+/* Global date range filter bar */
+.global-filter-bar{display:flex;align-items:center;gap:10px;padding:8px 20px;
+  border-bottom:1px solid var(--border);background:var(--surface);flex-wrap:wrap;flex-shrink:0}
+.global-filter-bar.hidden{display:none}
+.gf-group{display:inline-flex;align-items:center;gap:6px}
+.gf-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em}
+.gf-date{padding:4px 8px;border-radius:var(--radius-sm);border:1px solid var(--border);
+  background:var(--surface);color:var(--text);font-size:12px;font-family:var(--font);cursor:pointer}
+.gf-date:focus{outline:2px solid var(--primary);outline-offset:1px}
+.gf-reset{padding:4px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);
+  background:var(--surface2);color:var(--muted);font-size:11px;cursor:pointer;font-family:var(--font);
+  transition:all 140ms}
+.gf-reset:hover{background:var(--primary-bg);color:var(--primary);border-color:var(--primary)}
+.gf-hint{font-size:10px;color:var(--muted);font-style:italic}
 
-/* ── PROVIDER BAR ─────────────────────────────────────────────── */
-.prov-bar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;align-items:center}
-.prov-bar .filter-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-right:2px}
-
-/* ── DATE RANGE BAR ───────────────────────────────────────────── */
-.date-range-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center;
-  padding:8px 12px;background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius-sm);font-size:12px}
-.date-range-bar .filter-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-.date-input{padding:4px 8px;border-radius:var(--radius-sm);border:1px solid var(--border);
-  background:var(--surface2);color:var(--text);font-size:12px;font-family:var(--font);cursor:pointer}
-.date-input:focus{outline:2px solid var(--primary);border-color:transparent}
-.sched-complete-pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:var(--radius-sm);
-  background:var(--amber-bg);color:var(--amber-text);white-space:nowrap}
-.sched-complete-pill.known{background:var(--green-bg);color:var(--green-text)}
-.date-range-sep{color:var(--muted);padding:0 2px}
-
-/* ── PROVIDER SELECT (sidebar) — clearly interactive ──────────── */
-.provider-select-wrap{padding:4px 8px 8px;border-bottom:1px solid var(--divider)}
-.provider-select-label{font-size:9px;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;display:block}
-.provider-select-ctrl{display:flex;align-items:center;gap:6px;background:var(--primary-bg);
-  border:1px solid var(--primary);border-radius:var(--radius-sm);padding:5px 8px;cursor:pointer}
-.provider-select-ctrl select{background:transparent;border:none;color:var(--primary);
-  font-size:12px;font-weight:600;font-family:var(--font);cursor:pointer;outline:none;
-  -webkit-appearance:none;appearance:none;flex:1;min-width:80px}
-.provider-select-ctrl svg{color:var(--primary);flex-shrink:0;pointer-events:none}
-
-/* ── MOBILE SIDEBAR — hardened ─────────────────────────────────── */
-@media(max-width:768px){
-  .mob-menu-btn{display:flex!important}
-  .sidebar{
-    position:fixed!important;
-    left:0!important;top:0!important;bottom:0!important;
-    height:100%!important;
-    z-index:200!important;
-    transform:translateX(-100%)!important;
-    transition:transform 220ms cubic-bezier(.16,1,.3,1);
-    box-shadow:0 8px 40px rgba(0,0,0,0.45)!important;
-    overflow-y:auto;
-  }
-  .sidebar.open{transform:translateX(0)!important}
-  .sidebar-overlay{z-index:199!important}
-}
-
-/* ── MOBILE SIDEBAR (base breakpoint) ──────────────────────────── */
-.mob-menu-btn{display:none;align-items:center;justify-content:center;
-  width:38px;height:38px;border-radius:var(--radius-sm);border:1px solid var(--border);
-  background:var(--surface2);color:var(--muted);cursor:pointer;flex-shrink:0;
-  transition:all 140ms;margin-right:6px}
-.mob-menu-btn:hover{background:var(--surface3);color:var(--text)}
-.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);
-  z-index:9;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+/* Mobile menu button */
+.mob-menu-btn{display:none;align-items:center;justify-content:center;width:38px;height:38px;
+  border:none;background:transparent;color:var(--text);cursor:pointer;padding:0;margin-left:8px}
+.mob-menu-btn svg{width:22px;height:22px}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9}
 .sidebar-overlay.open{display:block}
-@media(max-width:768px){
-  .mob-menu-btn{display:flex}
-  .sidebar{
-    position:fixed;left:0;top:0;bottom:0;z-index:20;
-    transform:translateX(-100%);
-    transition:transform 220ms cubic-bezier(.16,1,.3,1);
-    box-shadow:0 8px 40px rgba(0,0,0,0.4);
-  }
+
+/* Mobile breakpoints */
+@media (max-width:768px){
+  body{flex-direction:column}
+  .sidebar{position:fixed;top:0;left:0;bottom:0;height:100vh;width:240px;
+    transform:translateX(-100%);transition:transform 220ms ease;z-index:11;box-shadow:0 0 24px rgba(0,0,0,0.25)}
   .sidebar.open{transform:translateX(0)}
-  .topbar{padding:0 10px;height:52px}
-  .topbar-left{padding:0 10px;border-left:2px solid var(--primary)}
-  .topbar-title{font-size:13px}
-  .topbar-meta{display:none}
-  .topbar-right{gap:6px}
-  .content{padding:12px}
-  #today-badge{display:none}
-  .font-ctrl{display:none}
-  .theme-btn{display:none}
+  .main{width:100%;height:100vh}
+  .mob-menu-btn{display:inline-flex}
+  .topbar{padding:0 12px 0 0}
+  .topbar-left{padding:0 12px}
+  .topbar-title{font-size:14px}
+  .topbar-meta{font-size:10px}
+  .global-filter-bar{padding:8px 12px;gap:8px}
+  .content{padding:14px 12px}
   .kpi-grid{grid-template-columns:repeat(2,1fr)!important}
+  .table-wrap{overflow-x:auto!important}
+  table{min-width:100%}
   .filter-bar{gap:6px}
-  .chip{font-size:11px;padding:4px 9px}
+  .cal-container{max-width:100%}
 }
-@media(max-width:480px){
-  .topbar-title{font-size:12px}
-  .status-pill{font-size:10px;padding:2px 6px}
-  .content{padding:8px}
-  .kpi-grid{grid-template-columns:1fr 1fr!important}
-  .kpi-value{font-size:20px!important}
+@media (max-width:480px){
+  .topbar-right .font-ctrl,.topbar-right .theme-btn{display:none}
+  .global-filter-bar{gap:6px}
+  .gf-hint{display:none}
+}
+@media print{
+  .mob-menu-btn,.sidebar-overlay,.global-filter-bar{display:none!important}
 }
 
 </style>
 </head>
 <body>
+
+<div class="sidebar-overlay" onclick="closeSidebar()"></div>
 
 <nav class="sidebar">
   <div class="sidebar-logo">
@@ -519,13 +501,11 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       <span class="logo-title">Psych Scheduler</span>
     </div>
-  </div>
-  <div class="provider-select-wrap">
-    <span class="provider-select-label">Active Provider</span>
-    <div class="provider-select-ctrl">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a6.5 6.5 0 0 1 13 0v2"/></svg>
-      <select id="provider-select" onchange="onProviderChange(this.value)"></select>
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    <div class="provider-select-wrap" title="Switch provider profile">
+      <svg class="provider-select-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="provider-select-label">Provider:</span>
+      <select id="provider-select" class="provider-select" onchange="onProviderChange(this.value)" aria-label="Provider profile"></select>
+      <svg class="provider-select-chevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
   </div>
   <div class="sidebar-nav">
@@ -575,9 +555,9 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
 
 <div class="main">
   <div class="topbar">
-      <button class="mob-menu-btn" onclick="toggleSidebar()" aria-label="Toggle navigation" title="Menu">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      </button>
+    <button class="mob-menu-btn" onclick="toggleSidebar()" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
     <div class="topbar-left">
       <div class="topbar-title">Psychiatry Schedule Analyzer <span style="font-size:12px;font-weight:500;color:var(--muted);letter-spacing:0">· Troy Fowler, MD</span></div>
       <div class="topbar-meta" id="topbar-meta">No schedule loaded — paste data to begin</div>
@@ -594,18 +574,20 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
     </div>
   </div>
 
-  <div class="content">
-
-
-    <!-- ══ GLOBAL DATE RANGE ══════════════════════════════════════════ -->
-    <div class="date-range-bar" id="global-date-bar" style="display:none">
-      <span class="filter-label">Date Range:</span>
-      <input type="date" class="date-input" id="g-date-from" onchange="setGlobalDateFrom(this.value)" title="From date">
-      <span class="date-range-sep">→</span>
-      <input type="date" class="date-input" id="g-date-to" onchange="setGlobalDateTo(this.value)" title="To date">
-      <button class="chip" onclick="clearDateRange()" style="font-size:11px;padding:3px 9px">✕ Clear</button>
-      <span id="sched-complete-pill" class="sched-complete-pill" style="display:none"></span>
+  <div class="global-filter-bar hidden" id="global-filter-bar">
+    <div class="gf-group">
+      <span class="gf-label">Start</span>
+      <input type="date" class="gf-date" id="gf-start" onchange="onGlobalRangeChange()">
     </div>
+    <div class="gf-group">
+      <span class="gf-label">End</span>
+      <input type="date" class="gf-date" id="gf-end" onchange="onGlobalRangeChange()">
+      <span class="gf-hint" id="gf-end-hint" title="Auto-detected from where the schedule appears populated"></span>
+    </div>
+    <button class="gf-reset" onclick="resetGlobalRange()" title="Reset to auto-detected defaults">Reset</button>
+  </div>
+
+  <div class="content">
 
     <!-- ══ PASTE VIEW ══════════════════════════════════════════════ -->
     <div class="view active" id="view-paste">
@@ -666,7 +648,6 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
         </button>
         <span class="rcount" id="dash-rc"></span>
       </div>
-      <div class="prov-bar" id="prov-bar-dash" style="display:none"></div>
       <div class="col-panel" id="col-panel" style="display:none">
         <div class="col-panel-row" style="margin-bottom:0">
           <span class="col-panel-label">Toggle columns — drag headers in the table to reorder</span>
@@ -698,7 +679,6 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
         <button class="chip" id="pto-btn-Not_Feasible" onclick="setPTOFilter('Not Feasible')">🚫 Not Feasible</button>
         <span class="rcount" id="pto-rc"></span>
       </div>
-      <div class="prov-bar" id="prov-bar-pto" style="display:none"></div>
       <div class="table-wrap" id="pto-table"></div>
     </div>
 
@@ -712,7 +692,6 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
         <button class="chip" id="st-btn-ok" onclick="setStaffFilter('ok')">✅ Full (6+)</button>
         <span class="rcount" id="st-rc"></span>
       </div>
-      <div class="prov-bar" id="prov-bar-staff" style="display:none"></div>
       <div class="table-wrap" id="st-table"></div>
     </div>
 
@@ -756,8 +735,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════
 
-// Patil + German removed — no longer full-time; their columns still parse as temp staff
-const CORE_PROVIDERS = ['Anderson','Fowler','Carter','Ondreyka','Smith','Cooley'];
+const CORE_PROVIDERS = ['Patil','German','Anderson','Fowler','Carter','Ondreyka','Smith','Cooley'];
 const BACKUP_POOL    = ['Fowler','Carter','Ondreyka'];
 
 // ── Google Drive / Apps Script integration ────────────────────────────────
@@ -792,6 +770,18 @@ const TRAIN_KW    = ['CME','CPI','CSL','EPIC','GOV BODY','GOV CONF','JURY','RHA'
 // ═══════════════════════════════════════════════════════════════════════════
 // CLASSIFICATION
 // ═══════════════════════════════════════════════════════════════════════════
+
+// Shared text normalization for schedule/provider matching.
+// Strips parenthetical annotations, punctuation, collapses whitespace, uppercases.
+function normalizeText(raw) {
+  if (!raw) return '';
+  return String(raw)
+    .replace(/\([^)]*\)/g, ' ')   // strip parenthetical annotations
+    .replace(/[^\w\s]/g, ' ')     // strip punctuation (keeps letters/digits/_)
+    .replace(/\s+/g, ' ')         // collapse whitespace
+    .trim()
+    .toUpperCase();
+}
 
 function classify(raw) {
   if (!raw || raw.trim() === '') return 'Off/Unavailable';
@@ -1035,13 +1025,16 @@ function parseRawData(text) {
     row.streak = streak;
   }
 
-  // Post-call second pass: set PC flag the day AFTER an overnight shift
-  // Post-call is ONLY triggered by a prior overnight, not just any backup call night
+  // Post-call second pass: set PC flag the day AFTER an overnight shift.
+  // Use normalizeText so variants like "FOWLER - CALL", extra spaces,
+  // punctuation, or parentheticals still match.
   for (let i = 1; i < data.length; i++) {
-    const ov = (data[i-1].overnight || '').toUpperCase();
-    if (ov.includes('FOWLER'))   data[i].fowlerPC = true;
-    if (ov.includes('CARTER'))   data[i].carterPC = true;
-    if (ov.includes('ONDREYKA')) data[i].ondreykaPC = true;
+    const ov = normalizeText(data[i-1].overnight);
+    const tokens = ov.split(' ').filter(Boolean);
+    const has = name => tokens.includes(name.toUpperCase());
+    if (has('FOWLER'))   data[i].fowlerPC = true;
+    if (has('CARTER'))   data[i].carterPC = true;
+    if (has('ONDREYKA')) data[i].ondreykaPC = true;
   }
 
   return data;
@@ -1055,16 +1048,92 @@ let DATA = [];
 let selectedProvider = 'Fowler';
 let TODAY = new Date().toISOString().slice(0,10);
 let bkpFilter = 'upcoming', ptoFilter = 'all', staffFilter = 'all';
-let filterDateFrom = null;    // 'YYYY-MM-DD' or null
-let filterDateTo   = null;    // 'YYYY-MM-DD' or null
-let schedComplete  = null;    // auto-detected completeness cutoff date
-let extraColsDash  = [];      // extra provider assignment cols in My Schedule
-let extraColsPTO   = [];      // extra provider assignment cols in PTO
-let visStaffProvs  = null;    // populated on load: all CORE_PROVIDERS by default
-let showStaffThin  = false;   // Thin Run column hidden by default
 let dashPage = 0, ptoPg = 0, staffPg = 0;
 let calYear, calMonth;
 let PG = 80;
+
+// Global date-range filter state (in-memory only)
+let globalRange = { start: null, end: null, autoStart: null, autoEnd: null };
+
+// Auto-detect end of schedule: scan rows, find last date where >= half of CORE_PROVIDERS
+// have a non-empty cell (i.e., schedule still appears populated).
+function detectScheduleEnd(data) {
+  if (!data || !data.length) return null;
+  const threshold = Math.ceil(CORE_PROVIDERS.length / 2);
+  let lastGood = null;
+  for (const row of data) {
+    const filled = CORE_PROVIDERS.reduce((n,p)=>{
+      const v = row.providerAsgns ? (row.providerAsgns[p]||'') : '';
+      return n + (v.trim() ? 1 : 0);
+    }, 0);
+    if (filled >= threshold) lastGood = row.date;
+  }
+  return lastGood;
+}
+
+function applyGlobalRange(rows) {
+  if (!rows || !rows.length) return rows || [];
+  const s = globalRange.start, e = globalRange.end;
+  if (!s && !e) return rows;
+  return rows.filter(r => (!s || r.date >= s) && (!e || r.date <= e));
+}
+
+function activeViewId() {
+  return document.querySelector('.view.active')?.id?.replace('view-','') || 'paste';
+}
+
+function rerenderActiveView() {
+  const id = activeViewId();
+  if(id==='dashboard') renderDashboard();
+  else if(id==='backup') renderBackup();
+  else if(id==='pto') renderPTO();
+  else if(id==='staffing') renderStaffing();
+  else if(id==='calendar') renderCalendar();
+}
+
+function onGlobalRangeChange() {
+  const s = document.getElementById('gf-start').value || null;
+  const e = document.getElementById('gf-end').value || null;
+  globalRange.start = s;
+  globalRange.end   = e;
+  rerenderActiveView();
+}
+
+function resetGlobalRange() {
+  globalRange.start = globalRange.autoStart;
+  globalRange.end   = globalRange.autoEnd;
+  const sEl = document.getElementById('gf-start');
+  const eEl = document.getElementById('gf-end');
+  if(sEl) sEl.value = globalRange.start || '';
+  if(eEl) eEl.value = globalRange.end   || '';
+  rerenderActiveView();
+}
+
+function initGlobalRange() {
+  if (!DATA.length) return;
+  const dates = DATA.map(r=>r.date).sort();
+  const dataStart = dates[0];
+  const dataEnd   = dates[dates.length-1];
+  // Auto start = today, clamped to data range
+  let autoStart = TODAY;
+  if (autoStart < dataStart) autoStart = dataStart;
+  if (autoStart > dataEnd)   autoStart = dataStart;
+  // Auto end = last date where schedule still appears populated; fallback to dataEnd
+  const autoEnd = detectScheduleEnd(DATA) || dataEnd;
+  globalRange.autoStart = autoStart;
+  globalRange.autoEnd   = autoEnd;
+  globalRange.start = autoStart;
+  globalRange.end   = autoEnd;
+
+  const sEl = document.getElementById('gf-start');
+  const eEl = document.getElementById('gf-end');
+  const hintEl = document.getElementById('gf-end-hint');
+  const barEl  = document.getElementById('global-filter-bar');
+  if (sEl) { sEl.min = dataStart; sEl.max = dataEnd; sEl.value = autoStart; }
+  if (eEl) { eEl.min = dataStart; eEl.max = dataEnd; eEl.value = autoEnd; }
+  if (hintEl) hintEl.textContent = autoEnd ? `schedule appears complete through ${fmtDate(autoEnd)}` : '';
+  if (barEl) barEl.classList.remove('hidden');
+}
 
 function parseAndLoad() {
   const text = document.getElementById('paste-area').value.trim();
@@ -1100,16 +1169,11 @@ function onDataLoaded() {
     const el=document.getElementById('nav-'+id);
     if(el) el.classList.remove('disabled');
   });
-  // Init staffing provider list (all by default)
-  if(!visStaffProvs) visStaffProvs = [...CORE_PROVIDERS];
-  // Detect schedule completeness
-  schedComplete = detectScheduleComplete(DATA);
   const dates=DATA.map(r=>r.date).sort();
-  const upcomingCount = DATA.filter(r=>isFuture(r.date)).length;
-  document.getElementById('status-pill').textContent=`${DATA.length} total`;
+  document.getElementById('status-pill').textContent=`${DATA.length} dates`;
   document.getElementById('status-pill').className='status-pill status-loaded';
   document.getElementById('topbar-meta').textContent=
-    `${dates[0]} → ${dates[dates.length-1]} · ${upcomingCount} upcoming · ${CORE_PROVIDERS.length} core providers`;
+    `${dates[0]} → ${dates[dates.length-1]} · ${CORE_PROVIDERS.length} core + ${TEMP_STAFF.length} temp providers`;
   document.getElementById('clear-btn').style.display='flex';
   // populate provider dropdown
   const _sel = document.getElementById('provider-select');
@@ -1117,10 +1181,7 @@ function onDataLoaded() {
   // set today badge
   const todayFmt = fmtDate(TODAY);
   document.getElementById('today-badge').textContent = 'Today: '+todayFmt;
-  // show date range bar + schedule completeness
-  updateGlobalDateBar();
-  // populate provider bars
-  renderProvBars();
+  initGlobalRange();
   showView('dashboard');
 }
 
@@ -1137,6 +1198,9 @@ function clearData() {
   document.getElementById('topbar-meta').textContent='No schedule loaded — paste data to begin';
   document.getElementById('today-badge').textContent='';
   document.getElementById('clear-btn').style.display='none';
+  globalRange = { start:null, end:null, autoStart:null, autoEnd:null };
+  const gbar = document.getElementById('global-filter-bar');
+  if(gbar) gbar.classList.add('hidden');
   showView('paste');
 }
 
@@ -1145,19 +1209,33 @@ function clearData() {
 // ═══════════════════════════════════════════════════════════════════════════
 
 function showView(id) {
-  if(window.innerWidth <= 768) closeSidebar();
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
   const view=document.getElementById('view-'+id);
   const nav=document.querySelector(`[data-view="${id}"]`);
   if(view) view.classList.add('active');
   if(nav)  nav.classList.add('active');
+  closeSidebar();
   if(DATA.length===0 && id!=='paste') return;
   if(id==='dashboard') renderDashboard();
   else if(id==='backup') renderBackup();
   else if(id==='pto') renderPTO();
   else if(id==='staffing') renderStaffing();
   else if(id==='calendar') renderCalendar();
+}
+
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const ov = document.querySelector('.sidebar-overlay');
+  if(!sb || !ov) return;
+  const isOpen = sb.classList.toggle('open');
+  ov.classList.toggle('open', isOpen);
+}
+function closeSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const ov = document.querySelector('.sidebar-overlay');
+  if(sb) sb.classList.remove('open');
+  if(ov) ov.classList.remove('open');
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1246,11 +1324,8 @@ const SCHED_COLS_ALL = [
   {id:'providers',   label:'Working Providers',sortable:false},
   {id:'streak',      label:'Thin Run',         sortable:true,  sortKey:r=>r.streak},
   {id:'ftPhone',     label:'FT Phone',         sortable:false},
-  {id:'carter',      label:'Carter Asgn',      sortable:false},
-  {id:'ondreyka',    label:'Ondreyka Asgn',    sortable:false},
-  {id:'anderson',    label:'Anderson Asgn',    sortable:false},
-  {id:'smith',       label:'Smith Asgn',       sortable:false},
-  {id:'cooley',      label:'Cooley Asgn',      sortable:false},
+  {id:'carter',      label:'Carter',           sortable:false},
+  {id:'ondreyka',    label:'Ondreyka',         sortable:false},
 ];
 
 let schedActiveCols = ['day','date','asgn','call'];
@@ -1281,26 +1356,8 @@ function schedCell(id, r) {
     }
     case 'streak':      return `<td>${r.streak>=3?`<span class="badge br">Day ${r.streak}</span>`:r.atMin&&!r.isWeekend?'<span class="badge ba">At min</span>':'<span style="color:var(--faint)">—</span>'}</td>`;
     case 'ftPhone':     return `<td>${r.fowlerFT?'<span class="badge bb">Yes</span>':'<span style="color:var(--faint)">—</span>'}</td>`;
-    case 'carter': {
-      const v=r.providerAsgns?.Carter||'';
-      return `<td style="font-size:11px">${v||'<span style="color:var(--faint)">—</span>'}</td>`;
-    }
-    case 'ondreyka': {
-      const v=r.providerAsgns?.Ondreyka||'';
-      return `<td style="font-size:11px">${v||'<span style="color:var(--faint)">—</span>'}</td>`;
-    }
-    case 'anderson': {
-      const v=r.providerAsgns?.Anderson||'';
-      return `<td style="font-size:11px">${v||'<span style="color:var(--faint)">—</span>'}</td>`;
-    }
-    case 'smith': {
-      const v=r.providerAsgns?.Smith||'';
-      return `<td style="font-size:11px">${v||'<span style="color:var(--faint)">—</span>'}</td>`;
-    }
-    case 'cooley': {
-      const v=r.providerAsgns?.Cooley||'';
-      return `<td style="font-size:11px">${v||'<span style="color:var(--faint)">—</span>'}</td>`;
-    }
+    case 'carter':      return `<td>${poolCell(r.carterBackup, r.providerAsgns?.Carter||'')}</td>`;
+    case 'ondreyka':    return `<td>${poolCell(r.ondreykaBackup, r.providerAsgns?.Ondreyka||'')}</td>`;
     default:            return '<td>—</td>';
   }
 }
@@ -1342,7 +1399,7 @@ function schedDragEnd() { schedDragId=null; renderColPicker(); }
 function renderColPicker() {
   // Fixed ordered grid — most-used first. Day/Date are always pinned (not shown here).
   const PICKER_ORDER = ['asgn','call','ptoRisk','staffTotal','providers','overnight',
-    'backupPerson','streak','ftPhone','carter','ondreyka','anderson','smith','cooley'];
+    'backupPerson','thinRun','ftPhone','carter','ondreyka'];
   const LOCKED = ['day','date'];
   const grid = PICKER_ORDER.map(id=>{
     const col = SCHED_COLS_ALL.find(c=>c.id===id);
@@ -1409,10 +1466,6 @@ function recomputePTORisk() {
 
 function onProviderChange(prov) {
   selectedProvider = prov;
-  // Remove new provider from extra cols if they were being shown
-  extraColsDash = extraColsDash.filter(p => p !== prov);
-  extraColsPTO  = extraColsPTO.filter(p => p !== prov);
-  renderProvBars();
   recomputePTORisk();
   // Re-render whichever view is currently active
   const activeId = document.querySelector('.view.active')?.id?.replace('view-','');
@@ -1534,16 +1587,19 @@ function renderDashboard(pg) {
   const fPeriod = document.getElementById('f-period').value;
   const fPTO    = document.getElementById('f-pto-dash').value;
 
-  let rows = [...DATA];
-  if(fPeriod==='future') rows = rows.filter(r=>isFuture(r.date));
-  else if(fPeriod==='past') rows = rows.filter(r=>isPast(r.date));
+  // Global date range takes precedence — if either bound set, skip f-period filter
+  let rows = applyGlobalRange([...DATA]);
+  const useGlobal = !!(globalRange.start || globalRange.end);
+  if(!useGlobal){
+    if(fPeriod==='future') rows = rows.filter(r=>isFuture(r.date));
+    else if(fPeriod==='past') rows = rows.filter(r=>isPast(r.date));
+  }
   if(fClass==='weekdays') rows = rows.filter(r=>!r.isWeekend);
   else if(fClass==='Clinical') rows = rows.filter(r=>provClass(r)==='Clinical');
   else if(fClass==='Admin')    rows = rows.filter(r=>provClass(r)==='Admin/Remote');
   else if(fClass==='Off')      rows = rows.filter(r=>provClass(r)==='Off/Unavailable');
   else if(fClass==='Training') rows = rows.filter(r=>provClass(r)==='Training/Non-clinical');
   if(fPTO) rows = rows.filter(r=>r.ptoRisk===fPTO);
-  rows = applyDateRange(rows);
 
   // Sort
   const sortDef = SCHED_COLS_ALL.find(c=>c.id===schedSort.col);
@@ -1576,17 +1632,12 @@ function renderDashboard(pg) {
       ondragend="thDragEnd(event)">${col.label}</th>`;
   }).join('');
 
-  const extraHdrs = extraColsDash.map(p=>`<th style="min-width:80px">${p}</th>`).join('');
   const trows = page.map(r=>{
     const cells = schedActiveCols.map(id=>schedCell(id,r)).join('');
-    const extra = extraColsDash.map(p=>{
-      const v=(r.providerAsgns&&r.providerAsgns[p])||'';
-      return v.trim()?`<td style="font-size:11px;max-width:110px;overflow:hidden;text-overflow:ellipsis">${v}</td>`:'<td style="color:var(--faint)">—</td>';
-    }).join('');
-    return `<tr${rowCls(r)}>${cells}${extra}${holColCell(r.date)}</tr>`;
+    return `<tr${rowCls(r)}>${cells}${holColCell(r.date)}</tr>`;
   }).join('');
 
-  const tbl = trows ? `<table><thead><tr>${hdrs}${extraHdrs}<th class="col-hol" style="background:var(--surface2)"></th></tr></thead><tbody>${trows}</tbody></table>` :
+  const tbl = trows ? `<table><thead><tr>${hdrs}<th class="col-hol" style="background:var(--surface2)"></th></tr></thead><tbody>${trows}</tbody></table>` :
     '<div class="empty"><p>No matching dates</p></div>';
 
   document.getElementById('dash-table').innerHTML = tbl + pagBar(t, dashPage, 'renderDashboard');
@@ -1620,11 +1671,16 @@ function providerCell(isBackup, asgn, isOvernight, isPC) {
 }
 
 function renderBackup() {
-  let rows = DATA.filter(r=>
-    r.fowlerBackup || r.carterBackup || r.ondreykaBackup ||
-    r.fowlerPC || r.carterPC || r.ondreykaPC
-  );
-  if(bkpFilter==='upcoming') rows = rows.filter(r=>isFuture(r.date));
+  let rows = applyGlobalRange(DATA).filter(r=>{
+    const fa=r.providerAsgns?r.providerAsgns.Fowler:'';
+    const ca=r.providerAsgns?r.providerAsgns.Carter:'';
+    const oa=r.providerAsgns?r.providerAsgns.Ondreyka:'';
+    return r.fowlerBackup || r.carterBackup || r.ondreykaBackup ||
+           r.fowlerPC || r.carterPC || r.ondreykaPC ||
+           isPostCall(fa) || isPostCall(ca) || isPostCall(oa);
+  });
+  const useGlobal = !!(globalRange.start || globalRange.end);
+  if(!useGlobal && bkpFilter==='upcoming') rows = rows.filter(r=>isFuture(r.date));
   document.getElementById('bkp-rc').textContent = `${rows.length} dates`;
 
   const cols = ['Day','Date','Fowler','Carter','Ondreyka',''];
@@ -1632,11 +1688,15 @@ function renderBackup() {
     const fa = r.providerAsgns ? r.providerAsgns.Fowler : '';
     const ca = r.providerAsgns ? r.providerAsgns.Carter : '';
     const oa = r.providerAsgns ? r.providerAsgns.Ondreyka : '';
+    // Post-call: trust either the {name}PC flag OR a raw-cell isPostCall match
+    const fPC = r.fowlerPC   || isPostCall(fa);
+    const cPC = r.carterPC   || isPostCall(ca);
+    const oPC = r.ondreykaPC || isPostCall(oa);
     return `${rowCls(r)}><td class="col-day"><span class="${r.isWeekend?'day-chip weekend':'day-chip'}">${dayShort(r.day)}</span></td>
       ${holDateCell(r.date)}
-      <td>${providerCell(r.fowlerBackup, fa, isProviderOvernight(r,'Fowler'), r.fowlerPC)}</td>
-      <td>${providerCell(r.carterBackup, ca, isProviderOvernight(r,'Carter'), r.carterPC)}</td>
-      <td>${providerCell(r.ondreykaBackup, oa, isProviderOvernight(r,'Ondreyka'), r.ondreykaPC)}</td>
+      <td>${providerCell(r.fowlerBackup, fa, isProviderOvernight(r,'Fowler'), fPC)}</td>
+      <td>${providerCell(r.carterBackup, ca, isProviderOvernight(r,'Carter'), cPC)}</td>
+      <td>${providerCell(r.ondreykaBackup, oa, isProviderOvernight(r,'Ondreyka'), oPC)}</td>
       ${holColCell(r.date)}`;
   }).map(r=>`<tr${r}`);
 
@@ -1659,31 +1719,25 @@ function setPTOFilter(f) {
 function renderPTO(pg) {
   if(pg !== undefined) ptoPg = pg;
 
-  let rows = DATA.filter(r=>isFuture(r.date));
+  // Global range takes precedence over default "future" filter
+  const useGlobal = !!(globalRange.start || globalRange.end);
+  let rows = useGlobal ? applyGlobalRange(DATA) : DATA.filter(r=>isFuture(r.date));
   if(ptoFilter!=='all') rows = rows.filter(r=>r.ptoRisk===ptoFilter);
-  rows = applyDateRange(rows);
   document.getElementById('pto-rc').textContent = `${rows.length} dates`;
 
   const t    = rows.length;
   const page = rows.slice(ptoPg*PG, (ptoPg+1)*PG);
 
-  const myHdr = `My Asgn (${selectedProvider})`;
-  const extraHdrs = extraColsPTO.map(p=>p);
-  const cols = ['Day','Date','PTO Risk','Working Providers', myHdr, ...extraHdrs, ''];
+  const cols = ['Day','Date','PTO Risk','Working Providers',selectedProvider,''];
   const trows = page.map(r=>{
     const availCore = CORE_PROVIDERS.filter(p=>p!==selectedProvider && isAvailableForPTO(r.providerAsgns[p]));
     const availTemp = TEMP_STAFF.filter(({name})=>isAvailableForPTO(r.tempAsgns[name])).map(({name})=>name);
     const allAvail = [...availCore, ...availTemp].join(', ') || '—';
-    const extraCells = extraColsPTO.map(p=>{
-      const v=(r.providerAsgns&&r.providerAsgns[p])||'';
-      return v.trim()?`<td style="font-size:11px">${v}</td>`:'<td style="color:var(--faint)">—</td>';
-    }).join('');
     return `${rowCls(r)}><td class="col-day"><span class="${r.isWeekend?'day-chip weekend':'day-chip'}">${dayShort(r.day)}</span></td>
       ${holDateCell(r.date)}
       <td>${ptoBadge(r.ptoRisk)}</td>
       <td style="font-size:11px;color:var(--muted)">${allAvail}</td>
       <td>${clsBadge(provClass(r))}${provPC(r)?' <span class="badge bk">Post-Call</span>':''}</td>
-      ${extraCells}
       ${holColCell(r.date)}`;
   }).map(r=>`<tr${r}`);
 
@@ -1702,45 +1756,26 @@ function setStaffFilter(f) {
   renderStaffing();
 }
 
-function provStaffCell(r, name) {
-  const asgn = (r.providerAsgns && r.providerAsgns[name]) || '';
-  if(!asgn.trim()) return '<td style="color:var(--faint)">—</td>';
-  const cls = classify(asgn);
-  if(cls==='Clinical') {
-    const pc = isPostCall(asgn);
-    const short = asgn.length>16 ? asgn.slice(0,16)+'…' : asgn;
-    return `<td style="font-size:11px">${short}${pc?' <span class="badge bk" style="font-size:9px">PC</span>':''}</td>`;
-  }
-  if(cls==='Off/Unavailable') return '<td><span class="bk cc">Off</span></td>';
-  if(cls==='Admin/Remote')    return '<td><span class="bt cc">Admin</span></td>';
-  if(cls==='Training/Non-clinical') return '<td><span class="ba cc">Train</span></td>';
-  return `<td style="font-size:11px">${asgn.slice(0,14)}</td>`;
-}
-
 function renderStaffing(pg) {
   if(pg !== undefined) staffPg = pg;
-  if(!visStaffProvs) visStaffProvs = [...CORE_PROVIDERS];
 
-  let rows = DATA;
+  let rows = applyGlobalRange(DATA);
   if(staffFilter==='min')  rows = rows.filter(r=>!r.isWeekend && r.atMin);
   else if(staffFilter==='thin')  rows = rows.filter(r=>!r.isWeekend && r.coreCount<=5);
   else if(staffFilter==='ok')    rows = rows.filter(r=>r.coreCount>=6);
-  rows = applyDateRange(rows);
   document.getElementById('st-rc').textContent = `${rows.length} dates`;
 
   const t    = rows.length;
   const page = rows.slice(staffPg*PG, (staffPg+1)*PG);
 
-  const provHdrs = visStaffProvs.map(p=>`<span style="font-size:10px">${p}</span>`);
-  const cols = ['Day','Date','Count','+ Temp',...provHdrs,...(showStaffThin?['Thin Run?']:[]),''];
+  const cols = ['Day','Date','Core Count','+ Temp','Working Providers','Thin Run?',''];
   const trows = page.map(r=>{
-    const provCells = visStaffProvs.map(p=>provStaffCell(r,p)).join('');
     return `${rowCls(r)}><td class="col-day"><span class="${r.isWeekend?'day-chip weekend':'day-chip'}">${dayShort(r.day)}</span></td>
       ${holDateCell(r.date)}
       <td>${cntBadge(r.coreCount, 0, r.isWeekend)}</td>
       <td>${r.workingTemp.length?`<span class="badge bt">+${r.workingTemp.length}</span>`:'<span style="color:var(--faint)">—</span>'}</td>
-      ${provCells}
-      ${showStaffThin?`<td>${r.streak>=3?`<span class="badge br">Day ${r.streak}</span>`:r.atMin&&!r.isWeekend?'<span class="badge ba">At min</span>':'<span style="color:var(--faint)">—</span>'}</td>`:''}
+      <td style="font-size:11px;color:var(--muted)">${[...r.workingCore.map(n=>`<strong>${n}</strong>`),...r.workingTemp].join(', ')||'—'}</td>
+      <td>${r.streak>=3?`<span class="badge br">Day ${r.streak}</span>`:r.atMin&&!r.isWeekend?'<span class="badge ba">At min</span>':'<span style="color:var(--faint)">—</span>'}</td>
       ${holColCell(r.date)}`;
   }).map(r=>`<tr${r}`);
 
@@ -1797,15 +1832,16 @@ function renderCalendar() {
     if(week.length===7||d===totalDays){ while(week.length<7)week.push(null); weeks.push(week); week=[]; }
   }
 
+  const filteredData = applyGlobalRange(DATA);
   const byDate = {};
-  for(const row of DATA) byDate[row.date]=row;
+  for(const row of filteredData) byDate[row.date]=row;
   const getISO=(y,m,d)=>`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
 
   // Build span event sequences: [{start,end,cls,label}]
   const spanSeqs = [];
   function buildSeqs(predicate, cls, label){
     let s=null,e=null;
-    for(const row of DATA){
+    for(const row of filteredData){
       if(predicate(row)){ if(!s)s=row.date; e=row.date; }
       else{ if(s)spanSeqs.push({start:s,end:e,cls,label}); s=null; }
     }
@@ -2097,159 +2133,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(cEl) cEl.style.zoom = (baseFontPx / 16).toFixed(3);
   updateThemeBtn(document.documentElement.getAttribute('data-theme')||'dark');
 });
-
-
-// ═══════════════════════════════════════════════════════════════════════════
-// DATE RANGE FILTER
-// ═══════════════════════════════════════════════════════════════════════════
-
-function applyDateRange(rows) {
-  if(filterDateFrom) rows = rows.filter(r => r.date >= filterDateFrom);
-  if(filterDateTo)   rows = rows.filter(r => r.date <= filterDateTo);
-  return rows;
-}
-function setGlobalDateFrom(v) {
-  filterDateFrom = v || null;
-  rerenderActive();
-}
-function setGlobalDateTo(v) {
-  filterDateTo = v || null;
-  rerenderActive();
-}
-function clearDateRange() {
-  filterDateFrom = filterDateTo = null;
-  const f = document.getElementById('g-date-from');
-  const t = document.getElementById('g-date-to');
-  if(f) f.value = '';
-  if(t) t.value = '';
-  rerenderActive();
-}
-function rerenderActive() {
-  const active = document.querySelector('.nav-item.active')?.dataset?.view;
-  if(active==='dashboard') { dashPage=0; renderDashboard(); }
-  else if(active==='pto') { ptoPg=0; renderPTO(); }
-  else if(active==='staffing') { staffPg=0; renderStaffing(); }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// SCHEDULE COMPLETENESS DETECTION
-// ═══════════════════════════════════════════════════════════════════════════
-
-function detectScheduleComplete(data) {
-  // Scan from end backward — first date where ≥3 core providers have data
-  for(let i = data.length-1; i>=0; i--) {
-    const r = data[i];
-    const filled = CORE_PROVIDERS.filter(p => {
-      const v = (r.providerAsgns && r.providerAsgns[p]) || '';
-      return v.trim() !== '';
-    }).length;
-    if(filled >= 3) return r.date;
-  }
-  return null;
-}
-function updateGlobalDateBar() {
-  const bar = document.getElementById('global-date-bar');
-  if(bar) bar.style.display = DATA.length ? 'flex' : 'none';
-  const pill = document.getElementById('sched-complete-pill');
-  if(!pill) return;
-  if(schedComplete) {
-    pill.textContent = '📋 Schedule complete thru ' + fmtDate(schedComplete);
-    pill.className = 'sched-complete-pill known';
-    pill.style.display = '';
-    // Suggest it as default To date if no filter set
-    if(!filterDateTo) {
-      filterDateTo = schedComplete;
-      const el = document.getElementById('g-date-to');
-      if(el) el.value = schedComplete;
-    }
-  } else {
-    pill.style.display = 'none';
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// PROVIDER COLUMN TOGGLES
-// ═══════════════════════════════════════════════════════════════════════════
-
-function toggleExtraCol(name, view) {
-  if(view==='dash') {
-    const i = extraColsDash.indexOf(name);
-    if(i>=0) extraColsDash.splice(i,1); else extraColsDash.push(name);
-    dashPage=0; renderDashboard();
-  } else if(view==='pto') {
-    const i = extraColsPTO.indexOf(name);
-    if(i>=0) extraColsPTO.splice(i,1); else extraColsPTO.push(name);
-    ptoPg=0; renderPTO();
-  }
-  renderProvBars();
-}
-function toggleStaffProv(name) {
-  if(!visStaffProvs) return;
-  const i = visStaffProvs.indexOf(name);
-  if(i>=0) { if(visStaffProvs.length>1) visStaffProvs.splice(i,1); }
-  else visStaffProvs.push(name);
-  staffPg=0; renderStaffing();
-  renderProvBars();
-}
-function toggleStaffThin() {
-  showStaffThin = !showStaffThin;
-  staffPg=0; renderStaffing();
-  renderProvBars();
-}
-function updateProvBtns(barId, activeArr) {
-  const bar = document.getElementById(barId);
-  if(!bar) return;
-  bar.querySelectorAll('[data-pname]').forEach(btn => {
-    btn.classList.toggle('active', activeArr.includes(btn.dataset.pname));
-  });
-}
-function renderProvBars() {
-  if(!DATA.length) return;
-  const others = CORE_PROVIDERS.filter(p => p !== selectedProvider);
-
-  // ── My Schedule
-  const dashBar = document.getElementById('prov-bar-dash');
-  if(dashBar) {
-    dashBar.style.display = 'flex';
-    dashBar.innerHTML = '<span class="filter-label">Also show:</span>' +
-      others.map(p=>`<button class="chip${extraColsDash.includes(p)?' active':''}" data-pname="${p}" onclick="toggleExtraCol('${p}','dash')">${p}</button>`).join('');
-  }
-
-  // ── PTO
-  const ptoBar = document.getElementById('prov-bar-pto');
-  if(ptoBar) {
-    ptoBar.style.display = 'flex';
-    ptoBar.innerHTML = '<span class="filter-label">Also show:</span>' +
-      others.map(p=>`<button class="chip${extraColsPTO.includes(p)?' active':''}" data-pname="${p}" onclick="toggleExtraCol('${p}','pto')">${p}</button>`).join('');
-  }
-
-  // ── Staffing
-  const staffBar = document.getElementById('prov-bar-staff');
-  if(staffBar && visStaffProvs) {
-    staffBar.style.display = 'flex';
-    staffBar.innerHTML = '<span class="filter-label">Columns:</span>' +
-      CORE_PROVIDERS.map(p=>`<button class="chip${visStaffProvs.includes(p)?' active':''}" data-pname="${p}" onclick="toggleStaffProv('${p}')">${p}</button>`).join('') +
-      `<button class="chip${showStaffThin?' active':''}" onclick="toggleStaffThin()">Thin Run</button>`;
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// MOBILE SIDEBAR TOGGLE
-// ═══════════════════════════════════════════════════════════════════════════
-
-function toggleSidebar() {
-  const sb = document.querySelector('.sidebar');
-  const ov = document.getElementById('sidebar-overlay');
-  sb.classList.toggle('open');
-  ov.classList.toggle('open');
-}
-function closeSidebar() {
-  document.querySelector('.sidebar').classList.remove('open');
-  document.getElementById('sidebar-overlay').classList.remove('open');
-}
-
 </script>
-
-<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 </body>
 </html>
