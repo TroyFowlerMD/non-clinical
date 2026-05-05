@@ -762,9 +762,9 @@ const NC_HOLIDAYS_2026 = {
 };
 
 // Keywords for cell classification
-const CLINICAL_KW = ['POST CALL','POST-CALL','ACU-1','ACU','TEAM A','TEAM B','ARS-E','ARS-H','ARS','NEO','FLOAT',' SP','SP ','SP,','FLEX','IN @','IN SOLO','IN CALL',' IN\t'];
+const CLINICAL_KW = ['POST CALL','POST-CALL','ACU-1','ACU','TEAM A','TEAM B','ARS-E','ARS-H','ARS','NEO','FLOAT',' SP','SP ','SP,','FLEX','IN @','IN SOLO','IN CALL','IN CONFIRMED',' IN\t'];
 const ADMIN_KW    = ['ADMIN','WFH'];
-const OFF_KW      = ['VAC','OFF NO CALL','NO CALL','IN CONFIRMED','OFF','HOL'];
+const OFF_KW      = ['VAC','OFF NO CALL','NO CALL','OFF','HOL'];
 const TRAIN_KW    = ['CME','CPI','CSL','EPIC','GOV BODY','GOV CONF','JURY','RHA','ORIENT','PRN'];
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -787,7 +787,7 @@ function classify(raw) {
   if (!raw || raw.trim() === '') return 'Off/Unavailable';
   const v = ' ' + raw.toUpperCase().trim() + ' ';
   for (const k of CLINICAL_KW) { if (v.includes(k)) return 'Clinical'; }
-  if (/\bIN\b/.test(v) && !v.includes('IN CONFIRMED') && !v.includes('CHECK IN')) return 'Clinical';
+  if (/\bIN\b/.test(v) && !v.includes('CHECK IN')) return 'Clinical';
   for (const k of TRAIN_KW)  { if (v.includes(k)) return 'Training/Non-clinical'; }
   for (const k of OFF_KW)    { if (v.includes(k)) return 'Off/Unavailable'; }
   for (const k of ADMIN_KW)  { if (v.includes(k)) return 'Admin/Remote'; }
