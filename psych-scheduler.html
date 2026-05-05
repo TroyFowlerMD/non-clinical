@@ -292,7 +292,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
          background: #fff !important; color: #111 !important; zoom: 1 !important; }
 
   /* Hide nav/chrome */
-  .sidebar, .font-ctrl, .filter-bar, .col-panel, .col-toggle-btn,
+  .sidebar, .mob-menu-btn, .sidebar-overlay, .font-ctrl, .filter-bar, .col-panel, .col-toggle-btn,
   .pag, .parse-btn, .cal-export-btn, .cal-nav-btn, .parse-result,
   #clear-btn, .footer-btn, .cal-filter-group, .sec-hd + .table-wrap + .sec-hd,
   .topbar-right { display: none !important; }
@@ -424,6 +424,46 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
 .drive-uncfg code{font-family:var(--mono);font-size:10px;background:var(--amber-bg);
   padding:1px 4px;border-radius:3px}
 
+
+/* ── MOBILE SIDEBAR ────────────────────────────────────────────── */
+.mob-menu-btn{display:none;align-items:center;justify-content:center;
+  width:38px;height:38px;border-radius:var(--radius-sm);border:1px solid var(--border);
+  background:var(--surface2);color:var(--muted);cursor:pointer;flex-shrink:0;
+  transition:all 140ms;margin-right:6px}
+.mob-menu-btn:hover{background:var(--surface3);color:var(--text)}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);
+  z-index:9;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.sidebar-overlay.open{display:block}
+@media(max-width:768px){
+  .mob-menu-btn{display:flex}
+  .sidebar{
+    position:fixed;left:0;top:0;bottom:0;z-index:20;
+    transform:translateX(-100%);
+    transition:transform 220ms cubic-bezier(.16,1,.3,1);
+    box-shadow:0 8px 40px rgba(0,0,0,0.4);
+  }
+  .sidebar.open{transform:translateX(0)}
+  .topbar{padding:0 10px;height:52px}
+  .topbar-left{padding:0 10px;border-left:2px solid var(--primary)}
+  .topbar-title{font-size:13px}
+  .topbar-meta{display:none}
+  .topbar-right{gap:6px}
+  .content{padding:12px}
+  #today-badge{display:none}
+  .font-ctrl{display:none}
+  .theme-btn{display:none}
+  .kpi-grid{grid-template-columns:repeat(2,1fr)!important}
+  .filter-bar{gap:6px}
+  .chip{font-size:11px;padding:4px 9px}
+}
+@media(max-width:480px){
+  .topbar-title{font-size:12px}
+  .status-pill{font-size:10px;padding:2px 6px}
+  .content{padding:8px}
+  .kpi-grid{grid-template-columns:1fr 1fr!important}
+  .kpi-value{font-size:20px!important}
+}
+
 </style>
 </head>
 <body>
@@ -483,6 +523,9 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
 
 <div class="main">
   <div class="topbar">
+      <button class="mob-menu-btn" onclick="toggleSidebar()" aria-label="Toggle navigation" title="Menu">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
     <div class="topbar-left">
       <div class="topbar-title">Psychiatry Schedule Analyzer <span style="font-size:12px;font-weight:500;color:var(--muted);letter-spacing:0">· Troy Fowler, MD</span></div>
       <div class="topbar-meta" id="topbar-meta">No schedule loaded — paste data to begin</div>
@@ -1020,6 +1063,7 @@ function clearData() {
 // ═══════════════════════════════════════════════════════════════════════════
 
 function showView(id) {
+  if(window.innerWidth <= 768) closeSidebar();
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
   const view=document.getElementById('view-'+id);
@@ -1913,6 +1957,24 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(cEl) cEl.style.zoom = (baseFontPx / 16).toFixed(3);
   updateThemeBtn(document.documentElement.getAttribute('data-theme')||'dark');
 });
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MOBILE SIDEBAR TOGGLE
+// ═══════════════════════════════════════════════════════════════════════════
+
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const ov = document.getElementById('sidebar-overlay');
+  sb.classList.toggle('open');
+  ov.classList.toggle('open');
+}
+function closeSidebar() {
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+}
+
 </script>
+
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 </body>
 </html>
