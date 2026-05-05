@@ -797,24 +797,62 @@ function classify(raw) {
 function isWorking(raw) { return classify(raw) === 'Clinical'; }
 function isPostCall(raw) {
   if (!raw) return false;
-  const v = raw.toUpperCase();
-  return v.includes('POST CALL') || v.includes('POST-CALL');
+  const n = normalizeText(raw);
+  if (!n) return false;
+  if (n.includes('POST CALL') || n.includes('POSTCALL')) return true;
+  // Token-level PC match (avoid false positives like "PCP", "EPIC")
+  const tokens = n.split(' ').filter(Boolean);
+  return tokens.includes('PC');
+}
+
+// Provider alias map — derived from CORE_PROVIDERS plus common Fowler/etc. nicknames.
+// Used to recognize a provider name in any free-text cell (overnight, backup, FT phone).
+// CORE_PROVIDERS is NOT mutated; this is a lookup only.
+const PROVIDER_ALIASES = {
+  Patil:    ['PATIL'],
+  German:   ['GERMAN'],
+  Anderson: ['ANDERSON'],
+  Fowler:   ['FOWLER','TFOWLER','TROY FOWLER','T FOWLER'],
+  Carter:   ['CARTER'],
+  Ondreyka: ['ONDREYKA'],
+  Smith:    ['SMITH'],
+  Cooley:   ['COOLEY'],
+};
+
+// Returns true if `raw` mentions provider `name` as a token. Handles "FOWLER - CALL",
+// "Fowler/Carter", "T. Fowler", parentheticals, extra spaces, punctuation.
+function textMentionsProvider(raw, name) {
+  if (!raw || !name) return false;
+  const n = normalizeText(raw);
+  if (!n) return false;
+  const tokens = n.split(' ').filter(Boolean);
+  const aliases = PROVIDER_ALIASES[name] || [name.toUpperCase()];
+  for (const a of aliases) {
+    const aTokens = a.split(' ').filter(Boolean);
+    if (aTokens.length === 1) {
+      if (tokens.includes(aTokens[0])) return true;
+    } else {
+      // Multi-word alias — substring match on normalized text
+      if ((' ' + n + ' ').includes(' ' + a + ' ')) return true;
+    }
+  }
+  return false;
 }
 // For PTO availability: post-call counts as OFF
 function isAvailableForPTO(raw) { return isWorking(raw) && !isPostCall(raw); }
 
 function extractPsychBackup(raw) {
   if (!raw) return {person:'',fowler:false,carter:false,ondreyka:false};
-  const v = raw.toUpperCase();
+  const f = textMentionsProvider(raw,'Fowler');
+  const c = textMentionsProvider(raw,'Carter');
+  const o = textMentionsProvider(raw,'Ondreyka');
   return {
-    person: v.includes('FOWLER')?'Fowler':v.includes('CARTER')?'Carter':v.includes('ONDREYKA')?'Ondreyka':'',
-    fowler: v.includes('FOWLER'),
-    carter: v.includes('CARTER'),
-    ondreyka: v.includes('ONDREYKA'),
+    person: f?'Fowler':c?'Carter':o?'Ondreyka':'',
+    fowler: f, carter: c, ondreyka: o,
   };
 }
 
-function fowlerInFT(raw) { return raw ? raw.toUpperCase().includes('FOWLER') : false; }
+function fowlerInFT(raw) { return textMentionsProvider(raw||'','Fowler'); }
 
 // ═══════════════════════════════════════════════════════════════════════════
 // DATE PARSING
@@ -1026,15 +1064,12 @@ function parseRawData(text) {
   }
 
   // Post-call second pass: set PC flag the day AFTER an overnight shift.
-  // Use normalizeText so variants like "FOWLER - CALL", extra spaces,
-  // punctuation, or parentheticals still match.
+  // Use textMentionsProvider so name variants/aliases all match consistently.
   for (let i = 1; i < data.length; i++) {
-    const ov = normalizeText(data[i-1].overnight);
-    const tokens = ov.split(' ').filter(Boolean);
-    const has = name => tokens.includes(name.toUpperCase());
-    if (has('FOWLER'))   data[i].fowlerPC = true;
-    if (has('CARTER'))   data[i].carterPC = true;
-    if (has('ONDREYKA')) data[i].ondreykaPC = true;
+    const ov = data[i-1].overnight || '';
+    if (textMentionsProvider(ov,'Fowler'))   data[i].fowlerPC = true;
+    if (textMentionsProvider(ov,'Carter'))   data[i].carterPC = true;
+    if (textMentionsProvider(ov,'Ondreyka')) data[i].ondreykaPC = true;
   }
 
   return data;
@@ -1055,20 +1090,67 @@ let PG = 80;
 // Global date-range filter state (in-memory only)
 let globalRange = { start: null, end: null, autoStart: null, autoEnd: null };
 
-// Auto-detect end of schedule: scan rows, find last date where >= half of CORE_PROVIDERS
-// have a non-empty cell (i.e., schedule still appears populated).
+// Auto-detect end of schedule using a staffing-drop rule:
+//   - Walk rows chronologically.
+//   - Adequate staffing: 4+ psych providers on non-holiday weekdays, 2+ on holidays/weekends.
+//     "Assigned" = core provider with a non-empty cell that isn't pure OFF/PTO/post-call-only
+//     placeholder (i.e., counted in workingCore OR explicitly post-call — post-call still
+//     counts the provider as scheduled, just not available).
+//   - The "no longer up to date" point is where 5 consecutive non-holiday WEEKDAYS are
+//     under-staffed (3 or fewer assigned). From there, backtrack to the last date prior
+//     to that stretch where adequate minimum staffing held.
+//   - Fallback: if no such 5-weekday gap is found, return the dataset's last date.
+//
+// Holiday source: NC_HOLIDAYS_2026 keyed by ISO date. If a holiday calendar isn't
+// available for a given year, those dates fall back to weekend/weekday classification.
 function detectScheduleEnd(data) {
   if (!data || !data.length) return null;
-  const threshold = Math.ceil(CORE_PROVIDERS.length / 2);
-  let lastGood = null;
-  for (const row of data) {
-    const filled = CORE_PROVIDERS.reduce((n,p)=>{
-      const v = row.providerAsgns ? (row.providerAsgns[p]||'') : '';
-      return n + (v.trim() ? 1 : 0);
-    }, 0);
-    if (filled >= threshold) lastGood = row.date;
+
+  const isHoliday = iso => !!NC_HOLIDAYS_2026[iso];
+  const adequateFor = row => {
+    const minN = (row.isWeekend || isHoliday(row.date)) ? 2 : 4;
+    // Count core providers with any non-trivial assignment (working OR post-call).
+    // Empty/whitespace cells don't count.
+    let assigned = 0;
+    for (const p of CORE_PROVIDERS) {
+      const v = (row.providerAsgns && row.providerAsgns[p] || '').trim();
+      if (!v) continue;
+      assigned++;
+    }
+    return { ok: assigned >= minN, assigned, minN };
+  };
+
+  // Find first index of a 5-consecutive-non-holiday-weekday run with <= 3 assigned.
+  let runStart = -1, runLen = 0, gapIdx = -1;
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    if (row.isWeekend || isHoliday(row.date)) continue; // weekends/holidays don't count toward the run
+    let assigned = 0;
+    for (const p of CORE_PROVIDERS) {
+      const v = (row.providerAsgns && row.providerAsgns[p] || '').trim();
+      if (v) assigned++;
+    }
+    if (assigned <= 3) {
+      if (runStart < 0) runStart = i;
+      runLen++;
+      if (runLen >= 5) { gapIdx = runStart; break; }
+    } else {
+      runStart = -1;
+      runLen = 0;
+    }
   }
-  return lastGood;
+
+  if (gapIdx < 0) {
+    // No incomplete stretch — last row is the last good date.
+    return data[data.length - 1].date;
+  }
+
+  // Backtrack to last date BEFORE gapIdx where adequate staffing held.
+  for (let j = gapIdx - 1; j >= 0; j--) {
+    if (adequateFor(data[j]).ok) return data[j].date;
+  }
+  // Nothing adequate before the gap → use first row's date as a defensive fallback.
+  return data[0].date;
 }
 
 function applyGlobalRange(rows) {
@@ -1131,7 +1213,7 @@ function initGlobalRange() {
   const barEl  = document.getElementById('global-filter-bar');
   if (sEl) { sEl.min = dataStart; sEl.max = dataEnd; sEl.value = autoStart; }
   if (eEl) { eEl.min = dataStart; eEl.max = dataEnd; eEl.value = autoEnd; }
-  if (hintEl) hintEl.textContent = autoEnd ? `schedule appears complete through ${fmtDate(autoEnd)}` : '';
+  if (hintEl) hintEl.textContent = autoEnd ? `schedule appears complete through ${fmtDate(autoEnd)} based on minimum staffing continuity` : '';
   if (barEl) barEl.classList.remove('hidden');
 }
 
@@ -1281,10 +1363,10 @@ function cntBadge(coreN, tempN, wknd){
   return `<span class="cnt ${k}">${coreN}</span>${tempSpan}`;
 }
 function isFowlerOvernight(r){
-  return r.overnight && r.overnight.toUpperCase().includes('FOWLER');
+  return textMentionsProvider(r.overnight||'','Fowler');
 }
 function isProviderOvernight(r, name){
-  return r.overnight && r.overnight.toUpperCase().includes(name.toUpperCase());
+  return textMentionsProvider(r.overnight||'', name);
 }
 function callBadge(r){
   let out='';
@@ -1439,7 +1521,7 @@ function provPC(r) {
   return isPostCall(provAsgn(r));
 }
 function isProvOvernight(r) {
-  return !!(r.overnight && r.overnight.toUpperCase().includes(selectedProvider.toUpperCase()));
+  return textMentionsProvider(r.overnight||'', selectedProvider);
 }
 function provBackup(r) {
   if(selectedProvider === 'Fowler')   return !!r.fowlerBackup;
@@ -1546,40 +1628,58 @@ async function loadFromDrive() {
 function renderDashboard(pg) {
   if(pg !== undefined) dashPage = pg;
 
-  // Dynamic KPI cards — only include cards relevant to active columns
+  // KPI cards must reflect the currently-displayed date range, not the entire dataset.
+  // Source-of-truth = rows after global Start/End filter is applied.
   const cols = new Set(schedActiveCols);
-  const kpis = [];
-  const fwUp   = DATA.filter(r=>provBackup(r) && isFuture(r.date)).length;
-  const fwAll  = DATA.filter(r=>provBackup(r)).length;
-  const pcDays = DATA.filter(r=>provPC(r)).length;
-  const pcUp   = DATA.filter(r=>provPC(r) && isFuture(r.date)).length;
-  const ovrAll = DATA.filter(r=>isProvOvernight(r)).length;
-  const ovrUp  = DATA.filter(r=>isProvOvernight(r) && isFuture(r.date)).length;
-  const thin   = DATA.filter(r=>!r.isWeekend && r.atMin).length;
-  const feasible = DATA.filter(r=>r.ptoRisk==='Feasible').length;
-  const cautDays = DATA.filter(r=>r.ptoRisk==='Caution').length;
-  const totalWkd = DATA.filter(r=>!r.isWeekend).length;
+  const inRange = applyGlobalRange([...DATA]);
+  const useGlobal = !!(globalRange.start || globalRange.end);
+  const rangeLabel = useGlobal
+    ? (globalRange.start && globalRange.end
+        ? `${fmtDate(globalRange.start)} → ${fmtDate(globalRange.end)}`
+        : 'selected range')
+    : 'all loaded dates';
+  const subRange = useGlobal ? 'in selected range' : 'in loaded schedule';
 
+  const fwIn   = inRange.filter(r=>provBackup(r)).length;
+  const pcIn   = inRange.filter(r=>provPC(r)).length;
+  const ovrIn  = inRange.filter(r=>isProvOvernight(r)).length;
+  const thin   = inRange.filter(r=>!r.isWeekend && r.atMin).length;
+  const feasible = inRange.filter(r=>r.ptoRisk==='Feasible').length;
+  const cautDays = inRange.filter(r=>r.ptoRisk==='Caution').length;
+  const wkdIn    = inRange.filter(r=>!r.isWeekend).length;
+  const totalIn  = inRange.length;
+
+  const kpis = [];
   // Call column present: show Backup Call and Post-Call cards
   if(cols.has('call')){
-    kpis.push(['info','Backup Call',`${fwUp} / ${fwAll}`,'Upcoming / total']);
-    if(pcDays) kpis.push(['warn','Post-Call Days',`${pcUp} / ${pcDays}`,'Upcoming / total']);
-    if(ovrAll) kpis.push(['info','Overnight Shifts',`${ovrUp} / ${ovrAll}`,'Upcoming / total']);
+    kpis.push(['info','Backup Call',`${fwIn} / ${totalIn}`,subRange,
+      `Backup-call days for ${selectedProvider} within ${rangeLabel}. Numerator = backup days; denominator = total dates shown.`]);
+    if(pcIn) kpis.push(['warn','Post-Call Days',`${pcIn} / ${totalIn}`,subRange,
+      `Post-call (recovery) days for ${selectedProvider} within ${rangeLabel}.`]);
+    if(ovrIn) kpis.push(['info','Overnight Shifts',`${ovrIn} / ${totalIn}`,subRange,
+      `Overnight on-call shifts for ${selectedProvider} within ${rangeLabel}.`]);
   }
   // PTO Risk column present
   if(cols.has('ptoRisk')){
-    kpis.push(['good','PTO Feasible',feasible,`of ${totalWkd} weekdays`]);
-    if(cautDays) kpis.push(['warn','PTO Caution',cautDays,'Weekdays (4 available)']);
+    kpis.push(['good','PTO Feasible',feasible,`of ${wkdIn} weekdays · ${subRange}`,
+      `Weekdays where ${selectedProvider} could request PTO without dropping coverage below threshold, within ${rangeLabel}.`]);
+    if(cautDays) kpis.push(['warn','PTO Caution',cautDays,`weekdays · ${subRange}`,
+      `Weekdays where PTO is borderline (exactly 4 other providers available), within ${rangeLabel}.`]);
   }
   // Staff count column present
   if(cols.has('staffTotal') || cols.has('coreTemp') || cols.has('allCount')){
-    kpis.push(['danger','Thin Weekdays',thin,'Core ≤4 providers']);
+    kpis.push(['danger','Thin Weekdays',thin,`Core ≤4 providers · ${subRange}`,
+      `Non-weekend dates where core psych staffing is at or below the 4-provider minimum, within ${rangeLabel}.`]);
   }
   // Fallback: always show date range
-  if(!kpis.length) kpis.push(['info','Loaded Dates',DATA.length,'Rows in schedule']);
+  if(!kpis.length) kpis.push(['info','Dates Shown',totalIn,subRange,
+    `Total dates in current view (${rangeLabel}).`]);
 
   document.getElementById('kpi-grid').innerHTML=kpis
-    .map(([cls,lbl,val,sub])=>`<div class="kpi ${cls}"><div class="kpi-label">${lbl}</div><div class="kpi-value">${val}</div><div class="kpi-sub">${sub}</div></div>`)
+    .map(([cls,lbl,val,sub,tip])=>{
+      const t = (tip||'').replace(/"/g,'&quot;');
+      return `<div class="kpi ${cls}" title="${t}" aria-label="${lbl}: ${val}. ${t}"><div class="kpi-label">${lbl}</div><div class="kpi-value">${val}</div><div class="kpi-sub">${sub}</div></div>`;
+    })
     .join('');
 
   // Filters
@@ -1589,7 +1689,6 @@ function renderDashboard(pg) {
 
   // Global date range takes precedence — if either bound set, skip f-period filter
   let rows = applyGlobalRange([...DATA]);
-  const useGlobal = !!(globalRange.start || globalRange.end);
   if(!useGlobal){
     if(fPeriod==='future') rows = rows.filter(r=>isFuture(r.date));
     else if(fPeriod==='past') rows = rows.filter(r=>isPast(r.date));
@@ -1610,7 +1709,7 @@ function renderDashboard(pg) {
     });
   }
 
-  document.getElementById('dash-rc').textContent = `${rows.length} dates`;
+  document.getElementById('dash-rc').textContent = `${rows.length} dates · ${useGlobal ? 'in selected range' : (fPeriod==='future' ? 'upcoming' : fPeriod==='past' ? 'past' : 'all dates')}`;
   const t = rows.length;
   const page = rows.slice(dashPage*PG, (dashPage+1)*PG);
 
@@ -1681,7 +1780,8 @@ function renderBackup() {
   });
   const useGlobal = !!(globalRange.start || globalRange.end);
   if(!useGlobal && bkpFilter==='upcoming') rows = rows.filter(r=>isFuture(r.date));
-  document.getElementById('bkp-rc').textContent = `${rows.length} dates`;
+  const bkpRangeLabel = useGlobal ? 'in selected range' : (bkpFilter==='upcoming' ? 'upcoming' : 'all dates');
+  document.getElementById('bkp-rc').textContent = `${rows.length} dates · ${bkpRangeLabel}`;
 
   const cols = ['Day','Date','Fowler','Carter','Ondreyka',''];
   const trows = rows.map(r=>{
@@ -1723,7 +1823,8 @@ function renderPTO(pg) {
   const useGlobal = !!(globalRange.start || globalRange.end);
   let rows = useGlobal ? applyGlobalRange(DATA) : DATA.filter(r=>isFuture(r.date));
   if(ptoFilter!=='all') rows = rows.filter(r=>r.ptoRisk===ptoFilter);
-  document.getElementById('pto-rc').textContent = `${rows.length} dates`;
+  const ptoRangeLabel = useGlobal ? 'in selected range' : 'upcoming';
+  document.getElementById('pto-rc').textContent = `${rows.length} dates · ${ptoRangeLabel}`;
 
   const t    = rows.length;
   const page = rows.slice(ptoPg*PG, (ptoPg+1)*PG);
@@ -1760,10 +1861,12 @@ function renderStaffing(pg) {
   if(pg !== undefined) staffPg = pg;
 
   let rows = applyGlobalRange(DATA);
+  const useGlobalSt = !!(globalRange.start || globalRange.end);
   if(staffFilter==='min')  rows = rows.filter(r=>!r.isWeekend && r.atMin);
   else if(staffFilter==='thin')  rows = rows.filter(r=>!r.isWeekend && r.coreCount<=5);
   else if(staffFilter==='ok')    rows = rows.filter(r=>r.coreCount>=6);
-  document.getElementById('st-rc').textContent = `${rows.length} dates`;
+  const stRangeLabel = useGlobalSt ? 'in selected range' : 'all loaded dates';
+  document.getElementById('st-rc').textContent = `${rows.length} dates · ${stRangeLabel}`;
 
   const t    = rows.length;
   const page = rows.slice(staffPg*PG, (staffPg+1)*PG);
