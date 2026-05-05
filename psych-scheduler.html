@@ -425,7 +425,52 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
   padding:1px 4px;border-radius:3px}
 
 
-/* ── MOBILE SIDEBAR ────────────────────────────────────────────── */
+
+/* ── PROVIDER BAR ─────────────────────────────────────────────── */
+.prov-bar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;align-items:center}
+.prov-bar .filter-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-right:2px}
+
+/* ── DATE RANGE BAR ───────────────────────────────────────────── */
+.date-range-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center;
+  padding:8px 12px;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-sm);font-size:12px}
+.date-range-bar .filter-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.date-input{padding:4px 8px;border-radius:var(--radius-sm);border:1px solid var(--border);
+  background:var(--surface2);color:var(--text);font-size:12px;font-family:var(--font);cursor:pointer}
+.date-input:focus{outline:2px solid var(--primary);border-color:transparent}
+.sched-complete-pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:var(--radius-sm);
+  background:var(--amber-bg);color:var(--amber-text);white-space:nowrap}
+.sched-complete-pill.known{background:var(--green-bg);color:var(--green-text)}
+.date-range-sep{color:var(--muted);padding:0 2px}
+
+/* ── PROVIDER SELECT (sidebar) — clearly interactive ──────────── */
+.provider-select-wrap{padding:4px 8px 8px;border-bottom:1px solid var(--divider)}
+.provider-select-label{font-size:9px;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;display:block}
+.provider-select-ctrl{display:flex;align-items:center;gap:6px;background:var(--primary-bg);
+  border:1px solid var(--primary);border-radius:var(--radius-sm);padding:5px 8px;cursor:pointer}
+.provider-select-ctrl select{background:transparent;border:none;color:var(--primary);
+  font-size:12px;font-weight:600;font-family:var(--font);cursor:pointer;outline:none;
+  -webkit-appearance:none;appearance:none;flex:1;min-width:80px}
+.provider-select-ctrl svg{color:var(--primary);flex-shrink:0;pointer-events:none}
+
+/* ── MOBILE SIDEBAR — hardened ─────────────────────────────────── */
+@media(max-width:768px){
+  .mob-menu-btn{display:flex!important}
+  .sidebar{
+    position:fixed!important;
+    left:0!important;top:0!important;bottom:0!important;
+    height:100%!important;
+    z-index:200!important;
+    transform:translateX(-100%)!important;
+    transition:transform 220ms cubic-bezier(.16,1,.3,1);
+    box-shadow:0 8px 40px rgba(0,0,0,0.45)!important;
+    overflow-y:auto;
+  }
+  .sidebar.open{transform:translateX(0)!important}
+  .sidebar-overlay{z-index:199!important}
+}
+
+/* ── MOBILE SIDEBAR (base breakpoint) ──────────────────────────── */
 .mob-menu-btn{display:none;align-items:center;justify-content:center;
   width:38px;height:38px;border-radius:var(--radius-sm);border:1px solid var(--border);
   background:var(--surface2);color:var(--muted);cursor:pointer;flex-shrink:0;
@@ -474,7 +519,14 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       <span class="logo-title">Psych Scheduler</span>
     </div>
-    <select id="provider-select" class="logo-sub" onchange="onProviderChange(this.value)" style="background:transparent;border:none;cursor:pointer;outline:none;font-family:inherit;-webkit-appearance:none;appearance:none;max-width:160px;color:var(--primary)"></select>
+  </div>
+  <div class="provider-select-wrap">
+    <span class="provider-select-label">Active Provider</span>
+    <div class="provider-select-ctrl">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a6.5 6.5 0 0 1 13 0v2"/></svg>
+      <select id="provider-select" onchange="onProviderChange(this.value)"></select>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
   </div>
   <div class="sidebar-nav">
     <div class="nav-section">Setup</div>
@@ -544,6 +596,17 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
 
   <div class="content">
 
+
+    <!-- ══ GLOBAL DATE RANGE ══════════════════════════════════════════ -->
+    <div class="date-range-bar" id="global-date-bar" style="display:none">
+      <span class="filter-label">Date Range:</span>
+      <input type="date" class="date-input" id="g-date-from" onchange="setGlobalDateFrom(this.value)" title="From date">
+      <span class="date-range-sep">→</span>
+      <input type="date" class="date-input" id="g-date-to" onchange="setGlobalDateTo(this.value)" title="To date">
+      <button class="chip" onclick="clearDateRange()" style="font-size:11px;padding:3px 9px">✕ Clear</button>
+      <span id="sched-complete-pill" class="sched-complete-pill" style="display:none"></span>
+    </div>
+
     <!-- ══ PASTE VIEW ══════════════════════════════════════════════ -->
     <div class="view active" id="view-paste">
       <div class="paste-container">
@@ -603,6 +666,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
         </button>
         <span class="rcount" id="dash-rc"></span>
       </div>
+      <div class="prov-bar" id="prov-bar-dash" style="display:none"></div>
       <div class="col-panel" id="col-panel" style="display:none">
         <div class="col-panel-row" style="margin-bottom:0">
           <span class="col-panel-label">Toggle columns — drag headers in the table to reorder</span>
@@ -634,6 +698,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
         <button class="chip" id="pto-btn-Not_Feasible" onclick="setPTOFilter('Not Feasible')">🚫 Not Feasible</button>
         <span class="rcount" id="pto-rc"></span>
       </div>
+      <div class="prov-bar" id="prov-bar-pto" style="display:none"></div>
       <div class="table-wrap" id="pto-table"></div>
     </div>
 
@@ -647,6 +712,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
         <button class="chip" id="st-btn-ok" onclick="setStaffFilter('ok')">✅ Full (6+)</button>
         <span class="rcount" id="st-rc"></span>
       </div>
+      <div class="prov-bar" id="prov-bar-staff" style="display:none"></div>
       <div class="table-wrap" id="st-table"></div>
     </div>
 
@@ -989,6 +1055,13 @@ let DATA = [];
 let selectedProvider = 'Fowler';
 let TODAY = new Date().toISOString().slice(0,10);
 let bkpFilter = 'upcoming', ptoFilter = 'all', staffFilter = 'all';
+let filterDateFrom = null;    // 'YYYY-MM-DD' or null
+let filterDateTo   = null;    // 'YYYY-MM-DD' or null
+let schedComplete  = null;    // auto-detected completeness cutoff date
+let extraColsDash  = [];      // extra provider assignment cols in My Schedule
+let extraColsPTO   = [];      // extra provider assignment cols in PTO
+let visStaffProvs  = null;    // populated on load: all CORE_PROVIDERS by default
+let showStaffThin  = false;   // Thin Run column hidden by default
 let dashPage = 0, ptoPg = 0, staffPg = 0;
 let calYear, calMonth;
 let PG = 80;
@@ -1027,11 +1100,16 @@ function onDataLoaded() {
     const el=document.getElementById('nav-'+id);
     if(el) el.classList.remove('disabled');
   });
+  // Init staffing provider list (all by default)
+  if(!visStaffProvs) visStaffProvs = [...CORE_PROVIDERS];
+  // Detect schedule completeness
+  schedComplete = detectScheduleComplete(DATA);
   const dates=DATA.map(r=>r.date).sort();
-  document.getElementById('status-pill').textContent=`${DATA.length} dates`;
+  const upcomingCount = DATA.filter(r=>isFuture(r.date)).length;
+  document.getElementById('status-pill').textContent=`${DATA.length} total`;
   document.getElementById('status-pill').className='status-pill status-loaded';
   document.getElementById('topbar-meta').textContent=
-    `${dates[0]} → ${dates[dates.length-1]} · ${CORE_PROVIDERS.length} core + ${TEMP_STAFF.length} temp providers`;
+    `${dates[0]} → ${dates[dates.length-1]} · ${upcomingCount} upcoming · ${CORE_PROVIDERS.length} core providers`;
   document.getElementById('clear-btn').style.display='flex';
   // populate provider dropdown
   const _sel = document.getElementById('provider-select');
@@ -1039,6 +1117,10 @@ function onDataLoaded() {
   // set today badge
   const todayFmt = fmtDate(TODAY);
   document.getElementById('today-badge').textContent = 'Today: '+todayFmt;
+  // show date range bar + schedule completeness
+  updateGlobalDateBar();
+  // populate provider bars
+  renderProvBars();
   showView('dashboard');
 }
 
@@ -1164,8 +1246,11 @@ const SCHED_COLS_ALL = [
   {id:'providers',   label:'Working Providers',sortable:false},
   {id:'streak',      label:'Thin Run',         sortable:true,  sortKey:r=>r.streak},
   {id:'ftPhone',     label:'FT Phone',         sortable:false},
-  {id:'carter',      label:'Carter',           sortable:false},
-  {id:'ondreyka',    label:'Ondreyka',         sortable:false},
+  {id:'carter',      label:'Carter Asgn',      sortable:false},
+  {id:'ondreyka',    label:'Ondreyka Asgn',    sortable:false},
+  {id:'anderson',    label:'Anderson Asgn',    sortable:false},
+  {id:'smith',       label:'Smith Asgn',       sortable:false},
+  {id:'cooley',      label:'Cooley Asgn',      sortable:false},
 ];
 
 let schedActiveCols = ['day','date','asgn','call'];
@@ -1196,8 +1281,26 @@ function schedCell(id, r) {
     }
     case 'streak':      return `<td>${r.streak>=3?`<span class="badge br">Day ${r.streak}</span>`:r.atMin&&!r.isWeekend?'<span class="badge ba">At min</span>':'<span style="color:var(--faint)">—</span>'}</td>`;
     case 'ftPhone':     return `<td>${r.fowlerFT?'<span class="badge bb">Yes</span>':'<span style="color:var(--faint)">—</span>'}</td>`;
-    case 'carter':      return `<td>${poolCell(r.carterBackup, r.providerAsgns?.Carter||'')}</td>`;
-    case 'ondreyka':    return `<td>${poolCell(r.ondreykaBackup, r.providerAsgns?.Ondreyka||'')}</td>`;
+    case 'carter': {
+      const v=r.providerAsgns?.Carter||'';
+      return `<td style="font-size:11px">${v||'<span style="color:var(--faint)">—</span>'}</td>`;
+    }
+    case 'ondreyka': {
+      const v=r.providerAsgns?.Ondreyka||'';
+      return `<td style="font-size:11px">${v||'<span style="color:var(--faint)">—</span>'}</td>`;
+    }
+    case 'anderson': {
+      const v=r.providerAsgns?.Anderson||'';
+      return `<td style="font-size:11px">${v||'<span style="color:var(--faint)">—</span>'}</td>`;
+    }
+    case 'smith': {
+      const v=r.providerAsgns?.Smith||'';
+      return `<td style="font-size:11px">${v||'<span style="color:var(--faint)">—</span>'}</td>`;
+    }
+    case 'cooley': {
+      const v=r.providerAsgns?.Cooley||'';
+      return `<td style="font-size:11px">${v||'<span style="color:var(--faint)">—</span>'}</td>`;
+    }
     default:            return '<td>—</td>';
   }
 }
@@ -1239,7 +1342,7 @@ function schedDragEnd() { schedDragId=null; renderColPicker(); }
 function renderColPicker() {
   // Fixed ordered grid — most-used first. Day/Date are always pinned (not shown here).
   const PICKER_ORDER = ['asgn','call','ptoRisk','staffTotal','providers','overnight',
-    'backupPerson','thinRun','ftPhone','carter','ondreyka'];
+    'backupPerson','streak','ftPhone','carter','ondreyka','anderson','smith','cooley'];
   const LOCKED = ['day','date'];
   const grid = PICKER_ORDER.map(id=>{
     const col = SCHED_COLS_ALL.find(c=>c.id===id);
@@ -1306,6 +1409,10 @@ function recomputePTORisk() {
 
 function onProviderChange(prov) {
   selectedProvider = prov;
+  // Remove new provider from extra cols if they were being shown
+  extraColsDash = extraColsDash.filter(p => p !== prov);
+  extraColsPTO  = extraColsPTO.filter(p => p !== prov);
+  renderProvBars();
   recomputePTORisk();
   // Re-render whichever view is currently active
   const activeId = document.querySelector('.view.active')?.id?.replace('view-','');
@@ -1436,6 +1543,7 @@ function renderDashboard(pg) {
   else if(fClass==='Off')      rows = rows.filter(r=>provClass(r)==='Off/Unavailable');
   else if(fClass==='Training') rows = rows.filter(r=>provClass(r)==='Training/Non-clinical');
   if(fPTO) rows = rows.filter(r=>r.ptoRisk===fPTO);
+  rows = applyDateRange(rows);
 
   // Sort
   const sortDef = SCHED_COLS_ALL.find(c=>c.id===schedSort.col);
@@ -1468,12 +1576,17 @@ function renderDashboard(pg) {
       ondragend="thDragEnd(event)">${col.label}</th>`;
   }).join('');
 
+  const extraHdrs = extraColsDash.map(p=>`<th style="min-width:80px">${p}</th>`).join('');
   const trows = page.map(r=>{
     const cells = schedActiveCols.map(id=>schedCell(id,r)).join('');
-    return `<tr${rowCls(r)}>${cells}${holColCell(r.date)}</tr>`;
+    const extra = extraColsDash.map(p=>{
+      const v=(r.providerAsgns&&r.providerAsgns[p])||'';
+      return v.trim()?`<td style="font-size:11px;max-width:110px;overflow:hidden;text-overflow:ellipsis">${v}</td>`:'<td style="color:var(--faint)">—</td>';
+    }).join('');
+    return `<tr${rowCls(r)}>${cells}${extra}${holColCell(r.date)}</tr>`;
   }).join('');
 
-  const tbl = trows ? `<table><thead><tr>${hdrs}<th class="col-hol" style="background:var(--surface2)"></th></tr></thead><tbody>${trows}</tbody></table>` :
+  const tbl = trows ? `<table><thead><tr>${hdrs}${extraHdrs}<th class="col-hol" style="background:var(--surface2)"></th></tr></thead><tbody>${trows}</tbody></table>` :
     '<div class="empty"><p>No matching dates</p></div>';
 
   document.getElementById('dash-table').innerHTML = tbl + pagBar(t, dashPage, 'renderDashboard');
@@ -1548,21 +1661,29 @@ function renderPTO(pg) {
 
   let rows = DATA.filter(r=>isFuture(r.date));
   if(ptoFilter!=='all') rows = rows.filter(r=>r.ptoRisk===ptoFilter);
+  rows = applyDateRange(rows);
   document.getElementById('pto-rc').textContent = `${rows.length} dates`;
 
   const t    = rows.length;
   const page = rows.slice(ptoPg*PG, (ptoPg+1)*PG);
 
-  const cols = ['Day','Date','PTO Risk','Working Providers',selectedProvider,''];
+  const myHdr = `My Asgn (${selectedProvider})`;
+  const extraHdrs = extraColsPTO.map(p=>p);
+  const cols = ['Day','Date','PTO Risk','Working Providers', myHdr, ...extraHdrs, ''];
   const trows = page.map(r=>{
     const availCore = CORE_PROVIDERS.filter(p=>p!==selectedProvider && isAvailableForPTO(r.providerAsgns[p]));
     const availTemp = TEMP_STAFF.filter(({name})=>isAvailableForPTO(r.tempAsgns[name])).map(({name})=>name);
     const allAvail = [...availCore, ...availTemp].join(', ') || '—';
+    const extraCells = extraColsPTO.map(p=>{
+      const v=(r.providerAsgns&&r.providerAsgns[p])||'';
+      return v.trim()?`<td style="font-size:11px">${v}</td>`:'<td style="color:var(--faint)">—</td>';
+    }).join('');
     return `${rowCls(r)}><td class="col-day"><span class="${r.isWeekend?'day-chip weekend':'day-chip'}">${dayShort(r.day)}</span></td>
       ${holDateCell(r.date)}
       <td>${ptoBadge(r.ptoRisk)}</td>
       <td style="font-size:11px;color:var(--muted)">${allAvail}</td>
       <td>${clsBadge(provClass(r))}${provPC(r)?' <span class="badge bk">Post-Call</span>':''}</td>
+      ${extraCells}
       ${holColCell(r.date)}`;
   }).map(r=>`<tr${r}`);
 
@@ -1581,26 +1702,45 @@ function setStaffFilter(f) {
   renderStaffing();
 }
 
+function provStaffCell(r, name) {
+  const asgn = (r.providerAsgns && r.providerAsgns[name]) || '';
+  if(!asgn.trim()) return '<td style="color:var(--faint)">—</td>';
+  const cls = classify(asgn);
+  if(cls==='Clinical') {
+    const pc = isPostCall(asgn);
+    const short = asgn.length>16 ? asgn.slice(0,16)+'…' : asgn;
+    return `<td style="font-size:11px">${short}${pc?' <span class="badge bk" style="font-size:9px">PC</span>':''}</td>`;
+  }
+  if(cls==='Off/Unavailable') return '<td><span class="bk cc">Off</span></td>';
+  if(cls==='Admin/Remote')    return '<td><span class="bt cc">Admin</span></td>';
+  if(cls==='Training/Non-clinical') return '<td><span class="ba cc">Train</span></td>';
+  return `<td style="font-size:11px">${asgn.slice(0,14)}</td>`;
+}
+
 function renderStaffing(pg) {
   if(pg !== undefined) staffPg = pg;
+  if(!visStaffProvs) visStaffProvs = [...CORE_PROVIDERS];
 
   let rows = DATA;
   if(staffFilter==='min')  rows = rows.filter(r=>!r.isWeekend && r.atMin);
   else if(staffFilter==='thin')  rows = rows.filter(r=>!r.isWeekend && r.coreCount<=5);
   else if(staffFilter==='ok')    rows = rows.filter(r=>r.coreCount>=6);
+  rows = applyDateRange(rows);
   document.getElementById('st-rc').textContent = `${rows.length} dates`;
 
   const t    = rows.length;
   const page = rows.slice(staffPg*PG, (staffPg+1)*PG);
 
-  const cols = ['Day','Date','Core Count','+ Temp','Working Providers','Thin Run?',''];
+  const provHdrs = visStaffProvs.map(p=>`<span style="font-size:10px">${p}</span>`);
+  const cols = ['Day','Date','Count','+ Temp',...provHdrs,...(showStaffThin?['Thin Run?']:[]),''];
   const trows = page.map(r=>{
+    const provCells = visStaffProvs.map(p=>provStaffCell(r,p)).join('');
     return `${rowCls(r)}><td class="col-day"><span class="${r.isWeekend?'day-chip weekend':'day-chip'}">${dayShort(r.day)}</span></td>
       ${holDateCell(r.date)}
       <td>${cntBadge(r.coreCount, 0, r.isWeekend)}</td>
       <td>${r.workingTemp.length?`<span class="badge bt">+${r.workingTemp.length}</span>`:'<span style="color:var(--faint)">—</span>'}</td>
-      <td style="font-size:11px;color:var(--muted)">${[...r.workingCore.map(n=>`<strong>${n}</strong>`),...r.workingTemp].join(', ')||'—'}</td>
-      <td>${r.streak>=3?`<span class="badge br">Day ${r.streak}</span>`:r.atMin&&!r.isWeekend?'<span class="badge ba">At min</span>':'<span style="color:var(--faint)">—</span>'}</td>
+      ${provCells}
+      ${showStaffThin?`<td>${r.streak>=3?`<span class="badge br">Day ${r.streak}</span>`:r.atMin&&!r.isWeekend?'<span class="badge ba">At min</span>':'<span style="color:var(--faint)">—</span>'}</td>`:''}
       ${holColCell(r.date)}`;
   }).map(r=>`<tr${r}`);
 
@@ -1957,6 +2097,141 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(cEl) cEl.style.zoom = (baseFontPx / 16).toFixed(3);
   updateThemeBtn(document.documentElement.getAttribute('data-theme')||'dark');
 });
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DATE RANGE FILTER
+// ═══════════════════════════════════════════════════════════════════════════
+
+function applyDateRange(rows) {
+  if(filterDateFrom) rows = rows.filter(r => r.date >= filterDateFrom);
+  if(filterDateTo)   rows = rows.filter(r => r.date <= filterDateTo);
+  return rows;
+}
+function setGlobalDateFrom(v) {
+  filterDateFrom = v || null;
+  rerenderActive();
+}
+function setGlobalDateTo(v) {
+  filterDateTo = v || null;
+  rerenderActive();
+}
+function clearDateRange() {
+  filterDateFrom = filterDateTo = null;
+  const f = document.getElementById('g-date-from');
+  const t = document.getElementById('g-date-to');
+  if(f) f.value = '';
+  if(t) t.value = '';
+  rerenderActive();
+}
+function rerenderActive() {
+  const active = document.querySelector('.nav-item.active')?.dataset?.view;
+  if(active==='dashboard') { dashPage=0; renderDashboard(); }
+  else if(active==='pto') { ptoPg=0; renderPTO(); }
+  else if(active==='staffing') { staffPg=0; renderStaffing(); }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SCHEDULE COMPLETENESS DETECTION
+// ═══════════════════════════════════════════════════════════════════════════
+
+function detectScheduleComplete(data) {
+  // Scan from end backward — first date where ≥3 core providers have data
+  for(let i = data.length-1; i>=0; i--) {
+    const r = data[i];
+    const filled = CORE_PROVIDERS.filter(p => {
+      const v = (r.providerAsgns && r.providerAsgns[p]) || '';
+      return v.trim() !== '';
+    }).length;
+    if(filled >= 3) return r.date;
+  }
+  return null;
+}
+function updateGlobalDateBar() {
+  const bar = document.getElementById('global-date-bar');
+  if(bar) bar.style.display = DATA.length ? 'flex' : 'none';
+  const pill = document.getElementById('sched-complete-pill');
+  if(!pill) return;
+  if(schedComplete) {
+    pill.textContent = '📋 Schedule complete thru ' + fmtDate(schedComplete);
+    pill.className = 'sched-complete-pill known';
+    pill.style.display = '';
+    // Suggest it as default To date if no filter set
+    if(!filterDateTo) {
+      filterDateTo = schedComplete;
+      const el = document.getElementById('g-date-to');
+      if(el) el.value = schedComplete;
+    }
+  } else {
+    pill.style.display = 'none';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PROVIDER COLUMN TOGGLES
+// ═══════════════════════════════════════════════════════════════════════════
+
+function toggleExtraCol(name, view) {
+  if(view==='dash') {
+    const i = extraColsDash.indexOf(name);
+    if(i>=0) extraColsDash.splice(i,1); else extraColsDash.push(name);
+    dashPage=0; renderDashboard();
+  } else if(view==='pto') {
+    const i = extraColsPTO.indexOf(name);
+    if(i>=0) extraColsPTO.splice(i,1); else extraColsPTO.push(name);
+    ptoPg=0; renderPTO();
+  }
+  renderProvBars();
+}
+function toggleStaffProv(name) {
+  if(!visStaffProvs) return;
+  const i = visStaffProvs.indexOf(name);
+  if(i>=0) { if(visStaffProvs.length>1) visStaffProvs.splice(i,1); }
+  else visStaffProvs.push(name);
+  staffPg=0; renderStaffing();
+  renderProvBars();
+}
+function toggleStaffThin() {
+  showStaffThin = !showStaffThin;
+  staffPg=0; renderStaffing();
+  renderProvBars();
+}
+function updateProvBtns(barId, activeArr) {
+  const bar = document.getElementById(barId);
+  if(!bar) return;
+  bar.querySelectorAll('[data-pname]').forEach(btn => {
+    btn.classList.toggle('active', activeArr.includes(btn.dataset.pname));
+  });
+}
+function renderProvBars() {
+  if(!DATA.length) return;
+  const others = CORE_PROVIDERS.filter(p => p !== selectedProvider);
+
+  // ── My Schedule
+  const dashBar = document.getElementById('prov-bar-dash');
+  if(dashBar) {
+    dashBar.style.display = 'flex';
+    dashBar.innerHTML = '<span class="filter-label">Also show:</span>' +
+      others.map(p=>`<button class="chip${extraColsDash.includes(p)?' active':''}" data-pname="${p}" onclick="toggleExtraCol('${p}','dash')">${p}</button>`).join('');
+  }
+
+  // ── PTO
+  const ptoBar = document.getElementById('prov-bar-pto');
+  if(ptoBar) {
+    ptoBar.style.display = 'flex';
+    ptoBar.innerHTML = '<span class="filter-label">Also show:</span>' +
+      others.map(p=>`<button class="chip${extraColsPTO.includes(p)?' active':''}" data-pname="${p}" onclick="toggleExtraCol('${p}','pto')">${p}</button>`).join('');
+  }
+
+  // ── Staffing
+  const staffBar = document.getElementById('prov-bar-staff');
+  if(staffBar && visStaffProvs) {
+    staffBar.style.display = 'flex';
+    staffBar.innerHTML = '<span class="filter-label">Columns:</span>' +
+      CORE_PROVIDERS.map(p=>`<button class="chip${visStaffProvs.includes(p)?' active':''}" data-pname="${p}" onclick="toggleStaffProv('${p}')">${p}</button>`).join('') +
+      `<button class="chip${showStaffThin?' active':''}" onclick="toggleStaffThin()">Thin Run</button>`;
+  }
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // MOBILE SIDEBAR TOGGLE
