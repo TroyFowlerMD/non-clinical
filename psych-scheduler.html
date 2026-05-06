@@ -642,6 +642,13 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
           <option value="Caution">⚠️ Caution</option>
           <option value="Not Feasible">🚫 Not Feasible</option>
         </select>
+        <select class="filter-select" id="f-trainee" onchange="renderDashboard()" title="Filter by trainee presence">
+          <option value="">Any trainees</option>
+          <option value="any">Has trainee</option>
+          <option value="resident">Resident only</option>
+          <option value="fellow">Fellow only</option>
+          <option value="none">No trainee</option>
+        </select>
         <button class="col-toggle-btn" id="col-toggle-btn" onclick="toggleColPanel()">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
           Columns
@@ -854,6 +861,39 @@ function extractPsychBackup(raw) {
 
 function fowlerInFT(raw) { return textMentionsProvider(raw||'','Fowler'); }
 
+// Extract trainees from a Residents/Fellowships cell.
+// Format: tokens are name-R (resident) or name-F (fellow), split by /, comma, or
+// semicolon. Optional " AM" / " PM" suffix per token is dropped. Suffix -R / -F
+// is preserved in display. Examples:
+//   "Morales-R/Eckert-F"          → ["Morales-R","Eckert-F"]
+//   "Morales-R AM/Eckert-F"       → ["Morales-R","Eckert-F"]
+//   "Morales-R AM"                → ["Morales-R"]
+//   "Smith-R, Jones-F; Lee-R PM"  → ["Smith-R","Jones-F","Lee-R"]
+function extractTrainees(raw) {
+  if (!raw) return [];
+  const text = String(raw).trim();
+  if (!text) return [];
+  const tokens = text.split(/[\/,;]+/);
+  const out = [];
+  for (let t of tokens) {
+    t = t.trim();
+    if (!t) continue;
+    // Drop trailing AM/PM and any trailing punctuation/whitespace.
+    t = t.replace(/\s+(AM|PM)\b.*$/i, '').trim();
+    t = t.replace(/[\s.;,]+$/,'').trim();
+    if (!t) continue;
+    // Must look like a token with -R or -F suffix to count as a trainee.
+    const m = t.match(/^([A-Za-z][A-Za-z'\-\s.]*?)\s*-\s*([RF])\b/i);
+    if (!m) continue;
+    const name = m[1].trim().replace(/\s+/g,' ');
+    const suffix = m[2].toUpperCase();
+    if (!name) continue;
+    const display = `${name}-${suffix}`;
+    if (!out.includes(display)) out.push(display);
+  }
+  return out;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // DATE PARSING
 // ═══════════════════════════════════════════════════════════════════════════
@@ -879,6 +919,8 @@ function parseDate(s) {
 
 let DETECTED_COLS = {};
 let TEMP_STAFF = []; // [{name, col}]
+// Names known to be temp psych staff regardless of column position (rule 4).
+const TEMP_PSYCH_FORCED = ['Patil','German'];
 
 const INFRA_MATCHERS = [
   ['date',    r => r.includes('date') && !r.includes('update')],
@@ -888,49 +930,101 @@ const INFRA_MATCHERS = [
   ['clarification', r => r.includes('clarification') || (r.includes('acu') && r.includes('ars'))],
   ['fasttrack', r => r.includes('fast track') || r.includes('fasttrack')],
   ['pharmacy', r => r.includes('pharmacy')],
-  ['residents', r => r.includes('resident')],
-  ['fellowships', r => r.includes('fellowship')],
 ];
+
+// Header normalization helper — keeps all logic in one place.
+function normHeader(cell) {
+  return (cell || '').toLowerCase().replace(/[\r\n\s]+/g,' ').trim();
+}
+
+// Locate the LAST occurrence of a Residents/Fellowships header. The workbook has two
+// such columns (one in the medical-staff section, one in the psych section); the
+// rightmost is the boundary between permanent psych providers (left of it) and
+// temp psych providers (right of it), and is the canonical trainees source.
+function findResidentsCol(headerRow) {
+  let last = -1;
+  headerRow.forEach((cell, i) => {
+    const h = normHeader(cell);
+    if (h.includes('resident') || h.includes('fellowship')) last = i;
+  });
+  return last;
+}
 
 function buildColMap(headerRow) {
   const cols = {};
   const tempStaff = [];
   const usedIdx = new Set();
 
-  // Infrastructure first
+  // Infrastructure first (single-pass, exclusive)
   headerRow.forEach((cell, i) => {
-    const h = cell.toLowerCase().replace(/[\r\n\s]+/g,' ').trim();
+    const h = normHeader(cell);
     if (!h) return;
     for (const [key, fn] of INFRA_MATCHERS) {
-      if (!cols[key] && fn(h)) { cols[key] = i; usedIdx.add(i); return; }
+      if (cols[key] === undefined && fn(h)) { cols[key] = i; usedIdx.add(i); return; }
     }
   });
 
-  // Core providers
+  // Residents/Fellowships boundary — rightmost occurrence wins.
+  const residentsIdx = findResidentsCol(headerRow);
+  if (residentsIdx >= 0) {
+    cols.residents = residentsIdx;
+    usedIdx.add(residentsIdx);
+  }
+
+  // Psych section boundaries (rules 5-6):
+  //   permanent psych = name columns strictly between Pharmacy On-Call and Residents/Fellowships
+  //   temp psych      = name columns strictly to the right of Residents/Fellowships
+  // Anything left of (or equal to) Med Staff Overnight Coverage is medical-staff and
+  // must be ignored for psych purposes (rule 2).
+  const pharmacyIdx  = cols.pharmacy   ?? -1;
+  const overnightIdx = cols.overnight  ?? -1;
+  const psychLeftBound  = pharmacyIdx >= 0 ? pharmacyIdx
+                       : overnightIdx >= 0 ? overnightIdx : -1;
+  const psychRightOfResidents = residentsIdx;
+
+  // Core providers — only match columns inside the psych permanent band. Patil
+  // and German (rule 4) are *forced temp* — they are skipped here and routed to
+  // tempStaff below even if they appear in the permanent band. CORE_PROVIDERS
+  // itself is not mutated (rule 8).
   headerRow.forEach((cell, i) => {
     if (usedIdx.has(i)) return;
-    const h = cell.toLowerCase().replace(/[\r\n\s]+/g,' ').trim();
+    if (psychLeftBound >= 0 && i <= psychLeftBound) return;       // skip medical-staff side
+    const h = normHeader(cell);
     const match = CORE_PROVIDERS.find(p => h.includes(p.toLowerCase()));
-    if (match) {
-      const key = match.toLowerCase();
-      // Last-match-wins: handles duplicate provider names (e.g. two "Patil" cols).
-      // Psychiatry provider columns cluster on the right, so rightmost wins.
-      if (usedIdx.has(i)) return;  // already claimed by INFRA
-      cols[key] = i; usedIdx.add(i);
-    }
+    if (!match) return;
+    if (TEMP_PSYCH_FORCED.includes(match)) return;                 // routed as temp instead
+    // Permanent psych must sit between Pharmacy On-Call and Residents/Fellowships.
+    if (psychRightOfResidents >= 0 && i >= psychRightOfResidents) return;
+    const key = match.toLowerCase();
+    cols[key] = i; usedIdx.add(i);
   });
 
-  // Remaining columns = potential temp staff
+  // Temp staff — every name column strictly RIGHT of Residents/Fellowships counts
+  // as temp psych (rule 6). Plus forced temp psych names (Patil, German) found
+  // inside the permanent band but explicitly marked temp by the user (rule 4).
   const skipKW = ['date','day','overnight','back','pharmacy','fast','clarif','resident','fellow','on-call','oncall','on call','call','coverage'];
   headerRow.forEach((cell, i) => {
     if (usedIdx.has(i)) return;
-    const h = cell.toLowerCase().replace(/[\r\n\s]+/g,' ').trim();
+    const h = normHeader(cell);
     if (!h || h.length < 2) return;
     if (skipKW.some(k => h.includes(k))) return;
-    if (/^[a-z][a-z\s\-']+$/.test(h) && h.length <= 30) {
-      const name = cell.trim().replace(/[\r\n]+/g,' ');
-      if (name.length >= 2) tempStaff.push({name, col: i});
+    if (!/^[a-z][a-z\s\-']+$/.test(h) || h.length > 30) return;
+    const name = cell.trim().replace(/[\r\n]+/g,' ');
+    if (name.length < 2) return;
+
+    const inTempBand = psychRightOfResidents >= 0 && i > psychRightOfResidents;
+    const inPermBand = psychLeftBound >= 0 && i > psychLeftBound
+                       && (psychRightOfResidents < 0 || i < psychRightOfResidents);
+    const isForcedTemp = TEMP_PSYCH_FORCED.some(t => h.includes(t.toLowerCase()));
+
+    if (inTempBand) {
+      tempStaff.push({name, col: i});
+    } else if (inPermBand && isForcedTemp) {
+      // Patil/German live in the permanent band by spreadsheet layout but are
+      // tracked as temp per user direction.
+      tempStaff.push({name, col: i});
     }
+    // Anything left of Pharmacy On-Call is medical-staff / primary-care — ignored.
   });
 
   return {cols, tempStaff};
@@ -1005,13 +1099,17 @@ function parseRawData(text) {
     const backupRaw  = (r[C.backup]  !== undefined ? r[C.backup]  : '').trim();
     const clarRaw    = (r[C.clarification] !== undefined ? r[C.clarification] : '').trim();
     const ftRaw      = (C.fasttrack !== undefined ? (r[C.fasttrack]||'') : C.clarification !== undefined ? (r[C.clarification]||'') : '').trim();
+    const traineeRaw = (C.residents !== undefined ? (r[C.residents]||'') : '').trim();
 
     const bkp       = extractPsychBackup(backupRaw);
     const ftFowler  = fowlerInFT(ftRaw);
+    const trainees  = extractTrainees(traineeRaw);
 
-    // Core provider assignments
+    // Core provider assignments — skip names routed to TEMP_PSYCH_FORCED so
+    // they don't double-count in core staffing (rule 4).
     const providerAsgns = {};
     for (const p of CORE_PROVIDERS) {
+      if (TEMP_PSYCH_FORCED.includes(p)) { providerAsgns[p] = ''; continue; }
       const key = p.toLowerCase();
       providerAsgns[p] = C[key] !== undefined ? (r[C[key]] || '').trim() : '';
     }
@@ -1045,7 +1143,7 @@ function parseRawData(text) {
     }
 
     data.push({
-      date:dateStr, day, overnight, backupRaw, clarRaw, ftRaw,
+      date:dateStr, day, overnight, backupRaw, clarRaw, ftRaw, traineeRaw, trainees,
       bkpPerson:bkp.person, fowlerBackup:bkp.fowler, carterBackup:bkp.carter, ondreykaBackup:bkp.ondreyka,
       fowlerFT:ftFowler,
       fowlerAsgn, fowlerClass:fowlerCls, fowlerWorking, fowlerPC,
@@ -1408,9 +1506,10 @@ const SCHED_COLS_ALL = [
   {id:'ftPhone',     label:'FT Phone',         sortable:false},
   {id:'carter',      label:'Carter',           sortable:false},
   {id:'ondreyka',    label:'Ondreyka',         sortable:false},
+  {id:'trainees',    label:'Trainees',         sortable:true,  sortKey:r=>(r.trainees||[]).join(',')},
 ];
 
-let schedActiveCols = ['day','date','asgn','call'];
+let schedActiveCols = ['day','date','asgn','call','trainees'];
 let schedSort = {col:'date', dir:1};
 let schedDragId = null;
 let schedColPanelOpen = false;
@@ -1440,6 +1539,16 @@ function schedCell(id, r) {
     case 'ftPhone':     return `<td>${r.fowlerFT?'<span class="badge bb">Yes</span>':'<span style="color:var(--faint)">—</span>'}</td>`;
     case 'carter':      return `<td>${poolCell(r.carterBackup, r.providerAsgns?.Carter||'')}</td>`;
     case 'ondreyka':    return `<td>${poolCell(r.ondreykaBackup, r.providerAsgns?.Ondreyka||'')}</td>`;
+    case 'trainees': {
+      const ts = r.trainees || [];
+      if (!ts.length) return '<td><span style="color:var(--faint)">—</span></td>';
+      const html = ts.map(t => {
+        const isF = /-F$/i.test(t);
+        const cls = isF ? 'badge bp' : 'badge bb';
+        return `<span class="${cls}" style="margin-right:3px">${t}</span>`;
+      }).join('');
+      return `<td style="font-size:11px;white-space:normal">${html}</td>`;
+    }
     default:            return '<td>—</td>';
   }
 }
@@ -1480,7 +1589,7 @@ function schedDragEnd() { schedDragId=null; renderColPicker(); }
 
 function renderColPicker() {
   // Fixed ordered grid — most-used first. Day/Date are always pinned (not shown here).
-  const PICKER_ORDER = ['asgn','call','ptoRisk','staffTotal','providers','overnight',
+  const PICKER_ORDER = ['asgn','call','trainees','ptoRisk','staffTotal','providers','overnight',
     'backupPerson','thinRun','ftPhone','carter','ondreyka'];
   const LOCKED = ['day','date'];
   const grid = PICKER_ORDER.map(id=>{
@@ -1683,9 +1792,10 @@ function renderDashboard(pg) {
     .join('');
 
   // Filters
-  const fClass  = document.getElementById('f-class').value;
-  const fPeriod = document.getElementById('f-period').value;
-  const fPTO    = document.getElementById('f-pto-dash').value;
+  const fClass   = document.getElementById('f-class').value;
+  const fPeriod  = document.getElementById('f-period').value;
+  const fPTO     = document.getElementById('f-pto-dash').value;
+  const fTrainee = document.getElementById('f-trainee')?.value || '';
 
   // Global date range takes precedence — if either bound set, skip f-period filter
   let rows = applyGlobalRange([...DATA]);
@@ -1699,6 +1809,18 @@ function renderDashboard(pg) {
   else if(fClass==='Off')      rows = rows.filter(r=>provClass(r)==='Off/Unavailable');
   else if(fClass==='Training') rows = rows.filter(r=>provClass(r)==='Training/Non-clinical');
   if(fPTO) rows = rows.filter(r=>r.ptoRisk===fPTO);
+  if(fTrainee) {
+    rows = rows.filter(r => {
+      const ts = r.trainees || [];
+      const hasR = ts.some(t => /-R$/i.test(t));
+      const hasF = ts.some(t => /-F$/i.test(t));
+      if (fTrainee === 'any')      return ts.length > 0;
+      if (fTrainee === 'resident') return hasR;
+      if (fTrainee === 'fellow')   return hasF;
+      if (fTrainee === 'none')     return ts.length === 0;
+      return true;
+    });
+  }
 
   // Sort
   const sortDef = SCHED_COLS_ALL.find(c=>c.id===schedSort.col);
