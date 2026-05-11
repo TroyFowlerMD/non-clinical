@@ -489,7 +489,12 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
   .mob-menu-btn,.sidebar-overlay,.global-filter-bar{display:none!important}
 }
 
+#excel-drop-zone.drag-active {
+  border-color: var(--primary);
+  background: var(--primary-bg);
+}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -597,6 +602,27 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
         <div class="step-card">
           <textarea class="paste-area" id="paste-area" placeholder="Paste your copied spreadsheet data here."></textarea>
           <div class="parse-result" id="parse-result"></div>
+        </div>
+
+        <div class="step-card" id="excel-drop-zone"
+             ondragover="event.preventDefault(); this.classList.add('drag-active')"
+             ondragleave="this.classList.remove('drag-active')"
+             ondrop="handleExcelDrop(event)"
+             style="border: 2px dashed var(--border); border-radius: var(--radius-lg);
+                    padding: 28px; text-align: center; cursor: pointer;
+                    transition: border-color 200ms, background 200ms;">
+          <input type="file" id="excel-file-input" accept=".xlsx,.xls"
+                 style="display:none" onchange="handleExcelFile(this.files)">
+          <div style="font-size:13px; color:var(--muted); margin-bottom:8px;">
+            📊 Drop Excel staff schedule here
+          </div>
+          <div style="font-size:11px; color:var(--faint);">
+            .xlsx / .xls · First sheet is used regardless of tab name
+          </div>
+          <button class="parse-btn" style="margin-top:12px"
+                  onclick="document.getElementById('excel-file-input').click()">
+            Browse file
+          </button>
         </div>
 
         <div class="drive-section">
@@ -1685,6 +1711,52 @@ function jsonToTSV(json) {
       return s;
     }).join('\t')
   ).join('\n');
+}
+
+function handleExcelDrop(event) {
+  event.preventDefault();
+  document.getElementById('excel-drop-zone').classList.remove('drag-active');
+  const file = event.dataTransfer.files;
+  if (!file) return;
+  if (!file.name.match(/\.(xlsx|xls)$/i)) {
+    showParseResult(false, 'File must be .xlsx or .xls');
+    return;
+  }
+  handleExcelFile(file);
+}
+
+function handleExcelFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const workbook = XLSX.read(e.target.result, { type: 'array' });
+      // Always use first sheet by index — handles tab name mismatch between
+      // Excel staff schedule and Google Sheet source
+      const sheetName = workbook.SheetNames;
+      const sheet = workbook.Sheets[sheetName];
+      // Convert to TSV — same format parseTSVRobust() already handles
+      const tsv = XLSX.utils.sheet_to_csv(sheet, { FS: '\t', RS: '\n' });
+      if (!tsv || tsv.trim().length < 10) {
+        showParseResult(false, 'Sheet "' + sheetName + '" appears empty');
+        return;
+      }
+      parseRawData(tsv);
+      if (scheduleData && scheduleData.length > 0) {
+        showParseResult(true,
+          'Loaded from Excel · Sheet: "' + sheetName + '" · ' +
+          scheduleData.length + ' rows parsed'
+        );
+        onDataLoaded();
+      } else {
+        showParseResult(false, 'No valid schedule rows found in this sheet');
+      }
+    } catch (err) {
+      showParseResult(false, 'Excel parse error: ' + err.message);
+    }
+  };
+  reader.onerror = () => showParseResult(false, 'File read failed');
+  reader.readAsArrayBuffer(file);
 }
 
 async function loadFromDrive() {
