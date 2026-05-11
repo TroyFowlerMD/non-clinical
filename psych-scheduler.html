@@ -1571,12 +1571,22 @@ let schedActiveCols = ['day','date','asgn','call','trainees'];
 let schedSort = {col:'date', dir:1};
 let schedDragId = null;
 
+// Render an assignment cell for a given provider using the SAME logic the
+// 'asgn' (My Assignment) column uses for the selected provider. Used by the
+// My Assignment column AND the per-provider toggle columns (Anderson, Carter,
+// Ondreyka, Fowler, Smith, Cooley) so a toggled column is rendered as if that
+// provider were the selected provider, side-by-side with My Assignment.
+function renderAsgnCellFor(r, providerName) {
+  const asgn = (r.providerAsgns && r.providerAsgns[providerName]) || '';
+  return `<td>${asgn||'<span style="color:var(--faint)">—</span>'}</td>`;
+}
+
 function schedCell(id, r) {
   const dayChip = `<span class="${r.isWeekend?'day-chip weekend':'day-chip'}">${dayShort(r.day)}</span>`;
   switch(id) {
     case 'day':         return `<td class="col-day">${dayChip}</td>`;
     case 'date':        return holDateCell(r.date);
-    case 'asgn':        return `<td>${provAsgn(r)||'<span style="color:var(--faint)">—</span>'}</td>`;
+    case 'asgn':        return renderAsgnCellFor(r, selectedProvider);
     case 'call':        return `<td>${provCallBadge(r)}</td>`;
     case 'ptoRisk':     return `<td>${ptoBadge(r.ptoRisk)}</td>`;
     case 'staffTotal': {
@@ -1594,12 +1604,12 @@ function schedCell(id, r) {
     }
     case 'streak':      return `<td>${r.streak>=3?`<span class="badge br">Day ${r.streak}</span>`:r.atMin&&!r.isWeekend?'<span class="badge ba">At min</span>':'<span style="color:var(--faint)">—</span>'}</td>`;
     case 'ftPhone':     return `<td>${r.fowlerFT?'<span class="badge bb">Yes</span>':'<span style="color:var(--faint)">—</span>'}</td>`;
-    case 'anderson':    return `<td>${providerCell(false, r.providerAsgns?.Anderson||'', isProviderOvernight(r,'Anderson'), false)}</td>`;
-    case 'fowler':      return `<td>${providerCell(!!r.fowlerBackup, r.providerAsgns?.Fowler||'', isProviderOvernight(r,'Fowler'), !!r.fowlerPC)}</td>`;
-    case 'carter':      return `<td>${providerCell(!!r.carterBackup, r.providerAsgns?.Carter||'', isProviderOvernight(r,'Carter'), !!r.carterPC)}</td>`;
-    case 'ondreyka':    return `<td>${providerCell(!!r.ondreykaBackup, r.providerAsgns?.Ondreyka||'', isProviderOvernight(r,'Ondreyka'), !!r.ondreykaPC)}</td>`;
-    case 'smith':       return `<td>${providerCell(false, r.providerAsgns?.Smith||'', isProviderOvernight(r,'Smith'), false)}</td>`;
-    case 'cooley':      return `<td>${providerCell(false, r.providerAsgns?.Cooley||'', isProviderOvernight(r,'Cooley'), false)}</td>`;
+    case 'anderson':    return renderAsgnCellFor(r, 'Anderson');
+    case 'fowler':      return renderAsgnCellFor(r, 'Fowler');
+    case 'carter':      return renderAsgnCellFor(r, 'Carter');
+    case 'ondreyka':    return renderAsgnCellFor(r, 'Ondreyka');
+    case 'smith':       return renderAsgnCellFor(r, 'Smith');
+    case 'cooley':      return renderAsgnCellFor(r, 'Cooley');
     case 'trainees': {
       const ts = r.trainees || [];
       if (!ts.length) return '<td><span style="color:var(--faint)">—</span></td>';
