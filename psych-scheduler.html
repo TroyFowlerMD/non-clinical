@@ -493,12 +493,71 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
   border-color: var(--primary);
   background: var(--primary-bg);
 }
+
+.fb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:10000;
+  align-items:flex-start;justify-content:center;padding:60px 16px;overflow-y:auto}
+.fb-overlay.open{display:flex}
+.fb-modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+  width:100%;max-width:460px;box-shadow:0 12px 40px rgba(0,0,0,0.3);color:var(--text);
+  display:flex;flex-direction:column}
+.fb-header{display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;border-bottom:1px solid var(--divider)}
+.fb-title{font-size:14px;font-weight:600;color:var(--text)}
+.fb-close{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;
+  display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm)}
+.fb-close:hover{background:var(--surface2);color:var(--text)}
+.fb-form{padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.fb-helper{font-size:11px;color:var(--muted);line-height:1.5;margin:-2px 0 4px}
+.fb-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em}
+.fb-input,.fb-textarea{width:100%;padding:9px 11px;background:var(--surface2);
+  border:1px solid var(--border);border-radius:var(--radius);color:var(--text);
+  font-size:13px;font-family:var(--font);line-height:1.5;box-sizing:border-box}
+.fb-textarea{resize:vertical;min-height:110px}
+.fb-input:focus,.fb-textarea:focus{outline:2px solid var(--primary);outline-offset:1px;border-color:transparent}
+.fb-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+.fb-btn{padding:8px 16px;border-radius:var(--radius);border:1px solid var(--border);
+  background:var(--surface2);color:var(--muted);font-size:12px;font-weight:500;
+  cursor:pointer;font-family:var(--font);transition:all 140ms ease}
+.fb-btn:hover{background:var(--surface3);color:var(--text)}
+.fb-btn-primary{background:var(--primary);color:#fff;border-color:transparent}
+.fb-btn-primary:hover{background:var(--primary-h);color:#fff}
+.fb-btn-primary:disabled{opacity:0.6;cursor:not-allowed}
+.fb-msg{display:none;padding:9px 11px;border-radius:var(--radius);font-size:12px;line-height:1.4}
+.fb-success{display:block;background:rgba(34,139,87,0.12);color:#2a8a5a;border:1px solid rgba(34,139,87,0.25)}
+.fb-error{display:block;background:rgba(192,40,40,0.12);color:#c43838;border:1px solid rgba(192,40,40,0.25)}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
 <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<div class="fb-overlay" id="fb-overlay" onclick="if(event.target===this)closeFeedbackModal()" role="dialog" aria-modal="true" aria-labelledby="fb-title">
+  <div class="fb-modal">
+    <div class="fb-header">
+      <div class="fb-title" id="fb-title">Send Feedback</div>
+      <button type="button" class="fb-close" onclick="closeFeedbackModal()" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <form class="fb-form" id="fb-form" onsubmit="submitFeedback(event)">
+      <div class="fb-helper">Maintenance requests, bug reports, or enhancement ideas — all welcome.</div>
+      <div>
+        <label class="fb-label" for="fb-name">Name</label>
+        <input class="fb-input" type="text" id="fb-name" name="name" required autocomplete="name">
+      </div>
+      <div>
+        <label class="fb-label" for="fb-comment">Request / Comment</label>
+        <textarea class="fb-textarea" id="fb-comment" name="comment" required placeholder="Describe the issue, request, or idea..."></textarea>
+      </div>
+      <div class="fb-msg" id="fb-msg"></div>
+      <div class="fb-actions">
+        <button type="button" class="fb-btn" onclick="closeFeedbackModal()">Cancel</button>
+        <button type="submit" class="fb-btn fb-btn-primary" id="fb-submit">Send</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <nav class="sidebar">
   <div class="sidebar-logo">
@@ -543,6 +602,10 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
     </button>
   </div>
   <div class="sidebar-footer">
+    <button class="footer-btn" onclick="openFeedbackModal()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Send Feedback
+    </button>
     <button class="footer-btn" onclick="clearData()" id="clear-btn" style="display:none">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
       Clear data
@@ -2478,6 +2541,86 @@ document.addEventListener('DOMContentLoaded',()=>{
   const cEl = document.querySelector('.content');
   if(cEl) cEl.style.zoom = (baseFontPx / 16).toFixed(3);
   updateThemeBtn(document.documentElement.getAttribute('data-theme')||'dark');
+});
+
+function openFeedbackModal(){
+  const ov = document.getElementById('fb-overlay');
+  if(!ov) return;
+  const msg = document.getElementById('fb-msg');
+  if(msg){ msg.className = 'fb-msg'; msg.textContent = ''; }
+  ov.classList.add('open');
+  setTimeout(function(){ const n = document.getElementById('fb-name'); if(n) n.focus(); }, 30);
+}
+function closeFeedbackModal(){
+  const ov = document.getElementById('fb-overlay');
+  if(!ov) return;
+  ov.classList.remove('open');
+}
+function submitFeedback(event){
+  if(event && event.preventDefault) event.preventDefault();
+  const nameEl = document.getElementById('fb-name');
+  const commentEl = document.getElementById('fb-comment');
+  const submitBtn = document.getElementById('fb-submit');
+  const msg = document.getElementById('fb-msg');
+  if(!nameEl || !commentEl || !submitBtn) return false;
+  const name = (nameEl.value || '').trim();
+  const comment = (commentEl.value || '').trim();
+  if(!name || !comment){
+    if(msg){ msg.className = 'fb-msg fb-error'; msg.textContent = 'Please fill out both fields.'; }
+    return false;
+  }
+  const origText = submitBtn.textContent;
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Sending…';
+  if(msg){ msg.className = 'fb-msg'; msg.textContent = ''; }
+  const timestamp = new Date().toISOString();
+  const page = document.title;
+
+  const fd = new FormData();
+  fd.append('name', name);
+  fd.append('comment', comment);
+  fd.append('page', page);
+  fd.append('timestamp', timestamp);
+  fd.append('_subject', 'Psych Scheduler Maintenance Request');
+  fd.append('_template', 'table');
+  fd.append('_captcha', 'false');
+
+  const emailReq = fetch('https://formsubmit.co/ajax/troyfowlermd@gmail.com', {
+    method: 'POST',
+    body: fd
+  }).then(function(r){ if(!r.ok) throw new Error('email failed'); return r; });
+
+  const sheetReq = fetch('https://script.google.com/macros/s/AKfycbxtM_sCWARu_IWy7MZe9ZD7grBX5WrlSr42ECmxa60Fpg7ZHm2eIUgDnO2Yp1xBCVYf/exec', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      site: document.title || window.location.pathname,
+      name: name,
+      comment: comment,
+      url: window.location.href,
+      timestamp: timestamp
+    })
+  }).then(function(r){ if(!r.ok) throw new Error('sheet failed'); return r; });
+
+  Promise.allSettled([emailReq, sheetReq]).then(function(results){
+    const anyOk = results.some(function(r){ return r.status === 'fulfilled'; });
+    submitBtn.disabled = false;
+    submitBtn.textContent = origText || 'Send';
+    if(anyOk){
+      if(msg){ msg.className = 'fb-msg fb-success'; msg.textContent = 'Thanks — your feedback was sent.'; }
+      const form = document.getElementById('fb-form');
+      if(form) form.reset();
+    } else {
+      if(msg){ msg.className = 'fb-msg fb-error'; msg.textContent = 'Sorry — we couldn’t send your feedback. Please try again later.'; }
+    }
+  });
+  return false;
+}
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape'){
+    const ov = document.getElementById('fb-overlay');
+    if(ov && ov.classList.contains('open')) closeFeedbackModal();
+  }
 });
 </script>
 </body>
