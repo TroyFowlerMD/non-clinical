@@ -749,6 +749,12 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
         <button class="chip" id="bkp-btn-all" onclick="setBkpFilter('all')">All dates</button>
         <span class="rcount" id="bkp-rc"></span>
       </div>
+      <div class="col-panel" id="bkp-col-panel">
+        <div class="col-panel-row" style="margin-bottom:0">
+          <span class="col-panel-label">Toggle columns</span>
+          <div id="bkp-col-pills" style="width:100%"></div>
+        </div>
+      </div>
       <div class="table-wrap" id="bkp-table"></div>
     </div>
 
@@ -1552,8 +1558,12 @@ const SCHED_COLS_ALL = [
   {id:'providers',   label:'Working Providers',sortable:false},
   {id:'streak',      label:'Thin Run',         sortable:true,  sortKey:r=>r.streak},
   {id:'ftPhone',     label:'FT Phone',         sortable:false},
+  {id:'anderson',    label:'Anderson',         sortable:false},
+  {id:'fowler',      label:'Fowler',           sortable:false},
   {id:'carter',      label:'Carter',           sortable:false},
   {id:'ondreyka',    label:'Ondreyka',         sortable:false},
+  {id:'smith',       label:'Smith',            sortable:false},
+  {id:'cooley',      label:'Cooley',           sortable:false},
   {id:'trainees',    label:'Trainees',         sortable:true,  sortKey:r=>(r.trainees||[]).join(',')},
 ];
 
@@ -1584,8 +1594,12 @@ function schedCell(id, r) {
     }
     case 'streak':      return `<td>${r.streak>=3?`<span class="badge br">Day ${r.streak}</span>`:r.atMin&&!r.isWeekend?'<span class="badge ba">At min</span>':'<span style="color:var(--faint)">—</span>'}</td>`;
     case 'ftPhone':     return `<td>${r.fowlerFT?'<span class="badge bb">Yes</span>':'<span style="color:var(--faint)">—</span>'}</td>`;
-    case 'carter':      return `<td>${poolCell(r.carterBackup, r.providerAsgns?.Carter||'')}</td>`;
-    case 'ondreyka':    return `<td>${poolCell(r.ondreykaBackup, r.providerAsgns?.Ondreyka||'')}</td>`;
+    case 'anderson':    return `<td>${providerCell(false, r.providerAsgns?.Anderson||'', isProviderOvernight(r,'Anderson'), false)}</td>`;
+    case 'fowler':      return `<td>${providerCell(!!r.fowlerBackup, r.providerAsgns?.Fowler||'', isProviderOvernight(r,'Fowler'), !!r.fowlerPC)}</td>`;
+    case 'carter':      return `<td>${providerCell(!!r.carterBackup, r.providerAsgns?.Carter||'', isProviderOvernight(r,'Carter'), !!r.carterPC)}</td>`;
+    case 'ondreyka':    return `<td>${providerCell(!!r.ondreykaBackup, r.providerAsgns?.Ondreyka||'', isProviderOvernight(r,'Ondreyka'), !!r.ondreykaPC)}</td>`;
+    case 'smith':       return `<td>${providerCell(false, r.providerAsgns?.Smith||'', isProviderOvernight(r,'Smith'), false)}</td>`;
+    case 'cooley':      return `<td>${providerCell(false, r.providerAsgns?.Cooley||'', isProviderOvernight(r,'Cooley'), false)}</td>`;
     case 'trainees': {
       const ts = r.trainees || [];
       if (!ts.length) return '<td><span style="color:var(--faint)">—</span></td>';
@@ -1637,7 +1651,7 @@ function schedDragEnd() { schedDragId=null; renderColPicker(); }
 function renderColPicker() {
   // Fixed ordered grid — most-used first. Day/Date are always pinned (not shown here).
   const PICKER_ORDER = ['asgn','call','trainees','ptoRisk','staffTotal','providers','overnight',
-    'backupPerson','thinRun','ftPhone','carter','ondreyka'];
+    'backupPerson','streak','ftPhone','anderson','fowler','carter','ondreyka','smith','cooley'];
   const LOCKED = ['day','date'];
   const grid = PICKER_ORDER.map(id=>{
     const col = SCHED_COLS_ALL.find(c=>c.id===id);
@@ -1697,10 +1711,15 @@ function recomputePTORisk() {
 
 function onProviderChange(prov) {
   selectedProvider = prov;
+  // Auto-deselect the column toggle for the newly-selected provider so the
+  // My Assignment column and the provider's own column don't duplicate data.
+  const provColId = (prov||'').toLowerCase();
+  const idx = schedActiveCols.indexOf(provColId);
+  if(idx >= 0) schedActiveCols.splice(idx, 1);
   recomputePTORisk();
   // Re-render whichever view is currently active
   const activeId = document.querySelector('.view.active')?.id?.replace('view-','');
-  if(activeId === 'dashboard') renderDashboard();
+  if(activeId === 'dashboard') { renderColPicker(); renderDashboard(); }
   else if(activeId === 'backup')   renderBackup();
   else if(activeId === 'calendar') renderCalendar();
 }
@@ -1959,7 +1978,33 @@ function providerCell(isBackup, asgn, isOvernight, isPC) {
   return badges.length ? badges.join(' ') : '<span style="color:var(--faint)">—</span>';
 }
 
+// Backup Call optional column toggles
+let bkpShowProviders  = false;
+let bkpShowStaffTotal = false;
+
+function bkpToggleCol(id) {
+  if(id === 'providers')  bkpShowProviders  = !bkpShowProviders;
+  if(id === 'staffTotal') bkpShowStaffTotal = !bkpShowStaffTotal;
+  renderBackup();
+}
+
+function renderBkpColPicker() {
+  const items = [
+    {id:'providers',  label:'Working Providers',     on:bkpShowProviders},
+    {id:'staffTotal', label:'Total Staff Core+Temp', on:bkpShowStaffTotal},
+  ];
+  const grid = items.map(it=>
+    `<label class="col-toggle-chip ${it.on?'on':''}" title="${it.label}">
+      <input type="checkbox" ${it.on?'checked':''} onchange="bkpToggleCol('${it.id}')" style="display:none">
+      <span class="col-chip-check">${it.on?'✓':''}</span>
+      ${it.label}
+    </label>`).join('');
+  const host = document.getElementById('bkp-col-pills');
+  if(host) host.innerHTML = `<div class="col-toggle-grid">${grid}</div>`;
+}
+
 function renderBackup() {
+  renderBkpColPicker();
   let rows = applyGlobalRange(DATA).filter(r=>{
     const fa=r.providerAsgns?r.providerAsgns.Fowler:'';
     const ca=r.providerAsgns?r.providerAsgns.Carter:'';
@@ -1973,7 +2018,10 @@ function renderBackup() {
   const bkpRangeLabel = useGlobal ? 'in selected range' : (bkpFilter==='upcoming' ? 'upcoming' : 'all dates');
   document.getElementById('bkp-rc').textContent = `${rows.length} dates · ${bkpRangeLabel}`;
 
-  const cols = ['Day','Date','Fowler','Carter','Ondreyka',''];
+  const cols = ['Day','Date','Fowler','Carter','Ondreyka'];
+  if(bkpShowProviders)  cols.push('Working Providers');
+  if(bkpShowStaffTotal) cols.push('Total Staff<br>Core+Temp');
+  cols.push('');
   const trows = rows.map(r=>{
     const fa = r.providerAsgns ? r.providerAsgns.Fowler : '';
     const ca = r.providerAsgns ? r.providerAsgns.Carter : '';
@@ -1982,11 +2030,24 @@ function renderBackup() {
     const fPC = r.fowlerPC   || isPostCall(fa);
     const cPC = r.carterPC   || isPostCall(ca);
     const oPC = r.ondreykaPC || isPostCall(oa);
+    let extra = '';
+    if(bkpShowProviders) {
+      const coreNames = (r.workingCore||[]).map(n=>`<strong>${n}</strong>`);
+      const tempNames = (r.workingTemp||[]);
+      const all = [...coreNames,...tempNames];
+      extra += `<td style="font-size:11px;color:var(--muted)">${all.join(', ')||'—'}</td>`;
+    }
+    if(bkpShowStaffTotal) {
+      const tN=(r.workingTemp||[]).length;
+      const totalK=r.isWeekend?'cnt-wk':r.count>=6?'cnt-6':r.count===5?'cnt-5':'cnt-low';
+      extra += `<td><span class="cnt ${totalK}">${r.count}</span><span class="cnt-temp" style="font-size:10px;margin-left:4px">${r.coreCount}c${tN?`+${tN}t`:''}</span></td>`;
+    }
     return `${rowCls(r)}><td class="col-day"><span class="${r.isWeekend?'day-chip weekend':'day-chip'}">${dayShort(r.day)}</span></td>
       ${holDateCell(r.date)}
       <td>${providerCell(r.fowlerBackup, fa, isProviderOvernight(r,'Fowler'), fPC)}</td>
       <td>${providerCell(r.carterBackup, ca, isProviderOvernight(r,'Carter'), cPC)}</td>
       <td>${providerCell(r.ondreykaBackup, oa, isProviderOvernight(r,'Ondreyka'), oPC)}</td>
+      ${extra}
       ${holColCell(r.date)}`;
   }).map(r=>`<tr${r}`);
 
