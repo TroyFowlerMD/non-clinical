@@ -1210,8 +1210,8 @@ function parseRawData(text) {
       tempAsgns[name] = col < r.length ? (r[col] || '').trim() : '';
     }
 
-    const workingCore = CORE_PROVIDERS.filter(p => isWorking(providerAsgns[p]));
-    const workingTemp = tempStaff.filter(({name}) => isWorking(tempAsgns[name])).map(({name}) => name);
+    const workingCore = CORE_PROVIDERS.filter(p => isWorking(providerAsgns[p]) && !isPostCall(providerAsgns[p]));
+    const workingTemp = tempStaff.filter(({name}) => isWorking(tempAsgns[name]) && !isPostCall(tempAsgns[name])).map(({name}) => name);
     const allWorking  = [...workingCore, ...workingTemp];
     const count       = allWorking.length;
     const coreCount   = workingCore.length;
