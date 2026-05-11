@@ -2050,14 +2050,14 @@ function setBkpFilter(f) {
 // Returns cell content for a backup pool provider: call badge, unavailability in red, or —
 function providerCell(isBackup, asgn, isOvernight, isPC) {
   const badges = [];
-  if (isBackup) badges.push('<span class="badge bb">Backup</span>');
   const pc  = isPC;
   const cls = asgn ? classify(asgn) : 'Off/Unavailable';
-  if (!isBackup) {
-    if (pc)                              badges.push('<span class="badge bk">↩ Post-Call</span>');
-    else if (cls === 'Off/Unavailable')  badges.push('<span class="badge br">Off</span>');
+  if (pc) badges.push('<span class="badge bk">↩ Post-Call</span>');
+  if (isBackup) badges.push('<span class="badge bb">Backup</span>');
+  if (!isBackup && !pc) {
+    if (cls === 'Off/Unavailable')            badges.push('<span class="badge br">Off</span>');
     else if (cls === 'Training/Non-clinical') badges.push('<span class="badge ba">Training</span>');
-    else if (cls === 'Admin/Remote')     badges.push('<span class="badge bt">Admin</span>');
+    else if (cls === 'Admin/Remote')          badges.push('<span class="badge bt">Admin</span>');
   }
   if (isOvernight) badges.push('<span class="badge bp">Overnight</span>');
   return badges.length ? badges.join(' ') : '<span style="color:var(--faint)">—</span>';
