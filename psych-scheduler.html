@@ -612,7 +612,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
                     padding: 28px; text-align: center; cursor: pointer;
                     transition: border-color 200ms, background 200ms;">
           <input type="file" id="excel-file-input" accept=".xlsx,.xls"
-                 style="display:none" onchange="handleExcelFile(this.files)">
+                 style="display:none" onchange="handleExcelFile(this.files[0])">
           <div style="font-size:13px; color:var(--muted); margin-bottom:8px;">
             📊 Drop Excel staff schedule here
           </div>
@@ -1716,7 +1716,7 @@ function jsonToTSV(json) {
 function handleExcelDrop(event) {
   event.preventDefault();
   document.getElementById('excel-drop-zone').classList.remove('drag-active');
-  const file = event.dataTransfer.files;
+  const file = event.dataTransfer.files[0];
   if (!file) return;
   if (!file.name.match(/\.(xlsx|xls)$/i)) {
     showParseResult(false, 'File must be .xlsx or .xls');
