@@ -1547,6 +1547,7 @@ const SCHED_COLS_ALL = [
   {id:'ptoRisk',     label:'PTO Risk',         sortable:true,  sortKey:r=>({Feasible:0,Caution:1,'Not Feasible':2}[r.ptoRisk]??9)},
   {id:'staffTotal',  label:'Total Staff<br>Core+Temp', sortable:true,  sortKey:r=>r.count},
 
+  {id:'overnight',   label:'Overnight',        sortable:false},
   {id:'backupPerson',label:'Backup Person',    sortable:false},
   {id:'providers',   label:'Working Providers',sortable:false},
   {id:'streak',      label:'Thin Run',         sortable:true,  sortKey:r=>r.streak},
@@ -1573,6 +1574,7 @@ function schedCell(id, r) {
       const totalK=r.isWeekend?'cnt-wk':r.count>=6?'cnt-6':r.count===5?'cnt-5':'cnt-low';
       return `<td><span class="cnt ${totalK}">${r.count}</span><span class="cnt-temp" style="font-size:10px;margin-left:4px">${r.coreCount}c${tN?`+${tN}t`:''}</span></td>`;
     }
+    case 'overnight':   return `<td style="font-size:11px;color:var(--muted)">${r.overnight||'<span style="color:var(--faint)">—</span>'}</td>`;
     case 'backupPerson':return `<td>${r.bkpPerson||'<span style="color:var(--faint)">—</span>'}</td>`;
     case 'providers': {
       const coreNames = (r.workingCore||[]).map(n=>`<strong>${n}</strong>`);
@@ -1634,7 +1636,7 @@ function schedDragEnd() { schedDragId=null; renderColPicker(); }
 
 function renderColPicker() {
   // Fixed ordered grid — most-used first. Day/Date are always pinned (not shown here).
-  const PICKER_ORDER = ['asgn','call','trainees','ptoRisk','staffTotal','providers',
+  const PICKER_ORDER = ['asgn','call','trainees','ptoRisk','staffTotal','providers','overnight',
     'backupPerson','thinRun','ftPhone','carter','ondreyka'];
   const LOCKED = ['day','date'];
   const grid = PICKER_ORDER.map(id=>{
