@@ -605,7 +605,8 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
         </div>
 
         <div class="step-card" id="excel-drop-zone"
-             ondragover="event.preventDefault(); this.classList.add('drag-active')"
+             ondragenter="event.preventDefault(); this.classList.add('drag-active')"
+             ondragover="event.preventDefault(); event.dataTransfer.dropEffect='copy'; this.classList.add('drag-active')"
              ondragleave="this.classList.remove('drag-active')"
              ondrop="handleExcelDrop(event)"
              style="border: 2px dashed var(--border); border-radius: var(--radius-lg);
@@ -1713,49 +1714,85 @@ function jsonToTSV(json) {
   ).join('\n');
 }
 
+// Helper: emit TSV from a SheetJS sheet by reading the AoA and joining with
+// tabs/newlines. This avoids sheet_to_csv FS option quirks across versions
+// and guarantees parseTSVRobust() (which only splits on \t / \n) gets the
+// right delimiters.
+function __sheetToTSV(sheet) {
+  const aoa = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
+  return aoa.map(row =>
+    row.map(cell => {
+      const s = (cell == null) ? '' : String(cell);
+      // Quote cells containing tab/newline/quote so parseTSVRobust handles them.
+      if (/[\t\n\r"]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+      return s;
+    }).join('\t')
+  ).join('\n');
+}
+
+function __excelReport(ok, msg) {
+  const el = document.getElementById('parse-result');
+  if (el) showResult(el, ok ? 'ok' : 'error', msg);
+}
+
 function handleExcelDrop(event) {
   event.preventDefault();
-  document.getElementById('excel-drop-zone').classList.remove('drag-active');
-  const file = event.dataTransfer.files[0];
-  if (!file) return;
-  if (!file.name.match(/\.(xlsx|xls)$/i)) {
-    showParseResult(false, 'File must be .xlsx or .xls');
+  event.stopPropagation();
+  const zone = document.getElementById('excel-drop-zone');
+  if (zone) zone.classList.remove('drag-active');
+  const dt = event.dataTransfer;
+  const file = dt && dt.files && dt.files[0];
+  if (!file) { __excelReport(false, 'No file detected in drop'); return; }
+  if (!/\.(xlsx|xls)$/i.test(file.name)) {
+    __excelReport(false, 'File must be .xlsx or .xls (got: ' + file.name + ')');
     return;
   }
   handleExcelFile(file);
 }
 
 function handleExcelFile(file) {
-  if (!file) return;
+  if (!file) { __excelReport(false, 'No file selected'); return; }
+  if (typeof XLSX === 'undefined') {
+    __excelReport(false, 'Excel library failed to load — check network/CDN');
+    return;
+  }
   const reader = new FileReader();
   reader.onload = function(e) {
     try {
       const workbook = XLSX.read(e.target.result, { type: 'array' });
-      // Always use first sheet by index — handles tab name mismatch between
-      // Excel staff schedule and Google Sheet source
-      const sheetName = workbook.SheetNames;
-      const sheet = workbook.Sheets[sheetName];
-      // Convert to TSV — same format parseTSVRobust() already handles
-      const tsv = XLSX.utils.sheet_to_csv(sheet, { FS: '\t', RS: '\n' });
-      if (!tsv || tsv.trim().length < 10) {
-        showParseResult(false, 'Sheet "' + sheetName + '" appears empty');
+      if (!workbook.SheetNames || !workbook.SheetNames.length) {
+        __excelReport(false, 'Workbook contains no sheets');
         return;
       }
-      parseRawData(tsv);
-      if (scheduleData && scheduleData.length > 0) {
-        showParseResult(true,
-          'Loaded from Excel · Sheet: "' + sheetName + '" · ' +
-          scheduleData.length + ' rows parsed'
+      // Always use first sheet by INDEX — handles tab name mismatch
+      // between the Excel staff schedule and the Google Sheet source.
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const tsv = __sheetToTSV(sheet);
+      if (!tsv || tsv.trim().length < 10) {
+        __excelReport(false, 'Sheet "' + sheetName + '" appears empty');
+        return;
+      }
+      // Stuff TSV into the paste-area so the user can see it parsed; this
+      // also lets parseAndLoad() reuse all its existing error reporting.
+      const pa = document.getElementById('paste-area');
+      if (pa) pa.value = tsv;
+      // Route through the same path the paste workflow uses, which assigns
+      // to global DATA, calls onDataLoaded(), and reports success via
+      // showResult(). After it runs, augment the message to indicate the
+      // Excel source.
+      parseAndLoad();
+      if (typeof DATA !== 'undefined' && DATA && DATA.length > 0) {
+        __excelReport(true,
+          '✓ Loaded from Excel · First sheet: "' + sheetName + '" · ' +
+          DATA.length + ' dates parsed'
         );
-        onDataLoaded();
-      } else {
-        showParseResult(false, 'No valid schedule rows found in this sheet');
       }
     } catch (err) {
-      showParseResult(false, 'Excel parse error: ' + err.message);
+      __excelReport(false, 'Excel parse error: ' + err.message);
     }
   };
-  reader.onerror = () => showParseResult(false, 'File read failed');
+  reader.onerror = function() { __excelReport(false, 'File read failed'); };
   reader.readAsArrayBuffer(file);
 }
 
@@ -2407,6 +2444,18 @@ document.addEventListener('DOMContentLoaded',()=>{
   const _initSel = document.getElementById('provider-select');
   if(_initSel) _initSel.innerHTML = CORE_PROVIDERS.map(p=>`<option value="${p}"${p===selectedProvider?' selected':''}>${p}</option>`).join('');
   document.getElementById('paste-area').addEventListener('paste', () => setTimeout(parseAndLoad, 80));
+
+  // Window-level guards: if the user misses the drop zone, keep the browser
+  // from navigating away to open the file. Dropping anywhere outside the
+  // zone is treated as a no-op (we only act on drops within the zone).
+  ['dragenter','dragover'].forEach(evt => {
+    window.addEventListener(evt, e => { e.preventDefault(); }, false);
+  });
+  window.addEventListener('drop', e => {
+    if (!e.target.closest || !e.target.closest('#excel-drop-zone')) {
+      e.preventDefault();
+    }
+  }, false);
 
   // Print: temporarily show all rows, then restore
   window.addEventListener('beforeprint', () => {
