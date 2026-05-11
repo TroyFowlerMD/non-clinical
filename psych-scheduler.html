@@ -587,15 +587,6 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       Backup Call
     </button>
-    <button class="nav-item disabled" id="nav-pto" onclick="showView('pto')" data-view="pto">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      PTO Evaluator
-    </button>
-    <button class="nav-item disabled" id="nav-staffing" onclick="showView('staffing')" data-view="staffing">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      Daily Staffing
-    </button>
-
     <button class="nav-item disabled" id="nav-calendar" onclick="showView('calendar')" data-view="calendar">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/></svg>
       Calendar
@@ -710,7 +701,6 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
 
     <!-- ══ DASHBOARD / MY SCHEDULE ════════════════════════════════ -->
     <div class="view" id="view-dashboard">
-      <div class="kpi-grid" id="kpi-grid"></div>
       <div class="filter-bar">
         <span class="filter-label">View:</span>
         <select class="filter-select" id="f-class" onchange="renderDashboard()">
@@ -739,13 +729,9 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
           <option value="fellow">Fellow only</option>
           <option value="none">No trainee</option>
         </select>
-        <button class="col-toggle-btn" id="col-toggle-btn" onclick="toggleColPanel()">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-          Columns
-        </button>
         <span class="rcount" id="dash-rc"></span>
       </div>
-      <div class="col-panel" id="col-panel" style="display:none">
+      <div class="col-panel" id="col-panel">
         <div class="col-panel-row" style="margin-bottom:0">
           <span class="col-panel-label">Toggle columns — drag headers in the table to reorder</span>
           <div id="col-pills-active" style="width:100%"></div>
@@ -764,32 +750,6 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
         <span class="rcount" id="bkp-rc"></span>
       </div>
       <div class="table-wrap" id="bkp-table"></div>
-    </div>
-
-    <!-- ══ PTO ════════════════════════════════════════════════════ -->
-    <div class="view" id="view-pto">
-      <div class="filter-bar">
-        <span class="filter-label">Show:</span>
-        <button class="chip active" id="pto-btn-all" onclick="setPTOFilter('all')">All upcoming</button>
-        <button class="chip" id="pto-btn-Feasible" onclick="setPTOFilter('Feasible')">✅ Feasible</button>
-        <button class="chip" id="pto-btn-Caution" onclick="setPTOFilter('Caution')">⚠️ Caution</button>
-        <button class="chip" id="pto-btn-Not_Feasible" onclick="setPTOFilter('Not Feasible')">🚫 Not Feasible</button>
-        <span class="rcount" id="pto-rc"></span>
-      </div>
-      <div class="table-wrap" id="pto-table"></div>
-    </div>
-
-    <!-- ══ STAFFING ═══════════════════════════════════════════════ -->
-    <div class="view" id="view-staffing">
-      <div class="filter-bar">
-        <span class="filter-label">Filter:</span>
-        <button class="chip active" id="st-btn-all" onclick="setStaffFilter('all')">All</button>
-        <button class="chip" id="st-btn-min" onclick="setStaffFilter('min')">⚠️ At min (≤4 wkdy)</button>
-        <button class="chip" id="st-btn-thin" onclick="setStaffFilter('thin')">↓ Below ideal (≤5)</button>
-        <button class="chip" id="st-btn-ok" onclick="setStaffFilter('ok')">✅ Full (6+)</button>
-        <span class="rcount" id="st-rc"></span>
-      </div>
-      <div class="table-wrap" id="st-table"></div>
     </div>
 
     <!-- ══ ALERTS ══════════════════════════════════════════════════ -->
@@ -833,6 +793,8 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
 // ═══════════════════════════════════════════════════════════════════════════
 
 const CORE_PROVIDERS = ['Patil','German','Anderson','Fowler','Carter','Ondreyka','Smith','Cooley'];
+// Providers hidden from the UI provider switcher dropdown. Parser/column-detection still references them.
+const PROVIDER_SELECT_HIDE = new Set(['Patil','German']);
 const BACKUP_POOL    = ['Fowler','Carter','Ondreyka'];
 
 // ── Google Drive / Apps Script integration ────────────────────────────────
@@ -1270,8 +1232,8 @@ function parseRawData(text) {
 let DATA = [];
 let selectedProvider = 'Fowler';
 let TODAY = new Date().toISOString().slice(0,10);
-let bkpFilter = 'upcoming', ptoFilter = 'all', staffFilter = 'all';
-let dashPage = 0, ptoPg = 0, staffPg = 0;
+let bkpFilter = 'upcoming';
+let dashPage = 0;
 let calYear, calMonth;
 let PG = 80;
 
@@ -1356,8 +1318,6 @@ function rerenderActiveView() {
   const id = activeViewId();
   if(id==='dashboard') renderDashboard();
   else if(id==='backup') renderBackup();
-  else if(id==='pto') renderPTO();
-  else if(id==='staffing') renderStaffing();
   else if(id==='calendar') renderCalendar();
 }
 
@@ -1435,7 +1395,7 @@ function showResult(el,type,msg){
 }
 
 function onDataLoaded() {
-  ['dashboard','backup','pto','staffing','calendar'].forEach(id=>{
+  ['dashboard','backup','calendar'].forEach(id=>{
     const el=document.getElementById('nav-'+id);
     if(el) el.classList.remove('disabled');
   });
@@ -1447,7 +1407,7 @@ function onDataLoaded() {
   document.getElementById('clear-btn').style.display='flex';
   // populate provider dropdown
   const _sel = document.getElementById('provider-select');
-  if(_sel) _sel.innerHTML = CORE_PROVIDERS.map(p=>`<option value="${p}"${p===selectedProvider?' selected':''}>${p}</option>`).join('');
+  if(_sel) _sel.innerHTML = CORE_PROVIDERS.filter(p=>!PROVIDER_SELECT_HIDE.has(p)).map(p=>`<option value="${p}"${p===selectedProvider?' selected':''}>${p}</option>`).join('');
   // set today badge
   const todayFmt = fmtDate(TODAY);
   document.getElementById('today-badge').textContent = 'Today: '+todayFmt;
@@ -1459,7 +1419,7 @@ function clearData() {
   DATA=[]; TEMP_STAFF=[]; DETECTED_COLS={};
   document.getElementById('paste-area').value='';
   document.getElementById('parse-result').style.display='none';
-  ['dashboard','backup','pto','staffing','calendar'].forEach(id=>{
+  ['dashboard','backup','calendar'].forEach(id=>{
     const el=document.getElementById('nav-'+id);
     if(el) el.classList.add('disabled');
   });
@@ -1489,8 +1449,6 @@ function showView(id) {
   if(DATA.length===0 && id!=='paste') return;
   if(id==='dashboard') renderDashboard();
   else if(id==='backup') renderBackup();
-  else if(id==='pto') renderPTO();
-  else if(id==='staffing') renderStaffing();
   else if(id==='calendar') renderCalendar();
 }
 
@@ -1589,7 +1547,6 @@ const SCHED_COLS_ALL = [
   {id:'ptoRisk',     label:'PTO Risk',         sortable:true,  sortKey:r=>({Feasible:0,Caution:1,'Not Feasible':2}[r.ptoRisk]??9)},
   {id:'staffTotal',  label:'Total Staff<br>Core+Temp', sortable:true,  sortKey:r=>r.count},
 
-  {id:'overnight',   label:'Overnight',        sortable:false},
   {id:'backupPerson',label:'Backup Person',    sortable:false},
   {id:'providers',   label:'Working Providers',sortable:false},
   {id:'streak',      label:'Thin Run',         sortable:true,  sortKey:r=>r.streak},
@@ -1602,7 +1559,6 @@ const SCHED_COLS_ALL = [
 let schedActiveCols = ['day','date','asgn','call','trainees'];
 let schedSort = {col:'date', dir:1};
 let schedDragId = null;
-let schedColPanelOpen = false;
 
 function schedCell(id, r) {
   const dayChip = `<span class="${r.isWeekend?'day-chip weekend':'day-chip'}">${dayShort(r.day)}</span>`;
@@ -1617,7 +1573,6 @@ function schedCell(id, r) {
       const totalK=r.isWeekend?'cnt-wk':r.count>=6?'cnt-6':r.count===5?'cnt-5':'cnt-low';
       return `<td><span class="cnt ${totalK}">${r.count}</span><span class="cnt-temp" style="font-size:10px;margin-left:4px">${r.coreCount}c${tN?`+${tN}t`:''}</span></td>`;
     }
-    case 'overnight':   return `<td style="font-size:11px;color:var(--muted)">${r.overnight||'<span style="color:var(--faint)">—</span>'}</td>`;
     case 'backupPerson':return `<td>${r.bkpPerson||'<span style="color:var(--faint)">—</span>'}</td>`;
     case 'providers': {
       const coreNames = (r.workingCore||[]).map(n=>`<strong>${n}</strong>`);
@@ -1679,7 +1634,7 @@ function schedDragEnd() { schedDragId=null; renderColPicker(); }
 
 function renderColPicker() {
   // Fixed ordered grid — most-used first. Day/Date are always pinned (not shown here).
-  const PICKER_ORDER = ['asgn','call','trainees','ptoRisk','staffTotal','providers','overnight',
+  const PICKER_ORDER = ['asgn','call','trainees','ptoRisk','staffTotal','providers',
     'backupPerson','thinRun','ftPhone','carter','ondreyka'];
   const LOCKED = ['day','date'];
   const grid = PICKER_ORDER.map(id=>{
@@ -1695,13 +1650,6 @@ function renderColPicker() {
   document.getElementById('col-pills-active').innerHTML =
     `<div class="col-toggle-grid">${grid}</div>`;
   document.getElementById('col-pills-inactive').innerHTML = '';
-}
-
-function toggleColPanel() {
-  schedColPanelOpen = !schedColPanelOpen;
-  document.getElementById('col-panel').style.display = schedColPanelOpen ? 'block' : 'none';
-  document.getElementById('col-toggle-btn').classList.toggle('open', schedColPanelOpen);
-  if(schedColPanelOpen) renderColPicker();
 }
 
 
@@ -1752,8 +1700,6 @@ function onProviderChange(prov) {
   const activeId = document.querySelector('.view.active')?.id?.replace('view-','');
   if(activeId === 'dashboard') renderDashboard();
   else if(activeId === 'backup')   renderBackup();
-  else if(activeId === 'pto')      renderPTO();
-  else if(activeId === 'staffing') renderStaffing();
   else if(activeId === 'calendar') renderCalendar();
 }
 
@@ -1908,60 +1854,7 @@ async function loadFromDrive() {
 
 function renderDashboard(pg) {
   if(pg !== undefined) dashPage = pg;
-
-  // KPI cards must reflect the currently-displayed date range, not the entire dataset.
-  // Source-of-truth = rows after global Start/End filter is applied.
-  const cols = new Set(schedActiveCols);
-  const inRange = applyGlobalRange([...DATA]);
-  const useGlobal = !!(globalRange.start || globalRange.end);
-  const rangeLabel = useGlobal
-    ? (globalRange.start && globalRange.end
-        ? `${fmtDate(globalRange.start)} → ${fmtDate(globalRange.end)}`
-        : 'selected range')
-    : 'all loaded dates';
-  const subRange = useGlobal ? 'in selected range' : 'in loaded schedule';
-
-  const fwIn   = inRange.filter(r=>provBackup(r)).length;
-  const pcIn   = inRange.filter(r=>provPC(r)).length;
-  const ovrIn  = inRange.filter(r=>isProvOvernight(r)).length;
-  const thin   = inRange.filter(r=>!r.isWeekend && r.atMin).length;
-  const feasible = inRange.filter(r=>r.ptoRisk==='Feasible').length;
-  const cautDays = inRange.filter(r=>r.ptoRisk==='Caution').length;
-  const wkdIn    = inRange.filter(r=>!r.isWeekend).length;
-  const totalIn  = inRange.length;
-
-  const kpis = [];
-  // Call column present: show Backup Call and Post-Call cards
-  if(cols.has('call')){
-    kpis.push(['info','Backup Call',`${fwIn} / ${totalIn}`,subRange,
-      `Backup-call days for ${selectedProvider} within ${rangeLabel}. Numerator = backup days; denominator = total dates shown.`]);
-    if(pcIn) kpis.push(['warn','Post-Call Days',`${pcIn} / ${totalIn}`,subRange,
-      `Post-call (recovery) days for ${selectedProvider} within ${rangeLabel}.`]);
-    if(ovrIn) kpis.push(['info','Overnight Shifts',`${ovrIn} / ${totalIn}`,subRange,
-      `Overnight on-call shifts for ${selectedProvider} within ${rangeLabel}.`]);
-  }
-  // PTO Risk column present
-  if(cols.has('ptoRisk')){
-    kpis.push(['good','PTO Feasible',feasible,`of ${wkdIn} weekdays · ${subRange}`,
-      `Weekdays where ${selectedProvider} could request PTO without dropping coverage below threshold, within ${rangeLabel}.`]);
-    if(cautDays) kpis.push(['warn','PTO Caution',cautDays,`weekdays · ${subRange}`,
-      `Weekdays where PTO is borderline (exactly 4 other providers available), within ${rangeLabel}.`]);
-  }
-  // Staff count column present
-  if(cols.has('staffTotal') || cols.has('coreTemp') || cols.has('allCount')){
-    kpis.push(['danger','Thin Weekdays',thin,`Core ≤4 providers · ${subRange}`,
-      `Non-weekend dates where core psych staffing is at or below the 4-provider minimum, within ${rangeLabel}.`]);
-  }
-  // Fallback: always show date range
-  if(!kpis.length) kpis.push(['info','Dates Shown',totalIn,subRange,
-    `Total dates in current view (${rangeLabel}).`]);
-
-  document.getElementById('kpi-grid').innerHTML=kpis
-    .map(([cls,lbl,val,sub,tip])=>{
-      const t = (tip||'').replace(/"/g,'&quot;');
-      return `<div class="kpi ${cls}" title="${t}" aria-label="${lbl}: ${val}. ${t}"><div class="kpi-label">${lbl}</div><div class="kpi-value">${val}</div><div class="kpi-sub">${sub}</div></div>`;
-    })
-    .join('');
+  renderColPicker();
 
   // Filters
   const fClass   = document.getElementById('f-class').value;
@@ -1970,6 +1863,7 @@ function renderDashboard(pg) {
   const fTrainee = document.getElementById('f-trainee')?.value || '';
 
   // Global date range takes precedence — if either bound set, skip f-period filter
+  const useGlobal = !!(globalRange.start || globalRange.end);
   let rows = applyGlobalRange([...DATA]);
   if(!useGlobal){
     if(fPeriod==='future') rows = rows.filter(r=>isFuture(r.date));
@@ -2052,8 +1946,8 @@ function providerCell(isBackup, asgn, isOvernight, isPC) {
   const badges = [];
   const pc  = isPC;
   const cls = asgn ? classify(asgn) : 'Off/Unavailable';
-  if (pc) badges.push('<span class="badge bk">↩ Post-Call</span>');
   if (isBackup) badges.push('<span class="badge bb">Backup</span>');
+  if (pc) badges.push('<span class="badge bk">↩ Post-Call</span>');
   if (!isBackup && !pc) {
     if (cls === 'Off/Unavailable')            badges.push('<span class="badge br">Off</span>');
     else if (cls === 'Training/Non-clinical') badges.push('<span class="badge ba">Training</span>');
@@ -2095,89 +1989,6 @@ function renderBackup() {
   }).map(r=>`<tr${r}`);
 
   document.getElementById('bkp-table').innerHTML = buildTable(cols, trows, 'No backup call dates found');
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// RENDER: PTO EVALUATOR
-// ═══════════════════════════════════════════════════════════════════════════
-
-function setPTOFilter(f) {
-  ptoFilter=f;
-  document.querySelectorAll('[id^="pto-btn"]').forEach(b=>b.classList.remove('active'));
-  const key='pto-btn-'+(f==='Not Feasible'?'Not_Feasible':f);
-  const el=document.getElementById(key);
-  if(el) el.classList.add('active');
-  renderPTO();
-}
-
-function renderPTO(pg) {
-  if(pg !== undefined) ptoPg = pg;
-
-  // Global range takes precedence over default "future" filter
-  const useGlobal = !!(globalRange.start || globalRange.end);
-  let rows = useGlobal ? applyGlobalRange(DATA) : DATA.filter(r=>isFuture(r.date));
-  if(ptoFilter!=='all') rows = rows.filter(r=>r.ptoRisk===ptoFilter);
-  const ptoRangeLabel = useGlobal ? 'in selected range' : 'upcoming';
-  document.getElementById('pto-rc').textContent = `${rows.length} dates · ${ptoRangeLabel}`;
-
-  const t    = rows.length;
-  const page = rows.slice(ptoPg*PG, (ptoPg+1)*PG);
-
-  const cols = ['Day','Date','PTO Risk','Working Providers',selectedProvider,''];
-  const trows = page.map(r=>{
-    const availCore = CORE_PROVIDERS.filter(p=>p!==selectedProvider && isAvailableForPTO(r.providerAsgns[p]));
-    const availTemp = TEMP_STAFF.filter(({name})=>isAvailableForPTO(r.tempAsgns[name])).map(({name})=>name);
-    const allAvail = [...availCore, ...availTemp].join(', ') || '—';
-    return `${rowCls(r)}><td class="col-day"><span class="${r.isWeekend?'day-chip weekend':'day-chip'}">${dayShort(r.day)}</span></td>
-      ${holDateCell(r.date)}
-      <td>${ptoBadge(r.ptoRisk)}</td>
-      <td style="font-size:11px;color:var(--muted)">${allAvail}</td>
-      <td>${clsBadge(provClass(r))}${provPC(r)?' <span class="badge bk">Post-Call</span>':''}</td>
-      ${holColCell(r.date)}`;
-  }).map(r=>`<tr${r}`);
-
-  document.getElementById('pto-table').innerHTML =
-    buildTable(cols, trows, 'No matching weekdays') + pagBar(t, ptoPg, 'renderPTO');
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// RENDER: DAILY STAFFING
-// ═══════════════════════════════════════════════════════════════════════════
-
-function setStaffFilter(f) {
-  staffFilter=f;
-  document.querySelectorAll('[id^="st-btn"]').forEach(b=>b.classList.remove('active'));
-  document.getElementById('st-btn-'+f).classList.add('active');
-  renderStaffing();
-}
-
-function renderStaffing(pg) {
-  if(pg !== undefined) staffPg = pg;
-
-  let rows = applyGlobalRange(DATA);
-  const useGlobalSt = !!(globalRange.start || globalRange.end);
-  if(staffFilter==='min')  rows = rows.filter(r=>!r.isWeekend && r.atMin);
-  else if(staffFilter==='thin')  rows = rows.filter(r=>!r.isWeekend && r.coreCount<=5);
-  else if(staffFilter==='ok')    rows = rows.filter(r=>r.coreCount>=6);
-  const stRangeLabel = useGlobalSt ? 'in selected range' : 'all loaded dates';
-  document.getElementById('st-rc').textContent = `${rows.length} dates · ${stRangeLabel}`;
-
-  const t    = rows.length;
-  const page = rows.slice(staffPg*PG, (staffPg+1)*PG);
-
-  const cols = ['Day','Date','Core Count','+ Temp','Working Providers','Thin Run?',''];
-  const trows = page.map(r=>{
-    return `${rowCls(r)}><td class="col-day"><span class="${r.isWeekend?'day-chip weekend':'day-chip'}">${dayShort(r.day)}</span></td>
-      ${holDateCell(r.date)}
-      <td>${cntBadge(r.coreCount, 0, r.isWeekend)}</td>
-      <td>${r.workingTemp.length?`<span class="badge bt">+${r.workingTemp.length}</span>`:'<span style="color:var(--faint)">—</span>'}</td>
-      <td style="font-size:11px;color:var(--muted)">${[...r.workingCore.map(n=>`<strong>${n}</strong>`),...r.workingTemp].join(', ')||'—'}</td>
-      <td>${r.streak>=3?`<span class="badge br">Day ${r.streak}</span>`:r.atMin&&!r.isWeekend?'<span class="badge ba">At min</span>':'<span style="color:var(--faint)">—</span>'}</td>
-      ${holColCell(r.date)}`;
-  }).map(r=>`<tr${r}`);
-
-  document.getElementById('st-table').innerHTML =
-    buildTable(cols, trows, 'No matching dates') + pagBar(t, staffPg, 'renderStaffing');
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2505,7 +2316,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('today-badge').textContent = todayFmt;
   // populate provider dropdown on initial load
   const _initSel = document.getElementById('provider-select');
-  if(_initSel) _initSel.innerHTML = CORE_PROVIDERS.map(p=>`<option value="${p}"${p===selectedProvider?' selected':''}>${p}</option>`).join('');
+  if(_initSel) _initSel.innerHTML = CORE_PROVIDERS.filter(p=>!PROVIDER_SELECT_HIDE.has(p)).map(p=>`<option value="${p}"${p===selectedProvider?' selected':''}>${p}</option>`).join('');
   document.getElementById('paste-area').addEventListener('paste', () => setTimeout(parseAndLoad, 80));
 
   // Window-level guards: if the user misses the drop zone, keep the browser
@@ -2526,16 +2337,12 @@ document.addEventListener('DOMContentLoaded',()=>{
     const id = document.querySelector('.view.active')?.id?.replace('view-','');
     if(id==='dashboard') renderDashboard(0);
     else if(id==='backup') renderBackup();
-    else if(id==='pto') renderPTO(0);
-    else if(id==='staffing') renderStaffing(0);
   });
   window.addEventListener('afterprint', () => {
     if(window._pgSave !== undefined){ PG = window._pgSave; window._pgSave = undefined;
       const id = document.querySelector('.view.active')?.id?.replace('view-','');
       if(id==='dashboard') renderDashboard();
       else if(id==='backup') renderBackup();
-      else if(id==='pto') renderPTO();
-      else if(id==='staffing') renderStaffing();
     }
   });
   const cEl = document.querySelector('.content');
