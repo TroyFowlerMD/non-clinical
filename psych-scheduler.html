@@ -2539,7 +2539,8 @@ async function fetchDriveMeta() {
       const d     = new Date(json.lastModified);
       const label = document.getElementById('drive-meta-label');
       if (label) label.textContent = 'Sheet last updated: ' + formatTimeAgo(d) +
-        ' (' + d.toLocaleDateString(undefined, {month:'short',day:'numeric',year:'numeric'}) + ')';
+        ' (' + d.toLocaleDateString(undefined, {month:'short',day:'numeric',year:'numeric'}) +
+        ' at ' + d.toLocaleTimeString(undefined, {hour:'numeric',minute:'2-digit'}) + ')';
     }
   } catch(_) {}  // silent fail — metadata is non-critical
 }
