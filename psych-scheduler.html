@@ -734,6 +734,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
             </button>
             <div class="drive-status" id="drive-status">Ready</div>
           </div>
+          <div id="drive-meta-label" style="font-size:11px;color:var(--muted);margin-top:6px;font-style:italic;min-height:14px;"></div>
           <div id="drive-uncfg" class="drive-uncfg" style="display:none">
             ⚠ <code>DRIVE_EXEC_URL</code> not configured — open the HTML and paste your Apps Script
             <code>/exec</code> URL into the constant at the top of the script block.
@@ -1928,6 +1929,9 @@ function handleExcelFile(file) {
           '✓ Loaded from Excel · First sheet: "' + sheetName + '" · ' +
           DATA.length + ' dates parsed'
         );
+        // Build full 2D array (header + data rows) and sync to Drive
+        const aoa = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
+        pushToDrive(aoa);
       }
     } catch (err) {
       __excelReport(false, 'Excel parse error: ' + err.message);
@@ -1937,6 +1941,31 @@ function handleExcelFile(file) {
   reader.readAsArrayBuffer(file);
 }
 
+
+async function pushToDrive(rows) {
+  if (!DRIVE_EXEC_URL) return;
+  const statusEl = document.getElementById('drive-status');
+  try {
+    if (statusEl) { statusEl.textContent = 'Syncing to Drive…'; statusEl.className = 'drive-status'; }
+    const res = await fetch(DRIVE_EXEC_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ rows })
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'Write failed');
+    if (statusEl) {
+      statusEl.textContent = 'Synced to Drive ✓ (' + json.rowCount + ' rows)';
+      statusEl.className = 'drive-status ok';
+    }
+    await fetchDriveMeta();
+  } catch(err) {
+    if (statusEl) {
+      statusEl.textContent = 'Drive sync failed: ' + err.message;
+      statusEl.className = 'drive-status err';
+    }
+  }
+}
 async function loadFromDrive() {
   const btn    = document.getElementById('drive-load-btn');
   const status = document.getElementById('drive-status');
@@ -1971,6 +2000,7 @@ async function loadFromDrive() {
     status.textContent = '\u2713 Loaded ' + json.rowCount + ' rows · ' +
       new Date(json.fetchedAt).toLocaleString();
     status.className   = 'drive-status ok';
+    await fetchDriveMeta();
   } catch(err) {
     driveStatus = { fetchedAt: null, rowCount: 0, error: err.message };
     status.textContent = 'Error: ' + err.message;
@@ -2485,6 +2515,35 @@ function updateThemeBtn(theme) {
 }
 
 // Set today badge on load
+function formatTimeAgo(date) {
+  const diffMs  = Date.now() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  const diffHr  = Math.floor(diffMs / 3600000);
+  const diffDay = Math.floor(diffMs / 86400000);
+  if (diffMin < 2)  return 'just now';
+  if (diffMin < 60) return diffMin + ' minutes ago';
+  if (diffHr  < 24) return diffHr  + ' hour'  + (diffHr  > 1 ? 's' : '') + ' ago';
+  if (diffDay < 7)  return diffDay + ' day'   + (diffDay > 1 ? 's' : '') + ' ago';
+  const diffWk = Math.floor(diffDay / 7);
+  if (diffWk  < 5)  return diffWk  + ' week'  + (diffWk  > 1 ? 's' : '') + ' ago';
+  const diffMo = Math.floor(diffDay / 30);
+  return diffMo + ' month' + (diffMo > 1 ? 's' : '') + ' ago';
+}
+
+async function fetchDriveMeta() {
+  if (!DRIVE_EXEC_URL) return;
+  try {
+    const res  = await fetch(DRIVE_EXEC_URL + '?meta=1');
+    const json = await res.json();
+    if (json.lastModified) {
+      const d     = new Date(json.lastModified);
+      const label = document.getElementById('drive-meta-label');
+      if (label) label.textContent = 'Sheet last updated: ' + formatTimeAgo(d) +
+        ' (' + d.toLocaleDateString(undefined, {month:'short',day:'numeric',year:'numeric'}) + ')';
+    }
+  } catch(_) {}  // silent fail — metadata is non-critical
+}
+
 document.addEventListener('DOMContentLoaded',()=>{
   const todayFmt = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
   document.getElementById('today-badge').textContent = todayFmt;
@@ -2522,6 +2581,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   const cEl = document.querySelector('.content');
   if(cEl) cEl.style.zoom = (baseFontPx / 16).toFixed(3);
   updateThemeBtn(document.documentElement.getAttribute('data-theme')||'dark');
+  fetchDriveMeta();
 });
 
 function openFeedbackModal(){
