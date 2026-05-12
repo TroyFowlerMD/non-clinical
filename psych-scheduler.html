@@ -69,7 +69,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh
 
 /* MAIN */
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;height:100vh}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px 0 0;
+
+/* ── Topbar removed from layout on screen (CHANGE 1) ──
+   Hidden universally; print stylesheet re-enables it via its own `display:flex !important` rule.
+   Status pill, today badge, and topbar-meta elements are preserved in DOM so existing JS
+   (updateThemeBtn, status updates, today-badge) keeps working without modification. */
+.topbar{display:none !important}
+.topbar-legacy{display:flex;align-items:center;justify-content:space-between;padding:0 20px 0 0;
   height:56px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
 .topbar-left{display:flex;flex-direction:column;padding:0 20px;border-left:3px solid var(--primary);height:100%;justify-content:center}
 .topbar-title{font-size:16px;font-weight:700;letter-spacing:-0.01em;line-height:1.2}
@@ -144,7 +150,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh
 .rcount{font-size:11px;color:var(--muted);margin-left:auto}
 
 /* TABLE */
-.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow-x:auto;overflow-y:visible;box-shadow:var(--shadow)}
+/* ── CHANGE 2: sticky header offset variable ──
+   With the topbar removed, the only persistent chrome above .table-wrap is the
+   global-filter-bar (~48px). The variable lets the offset be tuned per-breakpoint. */
+:root{--table-top-offset:60px}
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+  overflow-x:auto;overflow-y:auto;max-height:calc(100vh - var(--table-top-offset));box-shadow:var(--shadow)}
 .table-wrap>table{border-radius:inherit}
 .table-hdr{padding:11px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .table-hdr-title{font-size:13px;font-weight:600}
@@ -160,7 +171,7 @@ th.th-draggable{cursor:grab}
 th.th-draggable:active{cursor:grabbing}
 th.th-dragging{opacity:0.45;background:var(--surface3)!important}
 th.th-drag-over{background:var(--primary-bg)!important;color:var(--primary)!important;box-shadow:inset 2px 0 0 var(--primary)}
-.col-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.col-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:12px;box-shadow:var(--shadow);overflow:visible}
 .col-panel-row{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
 .col-panel-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;width:110px;flex-shrink:0}
 .col-pills{display:flex;flex-wrap:wrap;gap:5px}
@@ -295,9 +306,9 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
   .sidebar, .font-ctrl, .filter-bar, .col-panel, .col-toggle-btn,
   .pag, .parse-btn, .cal-export-btn, .cal-nav-btn, .parse-result,
   #clear-btn, .footer-btn, .cal-filter-group, .sec-hd + .table-wrap + .sec-hd,
-  .topbar-right { display: none !important; }
+  .topbar-right, .mob-menu-btn, .global-filter-bar { display: none !important; }
 
-  /* Topbar: minimal header */
+  /* Topbar: minimal header (CHANGE 1 — re-enabled only for print) */
   .topbar { display: flex !important; background: #fff !important; border-bottom: 1px solid #ccc !important;
              height: auto !important; padding: 6px 0 8px !important; margin-bottom: 10px; page-break-after: avoid; }
   .topbar-title { font-size: 13px !important; font-weight: 700 !important; color: #000 !important; }
@@ -361,11 +372,14 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
   .sec-hd { color: #333 !important; border-bottom: 1px solid #ccc !important;
               padding-bottom: 3px !important; margin-bottom: 8px !important; font-size: 10px !important; }
 }
-.col-toggle-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px;padding:2px 0}
-.col-toggle-chip{display:flex;align-items:center;gap:5px;padding:5px 10px;
+/* ── CHANGE 3: column-picker chips wrap into multiple rows on mobile ──
+   Replaces the auto-fill grid (which caused a single horizontally-scrolling row on
+   narrow screens) with flex-wrap so chips flow naturally onto additional rows. */
+.col-toggle-grid{display:flex;flex-wrap:wrap;gap:5px;padding:2px 0}
+.col-toggle-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;
   border-radius:var(--radius-sm);border:1px solid var(--border);cursor:pointer;
   font-size:11px;font-weight:600;color:var(--muted);background:var(--surface2);
-  transition:all 120ms;user-select:none;white-space:nowrap}
+  transition:all 120ms;user-select:none;white-space:nowrap;flex:0 0 auto}
 .col-toggle-chip:hover{border-color:var(--primary);color:var(--primary)}
 .col-toggle-chip.on{background:var(--primary-bg);border-color:var(--primary);color:var(--primary)}
 .col-chip-check{font-size:9px;width:10px;text-align:center;flex-shrink:0}
@@ -453,9 +467,11 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
 .gf-reset:hover{background:var(--primary-bg);color:var(--primary);border-color:var(--primary)}
 .gf-hint{font-size:10px;color:var(--muted);font-style:italic}
 
-/* Mobile menu button */
-.mob-menu-btn{display:none;align-items:center;justify-content:center;width:38px;height:38px;
-  border:none;background:transparent;color:var(--text);cursor:pointer;padding:0;margin-left:8px}
+/* Mobile menu button — relocated to .global-filter-bar after topbar removal (CHANGE 1) */
+.mob-menu-btn{display:none;align-items:center;justify-content:center;width:32px;height:32px;
+  border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;
+  padding:0;border-radius:var(--radius-sm);margin-right:4px;flex-shrink:0}
+.mob-menu-btn:hover{background:var(--surface3);border-color:var(--primary);color:var(--primary)}
 .mob-menu-btn svg{width:22px;height:22px}
 .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9}
 .sidebar-overlay.open{display:block}
@@ -468,10 +484,6 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
   .sidebar.open{transform:translateX(0)}
   .main{width:100%;height:100vh}
   .mob-menu-btn{display:inline-flex}
-  .topbar{padding:0 12px 0 0}
-  .topbar-left{padding:0 12px}
-  .topbar-title{font-size:14px}
-  .topbar-meta{font-size:10px}
   .global-filter-bar{padding:8px 12px;gap:8px}
   .content{padding:14px 12px}
   .kpi-grid{grid-template-columns:repeat(2,1fr)!important}
@@ -479,12 +491,32 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
   table{min-width:100%}
   .filter-bar{gap:6px}
   .cal-container{max-width:100%}
+  /* CHANGE 2: more generous sticky offset on mobile to account for wrapped
+     global-filter-bar + col-panel rows on narrow screens. */
+  :root{--table-top-offset:110px}
+  /* CHANGE 3: shrink chips on narrow screens so more fit per wrapped row. */
+  .col-toggle-chip{font-size:10px;padding:4px 8px}
 }
 @media (max-width:480px){
-  .topbar-right .font-ctrl,.topbar-right .theme-btn{display:none}
   .global-filter-bar{gap:6px}
   .gf-hint{display:none}
 }
+
+/* ── CHANGE 4: collapsible sidebar in landscape orientation on mobile ──
+   The 768px breakpoint above does not match landscape phones (width > 768px,
+   height < 600px). Without this rule, a landscape phone shows the permanent
+   sidebar and loses ~240px of an already-narrow viewport. */
+@media (max-width:1024px) and (orientation:landscape) and (max-height:600px){
+  body{flex-direction:row}
+  .sidebar{position:fixed;top:0;left:0;bottom:0;height:100vh;width:240px;
+    transform:translateX(-100%);transition:transform 220ms ease;z-index:11;
+    box-shadow:0 0 24px rgba(0,0,0,0.25)}
+  .sidebar.open{transform:translateX(0)}
+  .main{width:100%;height:100vh}
+  .mob-menu-btn{display:inline-flex !important}
+  .sidebar-overlay.open{display:block}
+}
+
 @media print{
   .mob-menu-btn,.sidebar-overlay,.global-filter-bar{display:none!important}
 }
@@ -593,6 +625,15 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
     </button>
   </div>
   <div class="sidebar-footer">
+    <!-- CHANGE 1: Theme cycle button relocated from topbar; styled as .footer-btn.
+         Original ID and onclick preserved so cycleTheme()/updateThemeBtn() keep working. -->
+    <button class="footer-btn" id="theme-cycle-btn" onclick="cycleTheme()" title="Cycle theme: Dark → Light → Slate"></button>
+    <!-- CHANGE 1: Font size controls relocated from topbar. -->
+    <div class="font-ctrl" title="Adjust text size" style="width:100%">
+      <button class="font-btn" onclick="changeFontSize(-1)" aria-label="Decrease text size" style="flex:1">A−</button>
+      <span class="font-badge" id="font-size-badge">20px</span>
+      <button class="font-btn font-btn-plus" onclick="changeFontSize(1)" aria-label="Increase text size" style="flex:1">A+</button>
+    </div>
     <button class="footer-btn" onclick="openFeedbackModal()">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       Send Feedback
@@ -613,10 +654,9 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
 </nav>
 
 <div class="main">
+  <!-- CHANGE 1: Topbar hidden via CSS on screen (kept in DOM for JS targets + print stylesheet).
+       Status pill, today badge, and topbar-meta remain so getElementById() calls still resolve. -->
   <div class="topbar">
-    <button class="mob-menu-btn" onclick="toggleSidebar()" aria-label="Open menu">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-    </button>
     <div class="topbar-left">
       <div class="topbar-title">Psychiatry Schedule Analyzer <span style="font-size:12px;font-weight:500;color:var(--muted);letter-spacing:0">· Troy Fowler, MD</span></div>
       <div class="topbar-meta" id="topbar-meta">No schedule loaded — paste data to begin</div>
@@ -624,16 +664,15 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
     <div class="topbar-right">
       <span class="status-pill status-empty" id="status-pill">No Data</span>
       <span class="status-pill" id="today-badge" style="background:var(--primary-bg);color:var(--primary)"></span>
-      <button class="theme-btn" id="theme-cycle-btn" onclick="cycleTheme()" title="Cycle theme: Dark → Light → Slate"></button>
-      <div class="font-ctrl" title="Adjust text size" style="margin-left:4px">
-        <button class="font-btn" onclick="changeFontSize(-1)" aria-label="Decrease text size">A−</button>
-        <span class="font-badge" id="font-size-badge">20px</span>
-        <button class="font-btn font-btn-plus" onclick="changeFontSize(1)" aria-label="Increase text size">A+</button>
-      </div>
     </div>
   </div>
 
   <div class="global-filter-bar hidden" id="global-filter-bar">
+    <!-- CHANGE 1: Hamburger relocated here. Appears once a data view is loaded
+         (global-filter-bar becomes visible). Paste view intentionally has no sidebar access. -->
+    <button class="mob-menu-btn" onclick="toggleSidebar()" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
     <div class="gf-group">
       <span class="gf-label">Start</span>
       <input type="date" class="gf-date" id="gf-start" onchange="onGlobalRangeChange()">
