@@ -199,6 +199,11 @@ tr.holiday-row:hover td{background:color-mix(in srgb,var(--amber-bg) 160%,var(--
 .muted-cell{color:var(--muted)}
 .day-chip{display:inline-block;font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px;background:var(--surface3);color:var(--muted)}
 .day-chip.weekend{background:var(--teal-bg);color:var(--teal)}
+.working-providers-cell{font-size:11px;color:var(--muted)}
+.working-provider-link{display:inline-flex;align-items:center;min-height:44px;color:var(--primary);text-decoration:none;border-radius:var(--radius-sm);padding:0 2px}
+.working-provider-link:hover,.working-provider-link:focus{background:var(--primary-bg);color:var(--primary-h);text-decoration:none;outline:none}
+.sms-all-btn{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;margin-left:4px;border-radius:var(--radius-sm);background:var(--surface2);border:1px solid var(--border);color:var(--primary);text-decoration:none;vertical-align:middle}
+.sms-all-btn:hover,.sms-all-btn:focus{background:var(--primary-bg);border-color:var(--primary);color:var(--primary-h);outline:none}
 
 /* BADGES */
 .badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:3px;font-size:11px;font-weight:600;white-space:nowrap}
@@ -854,6 +859,25 @@ const CORE_PROVIDERS = ['Patil','German','Anderson','Fowler','Carter','Ondreyka'
 // Providers hidden from the UI provider switcher dropdown. Parser/column-detection still references them.
 const PROVIDER_SELECT_HIDE = new Set(['Patil','German']);
 const BACKUP_POOL    = ['Fowler','Carter','Ondreyka'];
+  const PROVIDER_PHONES = {
+  'Fowler':    '+13606061046',
+  'Ondreyka':  '+17347091295',
+  'Carter':    '+19198641056',
+  'Anderson':  '+19122222759',
+  'Cooley':    '+19137102670',
+  'Smith':     '+18285513508',
+  'Wren':      '+19098023352',
+  'Patil':     '+14238029271',
+  'German':    '+13364651513',
+  'Coburn':    '+16173061134',
+  'Bennett':   '+13362602926',
+  'Williams':  '+19199153291',
+  'Eidson':    '+18034132609',
+  'Tran':      '+19808002145',
+  'Camiliere': '+14805861791',
+  'Bandell':   '+14439287357',
+  'Dickerson': '+18137663257',
+};
 
 // ── Google Drive / Apps Script integration ────────────────────────────────
 // After deploying Code.gs as a Web App, paste the /exec URL here:
@@ -1632,7 +1656,28 @@ function renderAsgnCellFor(r, providerName) {
   const asgn = (r.providerAsgns && r.providerAsgns[providerName]) || '';
   return `<td>${asgn||'<span style="color:var(--faint)">—</span>'}</td>`;
 }
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[ch]));
+}
 
+function renderWorkingProviderName(name, opts={}) {
+  const label = escapeHtml(name);
+  const content = opts.strong ? `<strong>${label}</strong>` : label;
+  const phone = PROVIDER_PHONES[name];
+  if(!phone) return content;
+  return `<a href="sms:${phone}" class="working-provider-link">${content}</a>`;
+}
+
+function renderTextAllButton(names) {
+  const phones = names
+    .filter(name => name !== 'Fowler')
+    .map(name => PROVIDER_PHONES[name])
+    .filter(Boolean);
+  if(phones.length < 2) return '';
+  return `<a href="sms:${phones.join(',')}" class="sms-all-btn" title="Text all working providers" aria-label="Text all working providers">💬</a>`;
+}
 function schedCell(id, r) {
   const dayChip = `<span class="${r.isWeekend?'day-chip weekend':'day-chip'}">${dayShort(r.day)}</span>`;
   switch(id) {
@@ -1648,12 +1693,15 @@ function schedCell(id, r) {
     }
     case 'overnight':   return `<td style="font-size:11px;color:var(--muted)">${r.overnight||'<span style="color:var(--faint)">—</span>'}</td>`;
     case 'backupPerson':return `<td>${r.bkpPerson||'<span style="color:var(--faint)">—</span>'}</td>`;
-    case 'providers': {
-      const coreNames = (r.workingCore||[]).map(n=>`<strong>${n}</strong>`);
-      const tempNames = (r.workingTemp||[]);
-      const all = [...coreNames,...tempNames];
-      return `<td style="font-size:11px;color:var(--muted)">${all.join(', ')||'—'}</td>`;
-    }
+   case 'providers': {
+  const workingCore = r.workingCore || [];
+  const workingTemp = r.workingTemp || [];
+  const coreNames = workingCore.map(n=>renderWorkingProviderName(n, {strong:true}));
+  const tempNames = workingTemp.map(n=>renderWorkingProviderName(n));
+  const all = [...coreNames,...tempNames];
+  const textAll = renderTextAllButton([...workingCore,...workingTemp]);
+  return `<td class="working-providers-cell">${all.join(', ')||'—'}${textAll}</td>`;
+}
     case 'streak':      return `<td>${r.streak>=3?`<span class="badge br">Day ${r.streak}</span>`:r.atMin&&!r.isWeekend?'<span class="badge ba">At min</span>':'<span style="color:var(--faint)">—</span>'}</td>`;
     case 'ftPhone':     return `<td>${r.fowlerFT?'<span class="badge bb">Yes</span>':'<span style="color:var(--faint)">—</span>'}</td>`;
     case 'anderson':    return renderAsgnCellFor(r, 'Anderson');
