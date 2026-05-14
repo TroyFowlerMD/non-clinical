@@ -68,7 +68,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh
 .footer-btn:hover{background:var(--surface3);color:var(--text)}
 
 /* MAIN */
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;height:100vh}
+.main{flex:1;display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;min-width:0;height:100vh}
 
 /* ── Topbar removed from layout on screen (CHANGE 1) ──
    Hidden universally; print stylesheet re-enables it via its own `display:flex !important` rule.
@@ -80,6 +80,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh
 .data-update-note{font-size:11px;color:var(--muted);margin-left:6px}
 .data-upload-btn{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--primary);font-size:12px;font-weight:600;cursor:pointer;transition:all 140ms}
 .data-upload-btn:hover{background:var(--primary-bg);border-color:var(--primary);color:var(--primary-h)}
+.page-controls-bar{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;padding:8px 16px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
 .topbar-legacy{display:flex;align-items:center;justify-content:space-between;padding:0 20px 0 0;
   height:56px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
 .topbar-left{display:flex;flex-direction:column;padding:0 20px;border-left:3px solid var(--primary);height:100%;justify-content:center}
@@ -96,7 +97,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh
 .status-empty{background:var(--amber-bg);color:var(--amber-text)}
 
 /* CONTENT */
-.content{flex:1;overflow-y:auto;padding:20px 24px;height:0}
+.content{flex:0 0 auto;overflow:visible;padding:20px 24px;min-height:0}
 .view{display:none}
 .view.active{display:block}
 
@@ -160,13 +161,16 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh
    global-filter-bar (~48px). The variable lets the offset be tuned per-breakpoint. */
 :root{--table-top-offset:60px}
 .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
-  overflow-x:auto;overflow-y:auto;max-height:calc(100vh - var(--table-top-offset));box-shadow:var(--shadow)}
+  overflow-x:auto;overflow-y:visible;max-height:none;box-shadow:var(--shadow)}
 .table-wrap>table{border-radius:inherit}
 .table-hdr{padding:11px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .table-hdr-title{font-size:13px;font-weight:600}
 table{width:max-content;border-collapse:collapse;font-size:12px;table-layout:auto}
 td,th{white-space:nowrap}
 .col-day{width:1%;padding-right:4px!important}
+.col-date{min-width:82px;max-width:92px;white-space:normal!important;line-height:1.2}
+.date-stack{display:flex;align-items:center;gap:6px}
+.date-stack .mono{font-size:10px;line-height:1.2;white-space:normal}
 .col-day+td,.col-day+th{padding-left:6px!important}
 th.sortable{cursor:pointer;user-select:none}
 th.sortable:hover{color:var(--text);background:var(--surface3)}
@@ -176,8 +180,18 @@ th.th-draggable{cursor:grab}
 th.th-draggable:active{cursor:grabbing}
 th.th-dragging{opacity:0.45;background:var(--surface3)!important}
 th.th-drag-over{background:var(--primary-bg)!important;color:var(--primary)!important;box-shadow:inset 2px 0 0 var(--primary)}
-.col-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:12px;box-shadow:var(--shadow);overflow:visible}
-.col-panel-row{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+.col-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:12px;box-shadow:var(--shadow);overflow:hidden}
+.col-panel-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;border:0;background:transparent;color:var(--text);font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;padding:0;text-align:left}
+.col-panel-summary-left{display:flex;align-items:center;gap:8px;min-width:0}
+.col-panel-summary-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.col-panel-summary-meta{font-size:11px;font-weight:500;color:var(--muted);white-space:nowrap}
+.col-panel-chevron{color:var(--muted);transition:transform 160ms ease;flex-shrink:0}
+.col-panel.open .col-panel-chevron{transform:rotate(180deg)}
+.col-panel-body{display:none;margin-top:12px}
+.col-panel.open .col-panel-body{display:block}
+.col-panel-filters{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px}
+.col-panel-actions{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px}
+.col-panel-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:0}
 .col-panel-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;width:110px;flex-shrink:0}
 .col-pills{display:flex;flex-wrap:wrap;gap:5px}
 .col-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:12px;cursor:pointer;transition:all 120ms;user-select:none}
@@ -193,11 +207,10 @@ th{padding:6px 8px;text-align:left;font-size:10px;font-weight:700;color:var(--mu
   border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;z-index:1;vertical-align:top}
 td{padding:5px 8px;border-bottom:1px solid var(--divider);vertical-align:middle}
 @media (max-width:768px){
-  #dash-table th:nth-child(1),#dash-table td:nth-child(1){position:sticky;left:0;z-index:4;min-width:48px;max-width:48px;background:var(--surface)}
-  #dash-table th:nth-child(2),#dash-table td:nth-child(2){position:sticky;left:48px;z-index:4;min-width:96px;background:var(--surface);box-shadow:2px 0 0 var(--border)}
-  #dash-table th:nth-child(1),#dash-table th:nth-child(2){z-index:6;background:var(--surface2)}
-  #dash-table tr.wknd-row td:nth-child(1),#dash-table tr.wknd-row td:nth-child(2){background:var(--wknd-bg)}
-  #dash-table tr.holiday-row td:nth-child(1),#dash-table tr.holiday-row td:nth-child(2){background:var(--amber-bg)!important}
+  #dash-table th:nth-child(1),#dash-table td:nth-child(1){position:sticky;left:0;z-index:4;min-width:82px;max-width:92px;background:var(--surface);box-shadow:2px 0 0 var(--border)}
+  #dash-table th:nth-child(1){z-index:6;background:var(--surface2)}
+  #dash-table tr.wknd-row td:nth-child(1){background:var(--wknd-bg)}
+  #dash-table tr.holiday-row td:nth-child(1){background:var(--amber-bg)!important}
 }
 tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--surface2)}
@@ -326,7 +339,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
          background: #fff !important; color: #111 !important; zoom: 1 !important; }
 
   /* Hide nav/chrome */
-  .sidebar, .font-ctrl, .filter-bar, .col-panel, .col-toggle-btn,
+  .sidebar, .font-ctrl, .filter-bar, .col-panel, .col-toggle-btn, .page-controls-bar,
   .pag, .parse-btn, .cal-export-btn, .cal-nav-btn, .parse-result,
   #clear-btn, .footer-btn, .cal-filter-group, .sec-hd + .table-wrap + .sec-hd,
   .topbar-right, .mob-menu-btn, .global-filter-bar { display: none !important; }
@@ -521,7 +534,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
   .global-filter-bar{padding:8px 12px;gap:8px}
   .content{padding:14px 12px}
   .kpi-grid{grid-template-columns:repeat(2,1fr)!important}
-  .table-wrap{overflow-x:auto!important}
+  .table-wrap{overflow-x:auto!important;overflow-y:visible!important;max-height:none!important}
   table{min-width:100%}
   .filter-bar{gap:6px}
   .cal-container{max-width:100%}
@@ -530,7 +543,10 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
   :root{--table-top-offset:110px}
   /* CHANGE 3: shrink chips on narrow screens so more fit per wrapped row. */
   .col-toggle-chip{font-size:10px;padding:4px 8px}
+  .col-panel{padding:12px}
+  .col-panel-filters .filter-select{flex:1 1 140px;min-width:0}
 }
+
 @media (max-width:480px){
   .global-filter-bar{gap:6px}
   .gf-hint{display:none}
@@ -659,15 +675,6 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
     </button>
   </div>
   <div class="sidebar-footer">
-    <!-- CHANGE 1: Theme cycle button relocated from topbar; styled as .footer-btn.
-         Original ID and onclick preserved so cycleTheme()/updateThemeBtn() keep working. -->
-    <button class="footer-btn" id="theme-cycle-btn" onclick="cycleTheme()" title="Cycle theme: Dark → Light → Slate"></button>
-    <!-- CHANGE 1: Font size controls relocated from topbar. -->
-    <div class="font-ctrl" title="Adjust text size" style="width:100%">
-      <button class="font-btn" onclick="changeFontSize(-1)" aria-label="Decrease text size" style="flex:1">A−</button>
-      <span class="font-badge" id="font-size-badge">20px</span>
-      <button class="font-btn font-btn-plus" onclick="changeFontSize(1)" aria-label="Increase text size" style="flex:1">A+</button>
-    </div>
     <button class="footer-btn" onclick="openFeedbackModal()">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       Send Feedback
@@ -700,6 +707,15 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
   <div class="data-update-bar" id="data-update-bar">
     <div><span class="data-update-text" id="data-updated-text">Data last updated —</span><span class="data-update-note" id="data-updated-note"></span></div>
     <button class="data-upload-btn" onclick="showView('paste')">upload latest schedule file</button>
+  </div>
+
+  <div class="page-controls-bar" aria-label="Page display controls">
+    <button class="theme-btn" id="theme-cycle-btn" onclick="cycleTheme()" title="Cycle theme: Dark → Light → Slate"></button>
+    <div class="font-ctrl" title="Adjust text size">
+      <button class="font-btn" onclick="changeFontSize(-1)" aria-label="Decrease text size">A−</button>
+      <span class="font-badge" id="font-size-badge">20px</span>
+      <button class="font-btn font-btn-plus" onclick="changeFontSize(1)" aria-label="Increase text size">A+</button>
+    </div>
   </div>
 
   <div class="global-filter-bar hidden" id="global-filter-bar">
@@ -776,30 +792,39 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
 
     <!-- ══ DASHBOARD / MY SCHEDULE ════════════════════════════════ -->
     <div class="view" id="view-dashboard">
-      <div class="filter-bar">
-        <span class="filter-label">View:</span>
-        <select class="filter-select" id="f-class" onchange="renderDashboard()">
-          <option value="">All dates</option>
-          <option value="weekdays">Weekdays only</option>
-          <option value="Clinical">My Clinical days</option>
-          <option value="Admin">Admin/Remote</option>
-          <option value="Off">Off/Unavailable</option>
-          <option value="Training">Training</option>
-        </select>
-        <select class="filter-select" id="f-period" onchange="renderDashboard()">
-          <option value="future">Upcoming only</option>
-          <option value="all">All dates</option>
-          <option value="past">Past only</option>
-        </select>
-        <span class="rcount" id="dash-rc"></span>
-      </div>
       <div class="col-panel" id="col-panel">
-        <div class="col-panel-row" style="margin-bottom:0">
-          <span class="col-panel-label">Toggle columns — drag headers in the table to reorder</span>
-          <div id="col-pills-active" style="width:100%"></div>
-          <div id="col-pills-inactive" style="display:none"></div>
-          <button class="col-toggle-btn" id="sched-weekdays-btn" onclick="toggleSchedWeekdaysOnly()" title="Hide Saturday and Sunday rows from My Schedule">Weekdays only</button>
-          <button class="col-toggle-btn" onclick="resetSchedCols()" title="Restore all columns to default visibility and order"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74"/><polyline points="3 3 3 9 9 9"/></svg> Reset columns</button>
+        <button class="col-panel-summary" type="button" onclick="toggleColumnPanel()" aria-expanded="false" aria-controls="col-panel-body" id="col-panel-toggle">
+          <span class="col-panel-summary-left">
+            <span class="col-panel-summary-title">Table controls</span>
+            <span class="col-panel-summary-meta" id="dash-rc"></span>
+          </span>
+          <svg class="col-panel-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="col-panel-body" id="col-panel-body">
+          <div class="col-panel-filters">
+            <span class="filter-label">View:</span>
+            <select class="filter-select" id="f-class" onchange="renderDashboard()">
+              <option value="">All dates</option>
+              <option value="weekdays">Weekdays only</option>
+              <option value="Clinical">My Clinical days</option>
+              <option value="Admin">Admin/Remote</option>
+              <option value="Off">Off/Unavailable</option>
+              <option value="Training">Training</option>
+            </select>
+            <select class="filter-select" id="f-period" onchange="renderDashboard()">
+              <option value="future">Upcoming only</option>
+              <option value="all">All dates</option>
+              <option value="past">Past only</option>
+            </select>
+          </div>
+          <div class="col-panel-row">
+            <div id="col-pills-active" style="width:100%"></div>
+            <div id="col-pills-inactive" style="display:none"></div>
+          </div>
+          <div class="col-panel-actions">
+            <button class="col-toggle-btn" id="sched-weekdays-btn" onclick="toggleSchedWeekdaysOnly()" title="Hide Saturday and Sunday rows from My Schedule">Weekdays only</button>
+            <button class="col-toggle-btn" onclick="resetSchedCols()" title="Restore all columns to default visibility and order"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74"/><polyline points="3 3 3 9 9 9"/></svg> Reset columns</button>
+          </div>
         </div>
       </div>
       <div class="table-wrap" id="dash-table"></div>
@@ -1648,8 +1673,7 @@ function pagBar(total,pg,onFn){
 // ═══════════════════════════════════════════════════════════════════════════
 
 const SCHED_COLS_ALL = [
-  {id:'day',         label:'Day',              sortable:true,  sortKey:r=>r.date},
-  {id:'date',        label:'Date',             sortable:true,  sortKey:r=>r.date},
+  {id:'date',        label:'Day / Date',       sortable:true,  sortKey:r=>r.date},
   {id:'asgn',        label:'My Assignment',    sortable:false},
   {id:'call',        label:'Call',             sortable:false},
   {id:'ptoFeasible', label:'PTO Feasible',     sortable:true,  sortKey:r=>r.count},
@@ -1668,7 +1692,7 @@ const SCHED_COLS_ALL = [
   {id:'trainees',    label:'Trainees',         sortable:true,  sortKey:r=>(r.trainees||[]).join(',')},
 ];
 
-let schedActiveCols = ['day','date','asgn','call','trainees','providers'];
+let schedActiveCols = ['date','asgn','call','trainees','providers'];
 let schedWeekdaysOnly = false;
 let schedSort = {col:'date', dir:1};
 let schedDragId = null;
@@ -1707,8 +1731,7 @@ function renderTextAllButton(names) {
 function schedCell(id, r) {
   const dayChip = `<span class="${r.isWeekend?'day-chip weekend':'day-chip'}">${dayShort(r.day)}</span>`;
   switch(id) {
-    case 'day':         return `<td class="col-day">${dayChip}</td>`;
-    case 'date':        return holDateCell(r.date);
+    case 'date':        return `<td class="col-date"><div class="date-stack">${dayChip}<span class="mono">${fmtDate(r.date)}</span></div></td>`;
     case 'asgn':        return renderAsgnCellFor(r, selectedProvider);
     case 'call':        return `<td>${provCallBadge(r)}</td>`;
     case 'ptoFeasible': return `<td>${ptoFeasibleBadge(r)}</td>`;
@@ -1758,9 +1781,9 @@ function schedSortBy(colId) {
 }
 
 function schedToggleCol(id) {
-  if(id==='day'||id==='date') return; // locked pinned columns
+  if(id==='date') return; // locked pinned date column
   const idx = schedActiveCols.indexOf(id);
-  if(idx>=0) { if(schedActiveCols.filter(c=>c!=='day'&&c!=='date').length>1) schedActiveCols.splice(idx,1); }
+  if(idx>=0) { if(schedActiveCols.filter(c=>c!=='date').length>1) schedActiveCols.splice(idx,1); }
   else {
     const asgnIdx = schedActiveCols.indexOf('asgn');
     const insertAt = asgnIdx >= 0 ? asgnIdx + 1 : schedActiveCols.length;
@@ -1774,12 +1797,12 @@ function schedDragStart(id) { schedDragId=id; }
 function schedDragOverPill(e,id) { e.preventDefault(); schedDragTargetId=id; }
 function schedDrop(id) {
   if(!schedDragId||schedDragId===id) return;
-  if(schedDragId==='day'||schedDragId==='date') return; // locked
-  if(id==='day'||id==='date') return; // can't drop onto locked cols
+  if(schedDragId==='date') return; // locked
+  if(id==='date') return; // can't drop onto locked col
   const from=schedActiveCols.indexOf(schedDragId);
   const to=schedActiveCols.indexOf(id);
   if(from<0||to<0) return;
-  if(to<2) return; // enforce Day+Date stay at front
+  if(to<1) return; // enforce Date stays at front
   schedActiveCols.splice(from,1);
   schedActiveCols.splice(to,0,schedDragId);
   schedDragId=null;
@@ -1788,8 +1811,17 @@ function schedDrop(id) {
 }
 function schedDragEnd() { schedDragId=null; renderColPicker(); }
 
+
+function toggleColumnPanel() {
+  const panel = document.getElementById('col-panel');
+  const btn = document.getElementById('col-panel-toggle');
+  if(!panel || !btn) return;
+  const open = panel.classList.toggle('open');
+  btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
 function renderColPicker() {
-  // Fixed ordered grid — most-used first. Day/Date are always pinned (not shown here).
+  // Fixed ordered grid — most-used first. Day/date is always pinned (not shown here).
   const PICKER_ORDER = ['asgn','call','trainees','ptoFeasible','staffTotal','providers','overnight',
     'backupPerson','ftPhone','anderson','fowler','carter','ondreyka','smith','cooley'];
   // Provider-type ids — those rendered by renderAsgnCellFor/providerCell
@@ -1859,7 +1891,7 @@ function schedToggleAllProviders() {
 
 
 function resetSchedCols() {
-  schedActiveCols = ['day','date','asgn','call','trainees','providers'];
+  schedActiveCols = ['date','asgn','call','trainees','providers'];
   renderColPicker();
   renderDashboard();
 }
@@ -2152,7 +2184,7 @@ function renderDashboard(pg) {
   // Build table with configurable columns — holiday column always first
   const hdrs = schedActiveCols.map(id=>{
     const col = SCHED_COLS_ALL.find(c=>c.id===id);
-    const isLocked = id==='day'||id==='date';
+    const isLocked = id==='date';
     const isSortActive = schedSort.col===id;
     const sortCls = col.sortable ? (isSortActive ? (schedSort.dir===1?'sort-asc':'sort-desc') : 'sortable') : '';
     const sortClick = col.sortable ? `onclick="schedSortBy('${id}')"` : '';
@@ -2570,10 +2602,10 @@ function thDrop(e, targetId) {
   e.stopPropagation();
   e.currentTarget.classList.remove('th-drag-over');
   if(!thDragColId || thDragColId === targetId) { thDragColId=null; return; }
-  if(targetId==='day'||targetId==='date') { thDragColId=null; return; }
+  if(targetId==='date') { thDragColId=null; return; }
   const from = schedActiveCols.indexOf(thDragColId);
   const to   = schedActiveCols.indexOf(targetId);
-  if(from<0||to<0||from<2||to<2) { thDragColId=null; return; }
+  if(from<0||to<0||from<1||to<1) { thDragColId=null; return; }
   schedActiveCols.splice(from,1);
   schedActiveCols.splice(to,0,thDragColId);
   thDragColId = null;
