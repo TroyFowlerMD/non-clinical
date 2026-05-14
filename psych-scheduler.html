@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Psych Schedule Analyzer — Fowler</title>
+<title>JFK Schedule Analyzer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -75,6 +75,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh
    Status pill, today badge, and topbar-meta elements are preserved in DOM so existing JS
    (updateThemeBtn, status updates, today-badge) keeps working without modification. */
 .topbar{display:none !important}
+.data-update-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:8px 16px;border-bottom:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--muted);flex-shrink:0}
+.data-update-text{font-weight:600;color:var(--text)}
+.data-update-note{font-size:11px;color:var(--muted);margin-left:6px}
+.data-upload-btn{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--primary);font-size:12px;font-weight:600;cursor:pointer;transition:all 140ms}
+.data-upload-btn:hover{background:var(--primary-bg);border-color:var(--primary);color:var(--primary-h)}
 .topbar-legacy{display:flex;align-items:center;justify-content:space-between;padding:0 20px 0 0;
   height:56px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
 .topbar-left{display:flex;flex-direction:column;padding:0 20px;border-left:3px solid var(--primary);height:100%;justify-content:center}
@@ -207,9 +212,9 @@ tr.holiday-row:hover td{background:color-mix(in srgb,var(--amber-bg) 160%,var(--
 .day-chip{display:inline-block;font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px;background:var(--surface3);color:var(--muted)}
 .day-chip.weekend{background:var(--teal-bg);color:var(--teal)}
 .working-providers-cell{font-size:11px;color:var(--muted)}
-.working-provider-link{display:inline-flex;align-items:center;min-height:44px;color:var(--primary);text-decoration:none;border-radius:var(--radius-sm);padding:0 2px}
+.working-provider-link{display:inline-flex;align-items:center;min-height:20px;color:var(--primary);text-decoration:none;border-radius:var(--radius-sm);padding:0 2px}
 .working-provider-link:hover,.working-provider-link:focus{background:var(--primary-bg);color:var(--primary-h);text-decoration:none;outline:none}
-.sms-all-btn{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;margin-left:4px;border-radius:var(--radius-sm);background:var(--surface2);border:1px solid var(--border);color:var(--primary);text-decoration:none;vertical-align:middle}
+.sms-all-btn{display:inline-flex;align-items:center;justify-content:center;min-width:24px;min-height:22px;margin-left:4px;padding:1px 5px;border-radius:var(--radius-sm);background:var(--surface2);border:1px solid var(--border);color:var(--primary);font-size:11px;line-height:1;text-decoration:none;vertical-align:middle}
 .sms-all-btn:hover,.sms-all-btn:focus{background:var(--primary-bg);border-color:var(--primary);color:var(--primary-h);outline:none}
 
 /* BADGES */
@@ -230,8 +235,8 @@ tr.holiday-row:hover td{background:color-mix(in srgb,var(--amber-bg) 160%,var(--
 
 .cnt{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:3px;font-variant-numeric:tabular-nums}
 .cnt-wk{background:var(--teal-bg);color:var(--teal)}
-.cnt-6{background:var(--green-bg);color:var(--green-text)}
-.cnt-5{background:var(--amber-bg);color:var(--amber-text)}
+.cnt-6{background:var(--green);color:var(--surface);border:1px solid var(--green)}
+.cnt-5{background:var(--green-bg);color:var(--green)}
 .cnt-low{background:var(--red-bg);color:var(--red-text)}
 .cnt-temp{font-size:10px;color:var(--muted);font-weight:500;margin-left:2px}
 
@@ -272,7 +277,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
 .cal-grid{border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-lg) var(--radius-lg);
   overflow:hidden;background:var(--border)}
 .cal-week{display:block;border-bottom:1px solid var(--border)}
-.cal-day-cell{background:var(--surface);min-height:80px;padding:6px 8px;position:relative;overflow:hidden}
+.cal-day-cell{background:var(--surface);min-height:80px;padding:6px 8px;position:relative;overflow:visible}
 .cal-day-cell.other-month{background:var(--surface2);opacity:0.5}
 .cal-day-cell.is-weekend{background:var(--wknd-bg)}
 [data-theme="dark"] .cal-day-cell.is-weekend{background:rgba(255,255,255,0.02)}
@@ -281,12 +286,14 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
   font-size:12px;font-weight:600;margin-bottom:3px}
 .cal-dots{display:flex;flex-wrap:wrap;gap:2px;margin-top:2px}
 .cal-dot{font-size:10px;padding:1px 5px;border-radius:2px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.cal-dot-provider{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;word-break:normal;line-height:1.25}
 .cal-dot-shift{background:var(--green-bg);color:var(--green-text)}
 .cal-dot-pc{background:var(--gray-bg);color:var(--gray-text)}
 .cal-dot-thin{background:var(--red-bg);color:var(--red-text);font-size:9px}
-.cal-dot-pto-f{background:var(--green-bg);color:var(--green-text);font-size:9px;opacity:0.7}
+.cal-dot-pto-f,.cal-dot-pto-5{background:var(--green-bg);color:var(--green);font-size:9px}
 .cal-dot-pto-c{background:var(--amber-bg);color:var(--amber-text);font-size:9px;opacity:0.7}
-.cal-dot-staff{background:var(--primary-bg);color:var(--primary);font-size:9px}
+.cal-dot-pto-6{background:var(--green);color:var(--surface);font-size:9px}
+.cal-dot-staff{font-size:9px}
 .cal-dot-trainee{background:var(--purple-bg);color:var(--purple);font-size:9px}
 .cal-dot-provider{background:var(--teal-bg);color:var(--teal);font-size:9px}
 .cal-dot-ft{background:var(--amber-bg);color:var(--amber-text);font-size:9px}
@@ -622,7 +629,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
   <div class="sidebar-logo">
     <div class="logo-row">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      <span class="logo-title">Psych Scheduler</span>
+      <span class="logo-title">JFK Schedule Analyzer</span>
     </div>
     <div class="provider-select-wrap" title="Switch provider profile">
       <svg class="provider-select-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -635,7 +642,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
     <div class="nav-section">Setup</div>
     <button class="nav-item active" onclick="showView('paste')" data-view="paste">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
-      Paste &amp; Parse
+      Upload latest schedule file
     </button>
     <div class="nav-section">Analysis</div>
     <button class="nav-item disabled" id="nav-dashboard" onclick="showView('dashboard')" data-view="dashboard">
@@ -681,13 +688,18 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
        Status pill, today badge, and topbar-meta remain so getElementById() calls still resolve. -->
   <div class="topbar">
     <div class="topbar-left">
-      <div class="topbar-title">Psychiatry Schedule Analyzer <span style="font-size:12px;font-weight:500;color:var(--muted);letter-spacing:0">· Troy Fowler, MD</span></div>
+      <div class="topbar-title">JFK Schedule Analyzer <span style="font-size:12px;font-weight:500;color:var(--muted);letter-spacing:0">· Troy Fowler, MD</span></div>
       <div class="topbar-meta" id="topbar-meta">No schedule loaded — paste data to begin</div>
     </div>
     <div class="topbar-right">
       <span class="status-pill status-empty" id="status-pill">No Data</span>
       <span class="status-pill" id="today-badge" style="background:var(--primary-bg);color:var(--primary)"></span>
     </div>
+  </div>
+
+  <div class="data-update-bar" id="data-update-bar">
+    <div><span class="data-update-text" id="data-updated-text">Data last updated —</span><span class="data-update-note" id="data-updated-note"></span></div>
+    <button class="data-upload-btn" onclick="showView('paste')">upload latest schedule file</button>
   </div>
 
   <div class="global-filter-bar hidden" id="global-filter-bar">
@@ -713,8 +725,8 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
     <!-- ══ PASTE VIEW ══════════════════════════════════════════════ -->
     <div class="view active" id="view-paste">
       <div class="paste-container">
-        <div class="paste-title">Load Your Schedule</div>
-        <div class="paste-sub">Copy the entire spreadsheet including the header row and paste below. The schedule will parse automatically.</div>
+        <div class="paste-title">Upload latest schedule file</div>
+        <div class="paste-sub">Upload, paste, or load the latest spreadsheet schedule. The schedule will parse automatically.</div>
         <div class="step-card">
           <textarea class="paste-area" id="paste-area" placeholder="Paste your copied spreadsheet data here."></textarea>
           <div class="parse-result" id="parse-result"></div>
@@ -779,12 +791,6 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
           <option value="all">All dates</option>
           <option value="past">Past only</option>
         </select>
-        <select class="filter-select" id="f-pto-dash" onchange="renderDashboard()">
-          <option value="">Any PTO risk</option>
-          <option value="Feasible">✅ Feasible</option>
-          <option value="Caution">⚠️ Caution</option>
-          <option value="Not Feasible">🚫 Not Feasible</option>
-        </select>
         <span class="rcount" id="dash-rc"></span>
       </div>
       <div class="col-panel" id="col-panel">
@@ -837,6 +843,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
               <label class="cal-cb-label"><input type="checkbox" id="cb-my-overnight" checked onchange="renderCalendar()"> My overnight</label>
               <label class="cal-cb-label"><input type="checkbox" id="cb-all-overnight" onchange="renderCalendar()"> All overnight</label>
               <label class="cal-cb-label"><input type="checkbox" id="cb-staff-total" onchange="renderCalendar()"> Total Staff Core+Temp</label>
+              <label class="cal-cb-label"><input type="checkbox" id="cb-pto-feasible" onchange="renderCalendar()"> PTO feasible</label>
               <label class="cal-cb-label"><input type="checkbox" id="cb-trainees" onchange="renderCalendar()"> Trainees</label>
               <label class="cal-cb-label"><input type="checkbox" id="cb-providers" onchange="renderCalendar()"> Working providers</label>
               <label class="cal-cb-label"><input type="checkbox" id="cb-ftphone" onchange="renderCalendar()"> FT Phone</label>
@@ -1577,6 +1584,21 @@ function rowCls(r) {
   const cls = [r.isWeekend?'wknd-row':'', NC_HOLIDAYS_2026[r.date]?'holiday-row':''].filter(Boolean).join(' ');
   return cls ? ` class="${cls}"` : '';
 }
+
+function staffTotalClass(row) {
+  if (row.count >= 6) return 'cnt-6';
+  if (row.count === 5) return 'cnt-5';
+  return 'cnt-low';
+}
+function ptoFeasibleClass(row) {
+  return row.count >= 6 ? 'cal-dot-pto-6' : 'cal-dot-pto-5';
+}
+function ptoFeasibleBadge(row) {
+  if (row.count < 5) return '<span style="color:var(--faint)">—</span>';
+  const cls = row.count >= 6 ? 'cnt cnt-6' : 'cnt cnt-5';
+  return `<span class="${cls}">PTO feasible</span>`;
+}
+
 function ptoBadge(v){
   if(v==='Feasible')     return '<span class="badge bg">✅ Feasible</span>';
   if(v==='Caution')      return '<span class="badge ba">⚠️ Caution</span>';
@@ -1590,7 +1612,7 @@ function clsBadge(v){
   return `<span class="cc cc-${k}">${k}</span>`;
 }
 function cntBadge(coreN, tempN, wknd){
-  const k=wknd?'cnt-wk':coreN>=6?'cnt-6':coreN===5?'cnt-5':'cnt-low';
+  const k=coreN>=6?'cnt-6':coreN===5?'cnt-5':'cnt-low';
   const tempSpan=tempN>0?`<span class="cnt-temp">+${tempN}T</span>`:'';
   return `<span class="cnt ${k}">${coreN}</span>${tempSpan}`;
 }
@@ -1630,13 +1652,12 @@ const SCHED_COLS_ALL = [
   {id:'date',        label:'Date',             sortable:true,  sortKey:r=>r.date},
   {id:'asgn',        label:'My Assignment',    sortable:false},
   {id:'call',        label:'Call',             sortable:false},
-  {id:'ptoRisk',     label:'PTO Risk',         sortable:true,  sortKey:r=>({Feasible:0,Caution:1,'Not Feasible':2}[r.ptoRisk]??9)},
+  {id:'ptoFeasible', label:'PTO Feasible',     sortable:true,  sortKey:r=>r.count},
   {id:'staffTotal',  label:'Total Staff<br>Core+Temp', sortable:true,  sortKey:r=>r.count},
 
   {id:'overnight',   label:'Overnight',        sortable:false},
   {id:'backupPerson',label:'Backup Person',    sortable:false},
   {id:'providers',   label:'Working Providers',sortable:false},
-  {id:'streak',      label:'Thin Run',         sortable:true,  sortKey:r=>r.streak},
   {id:'ftPhone',     label:'FT Phone',         sortable:false},
   {id:'anderson',    label:'Anderson',         sortable:false},
   {id:'fowler',      label:'Fowler',           sortable:false},
@@ -1647,7 +1668,7 @@ const SCHED_COLS_ALL = [
   {id:'trainees',    label:'Trainees',         sortable:true,  sortKey:r=>(r.trainees||[]).join(',')},
 ];
 
-let schedActiveCols = ['day','date','asgn','call','trainees'];
+let schedActiveCols = ['day','date','asgn','call','trainees','providers'];
 let schedWeekdaysOnly = false;
 let schedSort = {col:'date', dir:1};
 let schedDragId = null;
@@ -1690,10 +1711,10 @@ function schedCell(id, r) {
     case 'date':        return holDateCell(r.date);
     case 'asgn':        return renderAsgnCellFor(r, selectedProvider);
     case 'call':        return `<td>${provCallBadge(r)}</td>`;
-    case 'ptoRisk':     return `<td>${ptoBadge(r.ptoRisk)}</td>`;
+    case 'ptoFeasible': return `<td>${ptoFeasibleBadge(r)}</td>`;
     case 'staffTotal': {
       const tN=(r.workingTemp||[]).length;
-      const totalK=r.isWeekend?'cnt-wk':r.count>=6?'cnt-6':r.count===5?'cnt-5':'cnt-low';
+      const totalK=staffTotalClass(r);
       return `<td><span class="cnt ${totalK}">${r.count}</span><span class="cnt-temp" style="font-size:10px;margin-left:4px">${r.coreCount}c${tN?`+${tN}t`:''}</span></td>`;
     }
     case 'overnight':   return `<td style="font-size:11px;color:var(--muted)">${r.overnight||'<span style="color:var(--faint)">—</span>'}</td>`;
@@ -1769,8 +1790,8 @@ function schedDragEnd() { schedDragId=null; renderColPicker(); }
 
 function renderColPicker() {
   // Fixed ordered grid — most-used first. Day/Date are always pinned (not shown here).
-  const PICKER_ORDER = ['asgn','call','trainees','ptoRisk','staffTotal','providers','overnight',
-    'backupPerson','streak','ftPhone','anderson','fowler','carter','ondreyka','smith','cooley'];
+  const PICKER_ORDER = ['asgn','call','trainees','ptoFeasible','staffTotal','providers','overnight',
+    'backupPerson','ftPhone','anderson','fowler','carter','ondreyka','smith','cooley'];
   // Provider-type ids — those rendered by renderAsgnCellFor/providerCell
   const PROVIDER_IDS = ['anderson','fowler','carter','ondreyka','smith','cooley'];
   // Change 3: hide the chip for whichever provider is currently selected in the dropdown
@@ -1838,7 +1859,7 @@ function schedToggleAllProviders() {
 
 
 function resetSchedCols() {
-  schedActiveCols = ['day','date','asgn','call','trainees'];
+  schedActiveCols = ['day','date','asgn','call','trainees','providers'];
   renderColPicker();
   renderDashboard();
 }
@@ -2041,16 +2062,22 @@ async function loadFromDrive() {
   const uncfg  = document.getElementById('drive-uncfg');
 
   if (!DRIVE_EXEC_URL) {
-    uncfg.style.display = 'block';
-    status.textContent  = 'Not configured';
-    status.className    = 'drive-status err';
+    if (uncfg) uncfg.style.display = 'block';
+    if (status) {
+      status.textContent  = 'Not configured';
+      status.className    = 'drive-status err';
+    }
+    updateDataUpdatedBar('error', null, 'Google Sheet connection is not configured');
     return;
   }
-  uncfg.style.display = 'none';
+  if (uncfg) uncfg.style.display = 'none';
 
-  btn.disabled        = true;
-  status.textContent  = 'Fetching from Google Drive…';
-  status.className    = 'drive-status';
+  if (btn) btn.disabled = true;
+  if (status) {
+    status.textContent  = 'Fetching from Google Drive…';
+    status.className    = 'drive-status';
+  }
+  updateDataUpdatedBar('loading', null, '(loading Google Sheet…)');
 
   try {
     const url      = DRIVE_EXEC_URL + (DRIVE_EXEC_URL.includes('?') ? '&' : '?') + '_cb=' + Date.now();
@@ -2066,16 +2093,22 @@ async function loadFromDrive() {
     document.getElementById('paste-area').value = tsv;
     parseAndLoad();
 
-    status.textContent = '\u2713 Loaded ' + json.rowCount + ' rows · ' +
-      new Date(json.fetchedAt).toLocaleString();
-    status.className   = 'drive-status ok';
+    if (status) {
+      status.textContent = '\u2713 Loaded ' + json.rowCount + ' rows · ' +
+        (json.fetchedAt ? new Date(json.fetchedAt).toLocaleString() : 'timestamp unavailable');
+      status.className   = 'drive-status ok';
+    }
+    updateDataUpdatedBar('ok', json.fetchedAt, json.fetchedAt ? '' : '(Google Sheet loaded; timestamp unavailable)');
     await fetchDriveMeta();
   } catch(err) {
     driveStatus = { fetchedAt: null, rowCount: 0, error: err.message };
-    status.textContent = 'Error: ' + err.message;
-    status.className   = 'drive-status err';
+    if (status) {
+      status.textContent = 'Error: ' + err.message;
+      status.className   = 'drive-status err';
+    }
+    updateDataUpdatedBar('error', null, 'automatic Google Sheet load failed: ' + err.message);
   } finally {
-    btn.disabled = false;
+    if (btn) btn.disabled = false;
   }
 }
 
@@ -2090,7 +2123,6 @@ function renderDashboard(pg) {
   // Filters
   const fClass   = document.getElementById('f-class').value;
   const fPeriod  = document.getElementById('f-period').value;
-  const fPTO     = document.getElementById('f-pto-dash').value;
 
   // Global date range takes precedence — if either bound set, skip f-period filter
   const useGlobal = !!(globalRange.start || globalRange.end);
@@ -2104,7 +2136,6 @@ function renderDashboard(pg) {
   else if(fClass==='Admin')    rows = rows.filter(r=>provClass(r)==='Admin/Remote');
   else if(fClass==='Off')      rows = rows.filter(r=>provClass(r)==='Off/Unavailable');
   else if(fClass==='Training') rows = rows.filter(r=>provClass(r)==='Training/Non-clinical');
-  if(fPTO) rows = rows.filter(r=>r.ptoRisk===fPTO);
   // Sort
   const sortDef = SCHED_COLS_ALL.find(c=>c.id===schedSort.col);
   if(sortDef?.sortKey) {
@@ -2235,7 +2266,7 @@ function renderBackup() {
     }
     if(bkpShowStaffTotal) {
       const tN=(r.workingTemp||[]).length;
-      const totalK=r.isWeekend?'cnt-wk':r.count>=6?'cnt-6':r.count===5?'cnt-5':'cnt-low';
+      const totalK=staffTotalClass(r);
       extra += `<td><span class="cnt ${totalK}">${r.count}</span><span class="cnt-temp" style="font-size:10px;margin-left:4px">${r.coreCount}c${tN?`+${tN}t`:''}</span></td>`;
     }
     return `${rowCls(r)}><td class="col-day"><span class="${r.isWeekend?'day-chip weekend':'day-chip'}">${dayShort(r.day)}</span></td>
@@ -2290,6 +2321,7 @@ function renderCalendar() {
   const showMyOvernight  = document.getElementById('cb-my-overnight').checked;
   const showAllOvernight = document.getElementById('cb-all-overnight').checked;
   const showStaffTotal   = document.getElementById('cb-staff-total').checked;
+  const showPTOFeasible  = document.getElementById('cb-pto-feasible').checked;
   const showTrainees     = document.getElementById('cb-trainees').checked;
   const showProviders    = document.getElementById('cb-providers').checked;
   const showFTPhone      = document.getElementById('cb-ftphone').checked;
@@ -2386,7 +2418,8 @@ function renderCalendar() {
         if(showMyOvernight  && isProvOvernight(row))               dots.push('<span class="cal-dot cal-dot-overnight">My overnight</span>');
         if(showAllOvernight && row.overnight)                      dots.push(`<span class="cal-dot cal-dot-overnight">${escapeHtml(row.overnight)}</span>`);
         if(showPC           && provPC(row))                        dots.push('<span class="cal-dot cal-dot-pc">Post-Call</span>');
-        if(showStaffTotal)                                         dots.push(`<span class="cal-dot cal-dot-staff">${escapeHtml(calStaffLabel(row))}</span>`);
+        if(showStaffTotal)                                         dots.push(`<span class="cal-dot cal-dot-staff ${staffTotalClass(row)}">${escapeHtml(calStaffLabel(row))}</span>`);
+        if(showPTOFeasible && row.count >= 5)                         dots.push(`<span class="cal-dot ${ptoFeasibleClass(row)}">PTO feasible</span>`);
         if(showTrainees     && (row.trainees||[]).length)          dots.push(`<span class="cal-dot cal-dot-trainee">${escapeHtml((row.trainees||[]).join(', '))}</span>`);
         if(showProviders) {
           const providerText = calProviderLabel(row);
@@ -2419,6 +2452,7 @@ function exportICS() {
   const showMyOvernight  = document.getElementById('cb-my-overnight').checked;
   const showAllOvernight = document.getElementById('cb-all-overnight').checked;
   const showStaffTotal   = document.getElementById('cb-staff-total').checked;
+  const showPTOFeasible  = document.getElementById('cb-pto-feasible').checked;
   const showTrainees     = document.getElementById('cb-trainees').checked;
   const showProviders    = document.getElementById('cb-providers').checked;
   const showFTPhone      = document.getElementById('cb-ftphone').checked;
@@ -2480,6 +2514,7 @@ function exportICS() {
   // Total staff, trainees, working providers, and FT Phone
   for(const row of DATA) {
     if(showStaffTotal) events.push({start:row.date,end:addOneDay(row.date),summary:`Total Staff: ${calStaffLabel(row)}`,cat:'staff'});
+    if(showPTOFeasible && row.count >= 5) events.push({start:row.date,end:addOneDay(row.date),summary:'PTO feasible',cat:'pto'});
     if(showTrainees && (row.trainees||[]).length) events.push({start:row.date,end:addOneDay(row.date),summary:`Trainees: ${(row.trainees||[]).join(', ')}`,cat:'trainees'});
     if(showProviders) {
       const providerText = calProviderLabel(row);
@@ -2491,7 +2526,7 @@ function exportICS() {
   if(!events.length) { alert('No events to export (check filter selections).'); return; }
 
   const now = new Date().toISOString().replace(/[-:.]/g,'').slice(0,15)+'Z';
-  let ics = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Psych Scheduler Fowler//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n`;
+  let ics = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//JFK Schedule Analyzer//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n`;
 
   events.forEach((ev,i)=>{
     ics += `BEGIN:VEVENT\r\n`;
@@ -2604,6 +2639,35 @@ function formatTimeAgo(date) {
   return diffMo + ' month' + (diffMo > 1 ? 's' : '') + ' ago';
 }
 
+
+function formatDataTimestamp(value) {
+  if (!value) return '';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleString(undefined, {
+    month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit'
+  });
+}
+
+function updateDataUpdatedBar(state, value, note) {
+  const textEl = document.getElementById('data-updated-text');
+  const noteEl = document.getElementById('data-updated-note');
+  if (!textEl) return;
+  if (state === 'loading') {
+    textEl.textContent = 'Data last updated loading…';
+    if (noteEl) noteEl.textContent = note || '';
+    return;
+  }
+  if (state === 'error') {
+    textEl.textContent = 'Data last updated —';
+    if (noteEl) noteEl.textContent = note ? `(${note})` : '(automatic Google Sheet load failed)';
+    return;
+  }
+  const formatted = formatDataTimestamp(value);
+  textEl.textContent = formatted ? `Data last updated ${formatted}` : 'Data last updated —';
+  if (noteEl) noteEl.textContent = note || '';
+}
+
 async function fetchDriveMeta() {
   if (!DRIVE_EXEC_URL) return;
   try {
@@ -2615,8 +2679,15 @@ async function fetchDriveMeta() {
       if (label) label.textContent = 'Sheet last updated: ' + formatTimeAgo(d) +
         ' (' + d.toLocaleDateString(undefined, {month:'short',day:'numeric',year:'numeric'}) +
         ' at ' + d.toLocaleTimeString(undefined, {hour:'numeric',minute:'2-digit'}) + ')';
+      updateDataUpdatedBar('ok', json.lastModified, '');
+    } else if (!driveStatus || !driveStatus.fetchedAt) {
+      updateDataUpdatedBar('ok', null, '(timestamp unavailable)');
     }
-  } catch(_) {}  // silent fail — metadata is non-critical
+  } catch(err) {
+    if (!driveStatus || !driveStatus.fetchedAt) {
+      updateDataUpdatedBar('error', null, 'could not read Google Sheet timestamp');
+    }
+  }
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
@@ -2656,7 +2727,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   const cEl = document.querySelector('.content');
   if(cEl) cEl.style.zoom = (baseFontPx / 16).toFixed(3);
   updateThemeBtn(document.documentElement.getAttribute('data-theme')||'dark');
-  fetchDriveMeta();
+  loadFromDrive();
 });
 
 function openFeedbackModal(){
@@ -2699,7 +2770,7 @@ function submitFeedback(event){
   fd.append('comment', comment);
   fd.append('page', page);
   fd.append('timestamp', timestamp);
-  fd.append('_subject', 'Psych Scheduler Maintenance Request');
+  fd.append('_subject', 'JFK Schedule Analyzer Maintenance Request');
   fd.append('_template', 'table');
   fd.append('_captcha', 'false');
 
