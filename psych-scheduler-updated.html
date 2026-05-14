@@ -1,0 +1,2736 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Psych Schedule Analyzer — Fowler</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root,[data-theme="light"]{
+  --bg:#f4f6f8;--surface:#ffffff;--surface2:#f0f3f6;--surface3:#e8ecf0;
+  --border:rgba(0,0,0,0.08);--divider:rgba(0,0,0,0.05);
+  --text:#1a2332;--muted:#5a6a7a;--faint:#9aaabb;
+  --primary:#1565C0;--primary-h:#0d47a1;--primary-bg:rgba(21,101,192,0.09);
+  --teal:#00838f;--teal-bg:rgba(0,131,143,0.09);
+  --green:#2e7d32;--green-bg:#e8f5e9;--green-text:#1b5e20;
+  --amber:#e65100;--amber-bg:#fff3e0;--amber-text:#bf360c;
+  --red:#c62828;--red-bg:#ffebee;--red-text:#b71c1c;
+  --gray-bg:#f5f5f5;--gray-text:#757575;
+  --purple:#7c3aed;--purple-bg:rgba(124,58,237,0.08);
+  --wknd-bg:rgba(0,0,0,0.025);
+  --shadow:0 1px 3px rgba(0,0,0,0.08),0 4px 12px rgba(0,0,0,0.05);
+  --radius:8px;--radius-sm:5px;--radius-lg:12px;
+  --font:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
+  --sidebar-w:220px;
+}
+[data-theme="dark"]{
+  --bg:#0f1520;--surface:#161e2d;--surface2:#1c2538;--surface3:#222d42;
+  --border:rgba(255,255,255,0.07);--divider:rgba(255,255,255,0.04);
+  --text:#d4dde8;--muted:#7a8fa0;--faint:#445566;
+  --primary:#4f9be8;--primary-h:#6aabf0;--primary-bg:rgba(79,155,232,0.1);
+  --teal:#4db6c3;--teal-bg:rgba(77,182,195,0.1);
+  --green:#66bb6a;--green-bg:rgba(102,187,106,0.12);--green-text:#a5d6a7;
+  --amber:#ffa726;--amber-bg:rgba(255,167,38,0.12);--amber-text:#ffcc80;
+  --red:#ef5350;--red-bg:rgba(239,83,80,0.12);--red-text:#ef9a9a;
+  --gray-bg:rgba(255,255,255,0.05);--gray-text:#607080;
+  --purple:#a78bfa;--purple-bg:rgba(167,139,250,0.12);
+  --wknd-bg:rgba(255,255,255,0.018);
+  --shadow:0 1px 3px rgba(0,0,0,0.3),0 4px 12px rgba(0,0,0,0.2);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;-webkit-font-smoothing:antialiased}
+body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh;display:flex;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;z-index:10}
+.sidebar-logo{padding:18px 16px 14px;border-bottom:1px solid var(--divider)}
+.logo-row{display:flex;align-items:center;gap:9px;margin-bottom:3px}
+.logo-row svg{color:var(--primary)}
+.logo-title{font-size:13px;font-weight:700;letter-spacing:-0.01em}
+.logo-sub{font-size:11px;color:var(--primary);padding-left:28px;font-weight:500;letter-spacing:0.02em}
+.sidebar-nav{padding:8px;flex:1}
+.nav-section{font-size:10px;font-weight:600;color:var(--faint);text-transform:uppercase;letter-spacing:0.06em;padding:10px 8px 4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius-sm);
+  cursor:pointer;font-size:13px;color:var(--muted);transition:all 140ms ease;margin-bottom:1px;
+  border:none;background:none;width:100%;text-align:left}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--primary-bg);color:var(--primary);font-weight:500}
+.nav-item svg{width:15px;height:15px;flex-shrink:0;opacity:0.7}
+.nav-item.active svg{opacity:1}
+.nav-item.disabled{opacity:0.4;cursor:default;pointer-events:none}
+.sidebar-footer{padding:10px;border-top:1px solid var(--divider);display:flex;flex-direction:column;gap:6px}
+.footer-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:7px;
+  border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);
+  color:var(--muted);font-size:11px;cursor:pointer;transition:all 140ms ease}
+.footer-btn:hover{background:var(--surface3);color:var(--text)}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;height:100vh}
+
+/* ── Topbar removed from layout on screen (CHANGE 1) ──
+   Hidden universally; print stylesheet re-enables it via its own `display:flex !important` rule.
+   Status pill, today badge, and topbar-meta elements are preserved in DOM so existing JS
+   (updateThemeBtn, status updates, today-badge) keeps working without modification. */
+.topbar{display:none !important}
+.topbar-legacy{display:flex;align-items:center;justify-content:space-between;padding:0 20px 0 0;
+  height:56px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.topbar-left{display:flex;flex-direction:column;padding:0 20px;border-left:3px solid var(--primary);height:100%;justify-content:center}
+.topbar-title{font-size:16px;font-weight:700;letter-spacing:-0.01em;line-height:1.2}
+.topbar-meta{font-size:11px;color:var(--muted)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.font-ctrl{display:flex;align-items:center;gap:0;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;flex-shrink:0}
+.font-btn{padding:4px 8px;background:var(--surface2);color:var(--muted);border:none;font-size:11px!important;font-weight:700;cursor:pointer;transition:all 120ms;line-height:1;font-family:var(--font);flex-shrink:0}
+.font-btn:hover{background:var(--surface3);color:var(--text)}
+.font-btn-plus{border-left:1px solid var(--border)}
+.font-badge{padding:4px 7px;font-size:10px;color:var(--faint);background:var(--surface2);border-left:1px solid var(--border);border-right:1px solid var(--border);font-family:var(--mono);white-space:nowrap}
+.status-pill{padding:3px 10px;border-radius:var(--radius-sm);font-size:11px;font-weight:600}
+.status-loaded{background:var(--green-bg);color:var(--green-text)}
+.status-empty{background:var(--amber-bg);color:var(--amber-text)}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:20px 24px;height:0}
+.view{display:none}
+.view.active{display:block}
+
+/* PASTE VIEW */
+.paste-container{max-width:820px}
+.paste-title{font-size:18px;font-weight:700;margin-bottom:6px}
+.paste-sub{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6}
+.step-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:20px;margin-bottom:14px;box-shadow:var(--shadow)}
+.step-label{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.step-num{width:24px;height:24px;border-radius:50%;background:var(--primary);color:#fff;
+  font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-title{font-size:13px;font-weight:600}
+.col-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+.col-table th{padding:6px 10px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:0.05em;background:var(--surface2);border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:2;vertical-align:top}
+.col-table td{padding:5px 10px;border-bottom:1px solid var(--divider)}
+.col-table tr:last-child td{border-bottom:none}
+.col-num{font-family:var(--mono);color:var(--faint);font-size:11px}
+.col-header{font-weight:500}
+.col-highlight{color:var(--primary);font-weight:600}
+.col-temp{color:var(--teal);font-weight:600}
+.paste-area{width:100%;height:200px;padding:12px;font-family:var(--mono);font-size:11px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);
+  color:var(--text);resize:vertical;line-height:1.5}
+.paste-area:focus{outline:2px solid var(--primary);outline-offset:1px;border-color:transparent}
+.parse-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--primary);
+  color:#fff;border:none;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;
+  transition:all 140ms ease;margin-top:12px}
+.parse-btn:hover{background:var(--primary-h)}
+.parse-result{margin-top:12px;padding:10px 14px;border-radius:var(--radius-sm);font-size:12px;display:none}
+.parse-ok{background:var(--green-bg);color:var(--green-text);border:1px solid var(--green-text)}
+.parse-err{background:var(--red-bg);color:var(--red-text);border:1px solid var(--red-text)}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;box-shadow:var(--shadow)}
+.kpi-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
+.kpi-value{font-size:24px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;margin-bottom:4px}
+.kpi-sub{font-size:11px;color:var(--muted)}
+.kpi.good .kpi-value{color:var(--green)}
+.kpi.warn .kpi-value{color:var(--amber)}
+.kpi.danger .kpi-value{color:var(--red)}
+.kpi.info .kpi-value{color:var(--primary)}
+
+/* FILTERS */
+.filter-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:center}
+.filter-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em}
+.filter-select{padding:5px 9px;border-radius:var(--radius-sm);border:1px solid var(--border);
+  background:var(--surface);color:var(--text);font-size:12px;font-family:var(--font);cursor:pointer}
+.filter-select:focus{outline:2px solid var(--primary);outline-offset:1px}
+.chip{padding:5px 11px;border-radius:var(--radius-sm);border:1px solid var(--border);
+  background:var(--surface2);color:var(--muted);font-size:12px;cursor:pointer;transition:all 140ms}
+.chip:hover,.chip.active{background:var(--primary-bg);border-color:var(--primary);color:var(--primary);font-weight:500}
+.rcount{font-size:11px;color:var(--muted);margin-left:auto}
+
+/* TABLE */
+/* ── CHANGE 2: sticky header offset variable ──
+   With the topbar removed, the only persistent chrome above .table-wrap is the
+   global-filter-bar (~48px). The variable lets the offset be tuned per-breakpoint. */
+:root{--table-top-offset:60px}
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+  overflow-x:auto;overflow-y:auto;max-height:calc(100vh - var(--table-top-offset));box-shadow:var(--shadow)}
+.table-wrap>table{border-radius:inherit}
+.table-hdr{padding:11px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.table-hdr-title{font-size:13px;font-weight:600}
+table{width:max-content;border-collapse:collapse;font-size:12px;table-layout:auto}
+td,th{white-space:nowrap}
+.col-day{width:1%;padding-right:4px!important}
+.col-day+td,.col-day+th{padding-left:6px!important}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{color:var(--text);background:var(--surface3)}
+th.sort-asc::after{content:' ↑';color:var(--primary);font-weight:700}
+th.sort-desc::after{content:' ↓';color:var(--primary);font-weight:700}
+th.th-draggable{cursor:grab}
+th.th-draggable:active{cursor:grabbing}
+th.th-dragging{opacity:0.45;background:var(--surface3)!important}
+th.th-drag-over{background:var(--primary-bg)!important;color:var(--primary)!important;box-shadow:inset 2px 0 0 var(--primary)}
+.col-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:12px;box-shadow:var(--shadow);overflow:visible}
+.col-panel-row{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+.col-panel-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;width:110px;flex-shrink:0}
+.col-pills{display:flex;flex-wrap:wrap;gap:5px}
+.col-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:12px;cursor:pointer;transition:all 120ms;user-select:none}
+.col-pill:hover{border-color:var(--primary);color:var(--primary)}
+.col-pill.active{background:var(--primary-bg);border-color:var(--primary);color:var(--primary);font-weight:500}
+.col-pill.dragging{opacity:0.4}
+.col-pill.drag-over{border-color:var(--amber);background:var(--amber-bg)}
+.col-grip{font-size:10px;cursor:grab;opacity:0.5;margin-right:2px}
+.col-toggle-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:12px;cursor:pointer;transition:all 140ms}
+.col-toggle-btn:hover,.col-toggle-btn.open,.col-toggle-btn.active{background:var(--primary-bg);border-color:var(--primary);color:var(--primary);font-weight:600}
+th{padding:6px 8px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:0.05em;background:var(--surface2);
+  border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;z-index:1;vertical-align:top}
+td{padding:5px 8px;border-bottom:1px solid var(--divider);vertical-align:middle}
+@media (max-width:768px){
+  #dash-table th:nth-child(1),#dash-table td:nth-child(1){position:sticky;left:0;z-index:4;min-width:48px;max-width:48px;background:var(--surface)}
+  #dash-table th:nth-child(2),#dash-table td:nth-child(2){position:sticky;left:48px;z-index:4;min-width:96px;background:var(--surface);box-shadow:2px 0 0 var(--border)}
+  #dash-table th:nth-child(1),#dash-table th:nth-child(2){z-index:6;background:var(--surface2)}
+  #dash-table tr.wknd-row td:nth-child(1),#dash-table tr.wknd-row td:nth-child(2){background:var(--wknd-bg)}
+  #dash-table tr.holiday-row td:nth-child(1),#dash-table tr.holiday-row td:nth-child(2){background:var(--amber-bg)!important}
+}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface2)}
+tr.wknd-row td{background:var(--wknd-bg)}
+tr.wknd-row:hover td{background:var(--surface2)}
+tr.holiday-row td{background:var(--amber-bg)!important}
+tr.holiday-row:hover td{background:color-mix(in srgb,var(--amber-bg) 160%,var(--surface2))!important}
+.col-hol{width:1%;padding:2px 6px 2px 2px!important;white-space:nowrap;vertical-align:middle}
+.hol-col-tag{display:inline-block;font-size:9px;font-weight:700;color:var(--amber-text);background:var(--amber-bg);border-radius:3px;padding:2px 5px;white-space:nowrap;letter-spacing:0.01em}
+.mono{font-family:var(--mono);font-size:11px}
+.muted-cell{color:var(--muted)}
+.day-chip{display:inline-block;font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px;background:var(--surface3);color:var(--muted)}
+.day-chip.weekend{background:var(--teal-bg);color:var(--teal)}
+.working-providers-cell{font-size:11px;color:var(--muted)}
+.working-provider-link{display:inline-flex;align-items:center;min-height:44px;color:var(--primary);text-decoration:none;border-radius:var(--radius-sm);padding:0 2px}
+.working-provider-link:hover,.working-provider-link:focus{background:var(--primary-bg);color:var(--primary-h);text-decoration:none;outline:none}
+.sms-all-btn{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;margin-left:4px;border-radius:var(--radius-sm);background:var(--surface2);border:1px solid var(--border);color:var(--primary);text-decoration:none;vertical-align:middle}
+.sms-all-btn:hover,.sms-all-btn:focus{background:var(--primary-bg);border-color:var(--primary);color:var(--primary-h);outline:none}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:3px;font-size:11px;font-weight:600;white-space:nowrap}
+.bg{background:var(--green-bg);color:var(--green-text)}
+.ba{background:var(--amber-bg);color:var(--amber-text)}
+.br{background:var(--red-bg);color:var(--red-text)}
+.bk{background:var(--gray-bg);color:var(--gray-text)}
+.bb{background:var(--primary-bg);color:var(--primary)}
+.bt{background:var(--teal-bg);color:var(--teal)}
+.bp{background:var(--purple-bg);color:var(--purple)}
+
+.cc{font-size:10px;padding:2px 6px;border-radius:3px;font-weight:500}
+.cc-Clinical{background:var(--green-bg);color:var(--green-text)}
+.cc-Off{background:var(--gray-bg);color:var(--gray-text)}
+.cc-Admin{background:var(--teal-bg);color:var(--teal)}
+.cc-Training{background:var(--amber-bg);color:var(--amber-text)}
+
+.cnt{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:3px;font-variant-numeric:tabular-nums}
+.cnt-wk{background:var(--teal-bg);color:var(--teal)}
+.cnt-6{background:var(--green-bg);color:var(--green-text)}
+.cnt-5{background:var(--amber-bg);color:var(--amber-text)}
+.cnt-low{background:var(--red-bg);color:var(--red-text)}
+.cnt-temp{font-size:10px;color:var(--muted);font-weight:500;margin-left:2px}
+
+/* MISC */
+.sec-hd{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;
+  letter-spacing:0.06em;margin-bottom:10px;margin-top:20px}
+.sec-hd:first-child{margin-top:0}
+.empty{padding:32px 20px;text-align:center;color:var(--muted);font-size:13px}
+.pag{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;
+  border-top:1px solid var(--border);font-size:12px;color:var(--muted)}
+.pag-btns{display:flex;gap:4px}
+.pb{padding:4px 9px;border-radius:var(--radius-sm);border:1px solid var(--border);
+  background:var(--surface2);color:var(--muted);font-size:11px;cursor:pointer}
+.pb.active{background:var(--primary-bg);border-color:var(--primary);color:var(--primary);font-weight:600}
+kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var(--mono);font-size:10px}
+
+/* ══ CALENDAR ══════════════════════════════════════════════════════ */
+.cal-container{max-width:1100px}
+.cal-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.cal-nav{display:flex;align-items:center;gap:8px}
+.cal-month-label{font-size:16px;font-weight:700;min-width:160px;text-align:center}
+.cal-nav-btn{display:flex;align-items:center;justify-content:center;width:32px;height:32px;
+  border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);
+  color:var(--muted);cursor:pointer;transition:all 140ms}
+.cal-nav-btn:hover{background:var(--surface2);color:var(--text)}
+.cal-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.cal-filter-group{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.cal-cb-label{display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;user-select:none}
+.cal-cb-label input{accent-color:var(--primary);width:13px;height:13px;cursor:pointer}
+.cal-export-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
+  color:var(--muted);font-size:12px;cursor:pointer;transition:all 140ms;font-weight:500}
+.cal-export-btn:hover{background:var(--primary-bg);color:var(--primary);border-color:var(--primary)}
+.cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);
+  border:1px solid var(--border);border-radius:var(--radius-lg) var(--radius-lg) 0 0;overflow:hidden}
+.cal-dow{padding:6px;text-align:center;font-size:10px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:0.05em;background:var(--surface2)}
+.cal-grid{border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-lg) var(--radius-lg);
+  overflow:hidden;background:var(--border)}
+.cal-week{display:block;border-bottom:1px solid var(--border)}
+.cal-day-cell{background:var(--surface);min-height:80px;padding:6px 8px;position:relative;overflow:hidden}
+.cal-day-cell.other-month{background:var(--surface2);opacity:0.5}
+.cal-day-cell.is-weekend{background:var(--wknd-bg)}
+[data-theme="dark"] .cal-day-cell.is-weekend{background:rgba(255,255,255,0.02)}
+.cal-day-cell.is-today .cal-dn{background:var(--primary);color:#fff;border-radius:50%}
+.cal-dn{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
+  font-size:12px;font-weight:600;margin-bottom:3px}
+.cal-dots{display:flex;flex-wrap:wrap;gap:2px;margin-top:2px}
+.cal-dot{font-size:10px;padding:1px 5px;border-radius:2px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.cal-dot-shift{background:var(--green-bg);color:var(--green-text)}
+.cal-dot-pc{background:var(--gray-bg);color:var(--gray-text)}
+.cal-dot-thin{background:var(--red-bg);color:var(--red-text);font-size:9px}
+.cal-dot-pto-f{background:var(--green-bg);color:var(--green-text);font-size:9px;opacity:0.7}
+.cal-dot-pto-c{background:var(--amber-bg);color:var(--amber-text);font-size:9px;opacity:0.7}
+.cal-dot-staff{background:var(--primary-bg);color:var(--primary);font-size:9px}
+.cal-dot-trainee{background:var(--purple-bg);color:var(--purple);font-size:9px}
+.cal-dot-provider{background:var(--teal-bg);color:var(--teal);font-size:9px}
+.cal-dot-ft{background:var(--amber-bg);color:var(--amber-text);font-size:9px}
+
+/* Spanning call event bar */
+.cal-span-layer{position:absolute;top:0;left:0;right:0;pointer-events:none;overflow:visible}
+.cal-span-evt{position:absolute;height:16px;border-radius:3px;font-size:10px;font-weight:600;
+  display:flex;align-items:center;padding:0 6px;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;top:26px;pointer-events:auto;cursor:default}
+.cal-span-backup{background:var(--primary-bg);color:var(--primary);border:1px solid var(--primary);border-opacity:0.3}
+[data-theme="dark"] .cal-span-backup{background:rgba(79,155,232,0.18);border-color:rgba(79,155,232,0.4)}
+.cal-span-pc{background:var(--gray-bg);color:var(--gray-text);border:1px solid rgba(128,128,128,0.2)}
+.cal-span-grid{display:grid;grid-template-columns:repeat(7,1fr);column-gap:0;padding:2px 2px 0}
+.cal-span-grid>div{height:18px;font-size:10px;font-weight:600;padding:1px 6px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;margin-bottom:2px}
+.cal-cells-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border)}
+.cal-dot-overnight{background:rgba(122,57,187,0.15);color:#7a39bb}
+[data-theme="dark"] .cal-dot-overnight{background:rgba(168,111,223,0.18);color:#a86fdf}
+
+/* ═══════════════════════════════════════════════════════════════
+   PRINT STYLES
+   ═══════════════════════════════════════════════════════════════ */
+@media print {
+  @page { margin: 1.2cm; size: landscape; }
+
+  *, *::before, *::after { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+  html { font-size: 11px !important; }
+  body { display: block !important; height: auto !important; overflow: visible !important;
+         background: #fff !important; color: #111 !important; zoom: 1 !important; }
+
+  /* Hide nav/chrome */
+  .sidebar, .font-ctrl, .filter-bar, .col-panel, .col-toggle-btn,
+  .pag, .parse-btn, .cal-export-btn, .cal-nav-btn, .parse-result,
+  #clear-btn, .footer-btn, .cal-filter-group, .sec-hd + .table-wrap + .sec-hd,
+  .topbar-right, .mob-menu-btn, .global-filter-bar { display: none !important; }
+
+  /* Topbar: minimal header (CHANGE 1 — re-enabled only for print) */
+  .topbar { display: flex !important; background: #fff !important; border-bottom: 1px solid #ccc !important;
+             height: auto !important; padding: 6px 0 8px !important; margin-bottom: 10px; page-break-after: avoid; }
+  .topbar-title { font-size: 13px !important; font-weight: 700 !important; color: #000 !important; }
+  .topbar-meta  { font-size: 10px !important; color: #555 !important; }
+
+  /* Layout */
+  .main { display: block !important; height: auto !important; overflow: visible !important; width: 100% !important; }
+  .content { display: block !important; height: auto !important; overflow: visible !important;
+              padding: 0 !important; zoom: 1 !important; }
+  .view { display: none !important; }
+  .view.active { display: block !important; }
+
+  /* KPI cards */
+  .kpi-grid { display: grid !important; grid-template-columns: repeat(4,1fr) !important;
+               gap: 6px !important; margin-bottom: 10px !important; page-break-inside: avoid; }
+  .kpi { border: 1px solid #ccc !important; padding: 7px 10px !important; background: #fff !important;
+          box-shadow: none !important; break-inside: avoid; }
+  .kpi-value { font-size: 20px !important; line-height: 1.1 !important; }
+  .kpi-label { font-size: 9px !important; color: #555 !important; }
+  .kpi-sub   { font-size: 9px !important; color: #777 !important; display: block !important; }
+  .kpi.good .kpi-value { color: #2e7d32 !important; }
+  .kpi.warn .kpi-value { color: #e65100 !important; }
+  .kpi.danger .kpi-value { color: #c62828 !important; }
+  .kpi.info  .kpi-value { color: #1565c0 !important; }
+
+  /* Tables */
+  .table-wrap { overflow: visible !important; box-shadow: none !important; border: none !important;
+                 border-radius: 0 !important; margin-bottom: 8px; }
+  .table-hdr  { display: none !important; }
+  table { width: 100% !important; font-size: 10px !important; border-collapse: collapse !important;
+           table-layout: auto !important; page-break-inside: auto; }
+  thead { display: table-header-group !important; }
+  tr    { page-break-inside: avoid; }
+  th    { background: #f0f0f0 !important; color: #000 !important; border: 1px solid #bbb !important;
+           padding: 3px 6px !important; font-size: 9px !important; white-space: normal !important;
+           vertical-align: top !important; }
+  td    { border: 1px solid #ddd !important; padding: 3px 6px !important;
+           color: #000 !important; background: #fff !important; white-space: normal !important; }
+  tr.wknd-row td { background: #f9f9f9 !important; }
+  tr.holiday-row td { background: #fff8e0 !important; }
+
+  /* Badges & chips */
+  .badge  { border: 1px solid #aaa !important; background: #f5f5f5 !important;
+             color: #000 !important; font-size: 8px !important; padding: 1px 4px !important; }
+  .day-chip         { background: #eee !important; color: #333 !important; border: 1px solid #ccc !important; }
+  .day-chip.weekend { background: #e0f0f0 !important; color: #006070 !important; }
+  .cnt  { color: #000 !important; }
+  .hol-col-tag { background: #fff3cd !important; color: #7a4f00 !important; border: 1px solid #e8c84a !important; }
+  .cc   { border: 1px solid #bbb !important; background: #f5f5f5 !important; color: #000 !important; }
+
+  /* Calendar */
+  .cal-container { page-break-inside: avoid; }
+  .cal-dow-row .cal-dow { background: #f0f0f0 !important; color: #000 !important; border: 1px solid #ddd !important; }
+  .cal-day-cell { border: 1px solid #ddd !important; background: #fff !important; min-height: 60px !important; }
+  .cal-day-cell.is-today { border: 2px solid #333 !important; }
+  .cal-day-cell.is-weekend { background: #f9f9f9 !important; }
+  .cal-dot { font-size: 8px !important; padding: 1px 3px !important; }
+  .cal-span-backup { background: #dce8ff !important; color: #003399 !important; border-color: #99bbff !important; }
+
+  /* Alerts section headers */
+  .sec-hd { color: #333 !important; border-bottom: 1px solid #ccc !important;
+              padding-bottom: 3px !important; margin-bottom: 8px !important; font-size: 10px !important; }
+}
+/* ── CHANGE 3: column-picker chips wrap into multiple rows on mobile ──
+   Replaces the auto-fill grid (which caused a single horizontally-scrolling row on
+   narrow screens) with flex-wrap so chips flow naturally onto additional rows. */
+.col-toggle-grid{display:flex;flex-wrap:wrap;gap:5px;padding:2px 0}
+.col-toggle-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;
+  border-radius:var(--radius-sm);border:1px solid var(--border);cursor:pointer;
+  font-size:11px;font-weight:600;color:var(--muted);background:var(--surface2);
+  transition:all 120ms;user-select:none;white-space:nowrap;flex:0 0 auto}
+.col-toggle-chip:hover{border-color:var(--primary);color:var(--primary)}
+.col-toggle-chip.on{background:var(--primary-bg);border-color:var(--primary);color:var(--primary)}
+.col-chip-check{font-size:9px;width:10px;text-align:center;flex-shrink:0}
+
+/* ── SLATE THEME ──────────────────────────────────────────────── */
+[data-theme="slate"] {
+  --bg: #1a1c20;
+  --surface: #21242a;
+  --surface2: #272b32;
+  --surface3: #2a2e35;
+  --border: #343840;
+  --text: #a8acb4;
+  --muted: #626870;
+  --faint: #3c4048;
+  --primary: #6b9fd4;
+  --primary-bg: rgba(107,159,212,0.10);
+  --primary-hover: #4d85bf;
+  --teal: #4fa8b4;
+  --teal-bg: rgba(79,168,180,0.10);
+  --green: #5a9e66;
+  --green-bg: rgba(90,158,102,0.10);
+  --amber: #b08a3a;
+  --amber-bg: rgba(176,138,58,0.10);
+  --amber-text: #b08a3a;
+  --red: #a85858;
+  --red-bg: rgba(168,88,88,0.10);
+  --purple: #7c6aad;
+  --purple-bg: rgba(124,106,173,0.12);
+  --gray-bg: rgba(255,255,255,0.04);
+  --gray-text: #505860;
+  --wknd-bg: rgba(255,255,255,0.018);
+  --shadow: 0 2px 8px rgba(0,0,0,0.35);
+}
+.theme-btn{display:flex;align-items:center;gap:4px;padding:4px 8px;
+  background:var(--surface2);color:var(--muted);border:1px solid var(--border);
+  border-radius:var(--radius-sm);font-size:11px!important;font-weight:600;cursor:pointer;
+  transition:all 120ms;flex-shrink:0;font-family:var(--font);white-space:nowrap}
+.theme-btn:hover{color:var(--text);border-color:var(--primary)}
+/* Drive load section */
+.drive-section{margin-top:14px;border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 16px;background:var(--surface2)}
+.drive-section-title{font-size:11px;font-weight:600;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.drive-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.drive-btn{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;
+  border-radius:var(--radius-sm);border:1px solid var(--primary);background:var(--primary-bg);
+  color:var(--primary);font-size:12px;font-weight:600;cursor:pointer;
+  font-family:var(--font);transition:background .15s,color .15s}
+.drive-btn:hover{background:var(--primary);color:#fff}
+.drive-btn:disabled{opacity:.5;cursor:not-allowed}
+.drive-btn svg{flex-shrink:0}
+.drive-status{font-size:11px;color:var(--muted);flex:1;min-width:200px}
+.drive-status.ok{color:var(--green)}
+.drive-status.err{color:var(--red)}
+.drive-uncfg{font-size:11px;color:var(--amber-text);margin-top:6px}
+.drive-uncfg code{font-family:var(--mono);font-size:10px;background:var(--amber-bg);
+  padding:1px 4px;border-radius:3px}
+
+/* Provider selector — visible interactive dropdown */
+.provider-select-wrap{display:inline-flex;align-items:center;gap:5px;margin-top:6px;
+  padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--surface2);cursor:pointer;transition:all 140ms ease;max-width:100%}
+.provider-select-wrap:hover{border-color:var(--primary);background:var(--primary-bg)}
+.provider-select-wrap:focus-within{border-color:var(--primary);outline:2px solid var(--primary);outline-offset:1px}
+.provider-select-icon{flex-shrink:0;color:var(--primary);opacity:0.85}
+.provider-select-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;flex-shrink:0}
+.provider-select{flex:1;min-width:0;background:transparent;border:none;cursor:pointer;outline:none;
+  font-family:inherit;font-size:12px;font-weight:600;color:var(--primary);
+  -webkit-appearance:none;appearance:none;padding:0 2px}
+.provider-select-chevron{flex-shrink:0;color:var(--primary);opacity:0.75;pointer-events:none}
+.provider-select-wrap:hover .provider-select-chevron{opacity:1}
+
+/* Global date range filter bar */
+.global-filter-bar{display:flex;align-items:center;gap:10px;padding:8px 20px;
+  border-bottom:1px solid var(--border);background:var(--surface);flex-wrap:wrap;flex-shrink:0}
+.global-filter-bar.hidden{display:none}
+.gf-group{display:inline-flex;align-items:center;gap:6px}
+.gf-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em}
+.gf-date{padding:4px 8px;border-radius:var(--radius-sm);border:1px solid var(--border);
+  background:var(--surface);color:var(--text);font-size:12px;font-family:var(--font);cursor:pointer}
+.gf-date:focus{outline:2px solid var(--primary);outline-offset:1px}
+[data-theme="dark"] .gf-date,
+[data-theme="slate"] .gf-date {
+  color-scheme: dark;
+}
+/* Make the native calendar icon visible in dark/slate themes */
+[data-theme="dark"] .gf-date::-webkit-calendar-picker-indicator,
+[data-theme="slate"] .gf-date::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.4);
+  opacity: 0.85;
+  cursor: pointer;
+}
+.gf-reset{padding:4px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);
+  background:var(--surface2);color:var(--muted);font-size:11px;cursor:pointer;font-family:var(--font);
+  transition:all 140ms}
+.gf-reset:hover{background:var(--primary-bg);color:var(--primary);border-color:var(--primary)}
+.gf-hint{font-size:10px;color:var(--muted);font-style:italic}
+
+/* Mobile menu button — relocated to .global-filter-bar after topbar removal (CHANGE 1) */
+.mob-menu-btn{display:none;align-items:center;justify-content:center;width:32px;height:32px;
+  border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;
+  padding:0;border-radius:var(--radius-sm);margin-right:4px;flex-shrink:0}
+.mob-menu-btn:hover{background:var(--surface3);border-color:var(--primary);color:var(--primary)}
+.mob-menu-btn svg{width:22px;height:22px}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9}
+.sidebar-overlay.open{display:block}
+
+/* Mobile breakpoints */
+@media (max-width:768px){
+  body{flex-direction:column}
+  .sidebar{position:fixed;top:0;left:0;bottom:0;height:100vh;width:240px;
+    transform:translateX(-100%);transition:transform 220ms ease;z-index:11;box-shadow:0 0 24px rgba(0,0,0,0.25)}
+  .sidebar.open{transform:translateX(0)}
+  .main{width:100%;height:100vh}
+  .mob-menu-btn{display:inline-flex}
+  .global-filter-bar{padding:8px 12px;gap:8px}
+  .content{padding:14px 12px}
+  .kpi-grid{grid-template-columns:repeat(2,1fr)!important}
+  .table-wrap{overflow-x:auto!important}
+  table{min-width:100%}
+  .filter-bar{gap:6px}
+  .cal-container{max-width:100%}
+  /* CHANGE 2: more generous sticky offset on mobile to account for wrapped
+     global-filter-bar + col-panel rows on narrow screens. */
+  :root{--table-top-offset:110px}
+  /* CHANGE 3: shrink chips on narrow screens so more fit per wrapped row. */
+  .col-toggle-chip{font-size:10px;padding:4px 8px}
+}
+@media (max-width:480px){
+  .global-filter-bar{gap:6px}
+  .gf-hint{display:none}
+}
+
+/* ── CHANGE 4: collapsible sidebar in landscape orientation on mobile ──
+   The 768px breakpoint above does not match landscape phones (width > 768px,
+   height < 600px). Without this rule, a landscape phone shows the permanent
+   sidebar and loses ~240px of an already-narrow viewport. */
+@media (max-width:1024px) and (orientation:landscape) and (max-height:600px){
+  body{flex-direction:row}
+  .sidebar{position:fixed;top:0;left:0;bottom:0;height:100vh;width:240px;
+    transform:translateX(-100%);transition:transform 220ms ease;z-index:11;
+    box-shadow:0 0 24px rgba(0,0,0,0.25)}
+  .sidebar.open{transform:translateX(0)}
+  .main{width:100%;height:100vh}
+  .mob-menu-btn{display:inline-flex !important}
+  .sidebar-overlay.open{display:block}
+}
+
+@media print{
+  .mob-menu-btn,.sidebar-overlay,.global-filter-bar{display:none!important}
+}
+
+#excel-drop-zone.drag-active {
+  border-color: var(--primary);
+  background: var(--primary-bg);
+}
+
+.fb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:10000;
+  align-items:flex-start;justify-content:center;padding:60px 16px;overflow-y:auto}
+.fb-overlay.open{display:flex}
+.fb-modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+  width:100%;max-width:460px;box-shadow:0 12px 40px rgba(0,0,0,0.3);color:var(--text);
+  display:flex;flex-direction:column}
+.fb-header{display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;border-bottom:1px solid var(--divider)}
+.fb-title{font-size:14px;font-weight:600;color:var(--text)}
+.fb-close{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;
+  display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm)}
+.fb-close:hover{background:var(--surface2);color:var(--text)}
+.fb-form{padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.fb-helper{font-size:11px;color:var(--muted);line-height:1.5;margin:-2px 0 4px}
+.fb-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em}
+.fb-input,.fb-textarea{width:100%;padding:9px 11px;background:var(--surface2);
+  border:1px solid var(--border);border-radius:var(--radius);color:var(--text);
+  font-size:13px;font-family:var(--font);line-height:1.5;box-sizing:border-box}
+.fb-textarea{resize:vertical;min-height:110px}
+.fb-input:focus,.fb-textarea:focus{outline:2px solid var(--primary);outline-offset:1px;border-color:transparent}
+.fb-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+.fb-btn{padding:8px 16px;border-radius:var(--radius);border:1px solid var(--border);
+  background:var(--surface2);color:var(--muted);font-size:12px;font-weight:500;
+  cursor:pointer;font-family:var(--font);transition:all 140ms ease}
+.fb-btn:hover{background:var(--surface3);color:var(--text)}
+.fb-btn-primary{background:var(--primary);color:#fff;border-color:transparent}
+.fb-btn-primary:hover{background:var(--primary-h);color:#fff}
+.fb-btn-primary:disabled{opacity:0.6;cursor:not-allowed}
+.fb-msg{display:none;padding:9px 11px;border-radius:var(--radius);font-size:12px;line-height:1.4}
+.fb-success{display:block;background:rgba(34,139,87,0.12);color:#2a8a5a;border:1px solid rgba(34,139,87,0.25)}
+.fb-error{display:block;background:rgba(192,40,40,0.12);color:#c43838;border:1px solid rgba(192,40,40,0.25)}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<div class="fb-overlay" id="fb-overlay" onclick="if(event.target===this)closeFeedbackModal()" role="dialog" aria-modal="true" aria-labelledby="fb-title">
+  <div class="fb-modal">
+    <div class="fb-header">
+      <div class="fb-title" id="fb-title">Send Feedback</div>
+      <button type="button" class="fb-close" onclick="closeFeedbackModal()" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <form class="fb-form" id="fb-form" onsubmit="submitFeedback(event)">
+      <div class="fb-helper">Maintenance requests, bug reports, or enhancement ideas — all welcome.</div>
+      <div>
+        <label class="fb-label" for="fb-name">Name</label>
+        <input class="fb-input" type="text" id="fb-name" name="name" required autocomplete="name">
+      </div>
+      <div>
+        <label class="fb-label" for="fb-comment">Request / Comment</label>
+        <textarea class="fb-textarea" id="fb-comment" name="comment" required placeholder="Describe the issue, request, or idea..."></textarea>
+      </div>
+      <div class="fb-msg" id="fb-msg"></div>
+      <div class="fb-actions">
+        <button type="button" class="fb-btn" onclick="closeFeedbackModal()">Cancel</button>
+        <button type="submit" class="fb-btn fb-btn-primary" id="fb-submit">Send</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-row">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span class="logo-title">Psych Scheduler</span>
+    </div>
+    <div class="provider-select-wrap" title="Switch provider profile">
+      <svg class="provider-select-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="provider-select-label">Provider:</span>
+      <select id="provider-select" class="provider-select" onchange="onProviderChange(this.value)" aria-label="Provider profile"></select>
+      <svg class="provider-select-chevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section">Setup</div>
+    <button class="nav-item active" onclick="showView('paste')" data-view="paste">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+      Paste &amp; Parse
+    </button>
+    <div class="nav-section">Analysis</div>
+    <button class="nav-item disabled" id="nav-dashboard" onclick="showView('dashboard')" data-view="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a6.5 6.5 0 0 1 13 0v2"/></svg>
+      My Schedule
+    </button>
+    <button class="nav-item disabled" id="nav-backup" onclick="showView('backup')" data-view="backup">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Backup Call
+    </button>
+    <button class="nav-item disabled" id="nav-calendar" onclick="showView('calendar')" data-view="calendar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/></svg>
+      Calendar
+    </button>
+  </div>
+  <div class="sidebar-footer">
+    <!-- CHANGE 1: Theme cycle button relocated from topbar; styled as .footer-btn.
+         Original ID and onclick preserved so cycleTheme()/updateThemeBtn() keep working. -->
+    <button class="footer-btn" id="theme-cycle-btn" onclick="cycleTheme()" title="Cycle theme: Dark → Light → Slate"></button>
+    <!-- CHANGE 1: Font size controls relocated from topbar. -->
+    <div class="font-ctrl" title="Adjust text size" style="width:100%">
+      <button class="font-btn" onclick="changeFontSize(-1)" aria-label="Decrease text size" style="flex:1">A−</button>
+      <span class="font-badge" id="font-size-badge">20px</span>
+      <button class="font-btn font-btn-plus" onclick="changeFontSize(1)" aria-label="Increase text size" style="flex:1">A+</button>
+    </div>
+    <button class="footer-btn" onclick="openFeedbackModal()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Send Feedback
+    </button>
+    <button class="footer-btn" onclick="clearData()" id="clear-btn" style="display:none">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+      Clear data
+    </button>
+    <button class="footer-btn" onclick="window.print()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print view
+    </button>
+  </div>
+</nav>
+
+<div class="main">
+  <!-- CHANGE 1: Topbar hidden via CSS on screen (kept in DOM for JS targets + print stylesheet).
+       Status pill, today badge, and topbar-meta remain so getElementById() calls still resolve. -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-title">Psychiatry Schedule Analyzer <span style="font-size:12px;font-weight:500;color:var(--muted);letter-spacing:0">· Troy Fowler, MD</span></div>
+      <div class="topbar-meta" id="topbar-meta">No schedule loaded — paste data to begin</div>
+    </div>
+    <div class="topbar-right">
+      <span class="status-pill status-empty" id="status-pill">No Data</span>
+      <span class="status-pill" id="today-badge" style="background:var(--primary-bg);color:var(--primary)"></span>
+    </div>
+  </div>
+
+  <div class="global-filter-bar hidden" id="global-filter-bar">
+    <!-- CHANGE 1: Hamburger relocated here. Appears once a data view is loaded
+         (global-filter-bar becomes visible). Paste view intentionally has no sidebar access. -->
+    <button class="mob-menu-btn" onclick="toggleSidebar()" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <div class="gf-group">
+      <span class="gf-label">Start</span>
+      <input type="date" class="gf-date" id="gf-start" onchange="onGlobalRangeChange()">
+    </div>
+    <div class="gf-group">
+      <span class="gf-label">End</span>
+      <input type="date" class="gf-date" id="gf-end" onchange="onGlobalRangeChange()">
+      <span class="gf-hint" id="gf-end-hint" title="Auto-detected from where the schedule appears populated"></span>
+    </div>
+    <button class="gf-reset" onclick="resetGlobalRange()" title="Reset to auto-detected defaults">Reset</button>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ PASTE VIEW ══════════════════════════════════════════════ -->
+    <div class="view active" id="view-paste">
+      <div class="paste-container">
+        <div class="paste-title">Load Your Schedule</div>
+        <div class="paste-sub">Copy the entire spreadsheet including the header row and paste below. The schedule will parse automatically.</div>
+        <div class="step-card">
+          <textarea class="paste-area" id="paste-area" placeholder="Paste your copied spreadsheet data here."></textarea>
+          <div class="parse-result" id="parse-result"></div>
+        </div>
+
+        <div class="step-card" id="excel-drop-zone"
+             ondragenter="event.preventDefault(); this.classList.add('drag-active')"
+             ondragover="event.preventDefault(); event.dataTransfer.dropEffect='copy'; this.classList.add('drag-active')"
+             ondragleave="this.classList.remove('drag-active')"
+             ondrop="handleExcelDrop(event)"
+             style="border: 2px dashed var(--border); border-radius: var(--radius-lg);
+                    padding: 28px; text-align: center; cursor: pointer;
+                    transition: border-color 200ms, background 200ms;">
+          <input type="file" id="excel-file-input" accept=".xlsx,.xls"
+                 style="display:none" onchange="handleExcelFile(this.files[0])">
+          <div style="font-size:13px; color:var(--muted); margin-bottom:8px;">
+            📊 Drop Excel staff schedule here
+          </div>
+          <div style="font-size:11px; color:var(--faint);">
+            .xlsx / .xls · First sheet is used regardless of tab name
+          </div>
+          <button class="parse-btn" style="margin-top:12px"
+                  onclick="document.getElementById('excel-file-input').click()">
+            Browse file
+          </button>
+        </div>
+
+        <div class="drive-section">
+          <div class="drive-section-title">Or — Load from Google Drive</div>
+          <div class="drive-row">
+            <button class="drive-btn" id="drive-load-btn" onclick="loadFromDrive()" title="Fetch schedule from Google Sheets via Apps Script">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L6.5 11H17.5L12 2Z"/><path d="M6.5 11L2 19H22L17.5 11H6.5Z"/>
+              </svg>
+              Load from Drive
+            </button>
+            <div class="drive-status" id="drive-status">Ready</div>
+          </div>
+          <div id="drive-meta-label" style="font-size:11px;color:var(--muted);margin-top:6px;font-style:italic;min-height:14px;"></div>
+          <div id="drive-uncfg" class="drive-uncfg" style="display:none">
+            ⚠ <code>DRIVE_EXEC_URL</code> not configured — open the HTML and paste your Apps Script
+            <code>/exec</code> URL into the constant at the top of the script block.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ DASHBOARD / MY SCHEDULE ════════════════════════════════ -->
+    <div class="view" id="view-dashboard">
+      <div class="filter-bar">
+        <span class="filter-label">View:</span>
+        <select class="filter-select" id="f-class" onchange="renderDashboard()">
+          <option value="">All dates</option>
+          <option value="weekdays">Weekdays only</option>
+          <option value="Clinical">My Clinical days</option>
+          <option value="Admin">Admin/Remote</option>
+          <option value="Off">Off/Unavailable</option>
+          <option value="Training">Training</option>
+        </select>
+        <select class="filter-select" id="f-period" onchange="renderDashboard()">
+          <option value="future">Upcoming only</option>
+          <option value="all">All dates</option>
+          <option value="past">Past only</option>
+        </select>
+        <select class="filter-select" id="f-pto-dash" onchange="renderDashboard()">
+          <option value="">Any PTO risk</option>
+          <option value="Feasible">✅ Feasible</option>
+          <option value="Caution">⚠️ Caution</option>
+          <option value="Not Feasible">🚫 Not Feasible</option>
+        </select>
+        <span class="rcount" id="dash-rc"></span>
+      </div>
+      <div class="col-panel" id="col-panel">
+        <div class="col-panel-row" style="margin-bottom:0">
+          <span class="col-panel-label">Toggle columns — drag headers in the table to reorder</span>
+          <div id="col-pills-active" style="width:100%"></div>
+          <div id="col-pills-inactive" style="display:none"></div>
+          <button class="col-toggle-btn" id="sched-weekdays-btn" onclick="toggleSchedWeekdaysOnly()" title="Hide Saturday and Sunday rows from My Schedule">Weekdays only</button>
+          <button class="col-toggle-btn" onclick="resetSchedCols()" title="Restore all columns to default visibility and order"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74"/><polyline points="3 3 3 9 9 9"/></svg> Reset columns</button>
+        </div>
+      </div>
+      <div class="table-wrap" id="dash-table"></div>
+    </div>
+
+    <!-- ══ BACKUP ═════════════════════════════════════════════════ -->
+    <div class="view" id="view-backup">
+      <div class="filter-bar">
+        <span class="filter-label">Period:</span>
+        <button class="chip active" id="bkp-btn-upcoming" onclick="setBkpFilter('upcoming')">Upcoming</button>
+        <button class="chip" id="bkp-btn-all" onclick="setBkpFilter('all')">All dates</button>
+        <span class="rcount" id="bkp-rc"></span>
+      </div>
+      <div class="col-panel" id="bkp-col-panel">
+        <div class="col-panel-row" style="margin-bottom:0">
+          <span class="col-panel-label">Toggle columns</span>
+          <div id="bkp-col-pills" style="width:100%"></div>
+        </div>
+      </div>
+      <div class="table-wrap" id="bkp-table"></div>
+    </div>
+
+    <!-- ══ ALERTS ══════════════════════════════════════════════════ -->
+    <div class="view" id="view-calendar">
+      <div class="cal-container">
+        <div class="cal-top">
+          <div class="cal-nav">
+            <button class="cal-nav-btn" onclick="calPrev()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div class="cal-month-label" id="cal-month-label">—</div>
+            <button class="cal-nav-btn" onclick="calNext()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+          <div class="cal-controls">
+            <div class="cal-filter-group">
+              <label class="cal-cb-label"><input type="checkbox" id="cb-shifts" checked onchange="renderCalendar()"> My Shifts</label>
+              <label class="cal-cb-label"><input type="checkbox" id="cb-backup" checked onchange="renderCalendar()"> Backup Call</label>
+              <label class="cal-cb-label"><input type="checkbox" id="cb-postcall" checked onchange="renderCalendar()"> Post-Call</label>
+              <label class="cal-cb-label"><input type="checkbox" id="cb-my-overnight" checked onchange="renderCalendar()"> My overnight</label>
+              <label class="cal-cb-label"><input type="checkbox" id="cb-all-overnight" onchange="renderCalendar()"> All overnight</label>
+              <label class="cal-cb-label"><input type="checkbox" id="cb-staff-total" onchange="renderCalendar()"> Total Staff Core+Temp</label>
+              <label class="cal-cb-label"><input type="checkbox" id="cb-trainees" onchange="renderCalendar()"> Trainees</label>
+              <label class="cal-cb-label"><input type="checkbox" id="cb-providers" onchange="renderCalendar()"> Working providers</label>
+              <label class="cal-cb-label"><input type="checkbox" id="cb-ftphone" onchange="renderCalendar()"> FT Phone</label>
+            </div>
+            <button class="cal-export-btn" onclick="exportICS()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export ICS
+            </button>
+          </div>
+        </div>
+        <div id="cal-grid-container"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+const CORE_PROVIDERS = ['Patil','German','Anderson','Fowler','Carter','Ondreyka','Smith','Cooley'];
+// Providers hidden from the UI provider switcher dropdown. Parser/column-detection still references them.
+const PROVIDER_SELECT_HIDE = new Set(['Patil','German']);
+const BACKUP_POOL    = ['Fowler','Carter','Ondreyka'];
+  const PROVIDER_PHONES = {
+  'Fowler':    '+13606061046',
+  'Ondreyka':  '+17347091295',
+  'Carter':    '+19198641056',
+  'Anderson':  '+19122222759',
+  'Cooley':    '+19137102670',
+  'Smith':     '+18285513508',
+  'Wren':      '+19098023352',
+  'Patil':     '+14238029271',
+  'German':    '+13364651513',
+  'Coburn':    '+16173061134',
+  'Bennett':   '+13362602926',
+  'Williams':  '+19199153291',
+  'Eidson':    '+18034132609',
+  'Tran':      '+19808002145',
+  'Camiliere': '+14805861791',
+  'Bandell':   '+14439287357',
+  'Dickerson': '+18137663257',
+};
+
+// ── Google Drive / Apps Script integration ────────────────────────────────
+// After deploying Code.gs as a Web App, paste the /exec URL here:
+const DRIVE_EXEC_URL = 'https://script.google.com/macros/s/AKfycbyMi0090cG0OpaW8vijCrijox-R1Y_d-4uGBbeg2Jq8KAYmICqctoF3ctZlqheHyEWC/exec'; // e.g. 'https://script.google.com/macros/s/AKfy.../exec'
+let driveStatus = null;    // { fetchedAt, rowCount, error }
+const NP_STAFF       = ['Anderson','Smith','Cooley'];
+
+// NC State Government Holidays 2026 (official OSHR schedule)
+const NC_HOLIDAYS_2026 = {
+  '2026-01-01': "New Year's Day",
+  '2026-01-19': 'MLK Day',
+  '2026-04-03': 'Good Friday',
+  '2026-05-25': 'Memorial Day',
+  '2026-06-19': 'Juneteenth',
+  '2026-07-03': 'Independence Day',
+  '2026-09-07': 'Labor Day',
+  '2026-11-11': 'Veterans Day',
+  '2026-11-26': 'Thanksgiving',
+  '2026-11-27': 'Day After Thanksgiving',
+  '2026-12-24': 'Christmas Eve',
+  '2026-12-25': 'Christmas',
+  '2026-12-28': 'Christmas Holiday',
+};
+
+// Keywords for cell classification
+const CLINICAL_KW = ['POST CALL','POST-CALL','ACU-1','ACU','TEAM A','TEAM B','ARS-E','ARS-H','ARS','NEO','FLOAT',' SP','SP ','SP,','FLEX','IN @','IN SOLO','IN CALL','IN CONFIRMED',' IN\t'];
+const ADMIN_KW    = ['ADMIN','WFH'];
+const OFF_KW      = ['VAC','OFF NO CALL','NO CALL','OFF','HOL'];
+const TRAIN_KW    = ['CME','CPI','CSL','EPIC','GOV BODY','GOV CONF','JURY','RHA','ORIENT','PRN'];
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CLASSIFICATION
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Shared text normalization for schedule/provider matching.
+// Strips parenthetical annotations, punctuation, collapses whitespace, uppercases.
+function normalizeText(raw) {
+  if (!raw) return '';
+  return String(raw)
+    .replace(/\([^)]*\)/g, ' ')   // strip parenthetical annotations
+    .replace(/[^\w\s]/g, ' ')     // strip punctuation (keeps letters/digits/_)
+    .replace(/\s+/g, ' ')         // collapse whitespace
+    .trim()
+    .toUpperCase();
+}
+
+function classify(raw) {
+  if (!raw || raw.trim() === '') return 'Off/Unavailable';
+  const v = ' ' + raw.toUpperCase().trim() + ' ';
+  for (const k of CLINICAL_KW) { if (v.includes(k)) return 'Clinical'; }
+  if (/\bIN\b/.test(v) && !v.includes('CHECK IN')) return 'Clinical';
+  for (const k of TRAIN_KW)  { if (v.includes(k)) return 'Training/Non-clinical'; }
+  for (const k of OFF_KW)    { if (v.includes(k)) return 'Off/Unavailable'; }
+  for (const k of ADMIN_KW)  { if (v.includes(k)) return 'Admin/Remote'; }
+  return 'Off/Unavailable';
+}
+
+function isWorking(raw) { return classify(raw) === 'Clinical'; }
+function isPostCall(raw) {
+  if (!raw) return false;
+  const n = normalizeText(raw);
+  if (!n) return false;
+  if (n.includes('POST CALL') || n.includes('POSTCALL')) return true;
+  // Token-level PC match (avoid false positives like "PCP", "EPIC")
+  const tokens = n.split(' ').filter(Boolean);
+  return tokens.includes('PC');
+}
+
+// Provider alias map — derived from CORE_PROVIDERS plus common Fowler/etc. nicknames.
+// Used to recognize a provider name in any free-text cell (overnight, backup, FT phone).
+// CORE_PROVIDERS is NOT mutated; this is a lookup only.
+const PROVIDER_ALIASES = {
+  Patil:    ['PATIL'],
+  German:   ['GERMAN'],
+  Anderson: ['ANDERSON'],
+  Fowler:   ['FOWLER','TFOWLER','TROY FOWLER','T FOWLER'],
+  Carter:   ['CARTER'],
+  Ondreyka: ['ONDREYKA'],
+  Smith:    ['SMITH'],
+  Cooley:   ['COOLEY'],
+};
+
+// Returns true if `raw` mentions provider `name` as a token. Handles "FOWLER - CALL",
+// "Fowler/Carter", "T. Fowler", parentheticals, extra spaces, punctuation.
+function textMentionsProvider(raw, name) {
+  if (!raw || !name) return false;
+  const n = normalizeText(raw);
+  if (!n) return false;
+  const tokens = n.split(' ').filter(Boolean);
+  const aliases = PROVIDER_ALIASES[name] || [name.toUpperCase()];
+  for (const a of aliases) {
+    const aTokens = a.split(' ').filter(Boolean);
+    if (aTokens.length === 1) {
+      if (tokens.includes(aTokens[0])) return true;
+    } else {
+      // Multi-word alias — substring match on normalized text
+      if ((' ' + n + ' ').includes(' ' + a + ' ')) return true;
+    }
+  }
+  return false;
+}
+// For PTO availability: post-call counts as OFF
+function isAvailableForPTO(raw) { return isWorking(raw) && !isPostCall(raw); }
+
+function extractPsychBackup(raw) {
+  if (!raw) return {person:'',fowler:false,carter:false,ondreyka:false};
+  const f = textMentionsProvider(raw,'Fowler');
+  const c = textMentionsProvider(raw,'Carter');
+  const o = textMentionsProvider(raw,'Ondreyka');
+  return {
+    person: f?'Fowler':c?'Carter':o?'Ondreyka':'',
+    fowler: f, carter: c, ondreyka: o,
+  };
+}
+
+function fowlerInFT(raw) { return textMentionsProvider(raw||'','Fowler'); }
+
+// Extract trainees from a Residents/Fellowships cell.
+// Format: tokens are name-R (resident) or name-F (fellow), split by /, comma, or
+// semicolon. Optional " AM" / " PM" suffix per token is dropped. Suffix -R / -F
+// is preserved in display. Examples:
+//   "Morales-R/Eckert-F"          → ["Morales-R","Eckert-F"]
+//   "Morales-R AM/Eckert-F"       → ["Morales-R","Eckert-F"]
+//   "Morales-R AM"                → ["Morales-R"]
+//   "Smith-R, Jones-F; Lee-R PM"  → ["Smith-R","Jones-F","Lee-R"]
+function extractTrainees(raw) {
+  if (!raw) return [];
+  const text = String(raw).trim();
+  if (!text) return [];
+  const tokens = text.split(/[\/,;]+/);
+  const out = [];
+  for (let t of tokens) {
+    t = t.trim();
+    if (!t) continue;
+    // Drop trailing AM/PM and any trailing punctuation/whitespace.
+    t = t.replace(/\s+(AM|PM)\b.*$/i, '').trim();
+    t = t.replace(/[\s.;,]+$/,'').trim();
+    if (!t) continue;
+    // Must look like a token with -R or -F suffix to count as a trainee.
+    const m = t.match(/^([A-Za-z][A-Za-z'\-\s.]*?)\s*-\s*([RF])\b/i);
+    if (!m) continue;
+    const name = m[1].trim().replace(/\s+/g,' ');
+    const suffix = m[2].toUpperCase();
+    if (!name) continue;
+    const display = `${name}-${suffix}`;
+    if (!out.includes(display)) out.push(display);
+  }
+  return out;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DATE PARSING
+// ═══════════════════════════════════════════════════════════════════════════
+
+function parseDate(s) {
+  if (!s) return null;
+  s = s.trim();
+  let m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if (m) {
+    const y = m[3].length===2 ? '20'+m[3] : m[3];
+    return `${y}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`;
+  }
+  m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+  const d = new Date(s);
+  if (!isNaN(d)) return d.toISOString().slice(0,10);
+  return null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DYNAMIC COLUMN DETECTION
+// ═══════════════════════════════════════════════════════════════════════════
+
+let DETECTED_COLS = {};
+let TEMP_STAFF = []; // [{name, col}]
+// Names known to be temp psych staff regardless of column position (rule 4).
+const TEMP_PSYCH_FORCED = ['Patil','German'];
+
+const INFRA_MATCHERS = [
+  ['date',    r => r.includes('date') && !r.includes('update')],
+  ['day',     r => r.includes('day of week') || r === 'day'],
+  ['overnight', r => r.includes('overnight') || r.includes('med staff')],
+  ['backup',  r => (r.includes('back') || r.includes('back-up')) && r.includes('primary')],
+  ['clarification', r => r.includes('clarification') || (r.includes('acu') && r.includes('ars'))],
+  ['fasttrack', r => r.includes('fast track') || r.includes('fasttrack')],
+  ['pharmacy', r => r.includes('pharmacy')],
+];
+
+// Header normalization helper — keeps all logic in one place.
+function normHeader(cell) {
+  return (cell || '').toLowerCase().replace(/[\r\n\s]+/g,' ').trim();
+}
+
+// Locate the LAST occurrence of a Residents/Fellowships header. The workbook has two
+// such columns (one in the medical-staff section, one in the psych section); the
+// rightmost is the boundary between permanent psych providers (left of it) and
+// temp psych providers (right of it), and is the canonical trainees source.
+function findResidentsCol(headerRow) {
+  let last = -1;
+  headerRow.forEach((cell, i) => {
+    const h = normHeader(cell);
+    if (h.includes('resident') || h.includes('fellowship')) last = i;
+  });
+  return last;
+}
+
+function buildColMap(headerRow) {
+  const cols = {};
+  const tempStaff = [];
+  const usedIdx = new Set();
+
+  // Infrastructure first (single-pass, exclusive)
+  headerRow.forEach((cell, i) => {
+    const h = normHeader(cell);
+    if (!h) return;
+    for (const [key, fn] of INFRA_MATCHERS) {
+      if (cols[key] === undefined && fn(h)) { cols[key] = i; usedIdx.add(i); return; }
+    }
+  });
+
+  // Residents/Fellowships boundary — rightmost occurrence wins.
+  const residentsIdx = findResidentsCol(headerRow);
+  if (residentsIdx >= 0) {
+    cols.residents = residentsIdx;
+    usedIdx.add(residentsIdx);
+  }
+
+  // Psych section boundaries (rules 5-6):
+  //   permanent psych = name columns strictly between Pharmacy On-Call and Residents/Fellowships
+  //   temp psych      = name columns strictly to the right of Residents/Fellowships
+  // Anything left of (or equal to) Med Staff Overnight Coverage is medical-staff and
+  // must be ignored for psych purposes (rule 2).
+  const pharmacyIdx  = cols.pharmacy   ?? -1;
+  const overnightIdx = cols.overnight  ?? -1;
+  const psychLeftBound  = pharmacyIdx >= 0 ? pharmacyIdx
+                       : overnightIdx >= 0 ? overnightIdx : -1;
+  const psychRightOfResidents = residentsIdx;
+
+  // Core providers — only match columns inside the psych permanent band. Patil
+  // and German (rule 4) are *forced temp* — they are skipped here and routed to
+  // tempStaff below even if they appear in the permanent band. CORE_PROVIDERS
+  // itself is not mutated (rule 8).
+  headerRow.forEach((cell, i) => {
+    if (usedIdx.has(i)) return;
+    if (psychLeftBound >= 0 && i <= psychLeftBound) return;       // skip medical-staff side
+    const h = normHeader(cell);
+    const match = CORE_PROVIDERS.find(p => h.includes(p.toLowerCase()));
+    if (!match) return;
+    if (TEMP_PSYCH_FORCED.includes(match)) return;                 // routed as temp instead
+    // Permanent psych must sit between Pharmacy On-Call and Residents/Fellowships.
+    if (psychRightOfResidents >= 0 && i >= psychRightOfResidents) return;
+    const key = match.toLowerCase();
+    cols[key] = i; usedIdx.add(i);
+  });
+
+  // Temp staff — every name column strictly RIGHT of Residents/Fellowships counts
+  // as temp psych (rule 6). Plus forced temp psych names (Patil, German) found
+  // inside the permanent band but explicitly marked temp by the user (rule 4).
+  const skipKW = ['date','day','overnight','back','pharmacy','fast','clarif','resident','fellow','on-call','oncall','on call','call','coverage'];
+  headerRow.forEach((cell, i) => {
+    if (usedIdx.has(i)) return;
+    const h = normHeader(cell);
+    if (!h || h.length < 2) return;
+    if (skipKW.some(k => h.includes(k))) return;
+    if (!/^[a-z][a-z\s\-']+$/.test(h) || h.length > 30) return;
+    const name = cell.trim().replace(/[\r\n]+/g,' ');
+    if (name.length < 2) return;
+
+    const inTempBand = psychRightOfResidents >= 0 && i > psychRightOfResidents;
+    const inPermBand = psychLeftBound >= 0 && i > psychLeftBound
+                       && (psychRightOfResidents < 0 || i < psychRightOfResidents);
+    const isForcedTemp = TEMP_PSYCH_FORCED.some(t => h.includes(t.toLowerCase()));
+
+    if (inTempBand) {
+      tempStaff.push({name, col: i});
+    } else if (inPermBand && isForcedTemp) {
+      // Patil/German live in the permanent band by spreadsheet layout but are
+      // tracked as temp per user direction.
+      tempStaff.push({name, col: i});
+    }
+    // Anything left of Pharmacy On-Call is medical-staff / primary-care — ignored.
+  });
+
+  return {cols, tempStaff};
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DATA PARSING
+// ═══════════════════════════════════════════════════════════════════════════
+
+function detectHeaderRow(row) {
+  const j = row.join(' ').toLowerCase();
+  return j.includes('date') || j.includes('fowler') || j.includes('overnight');
+}
+
+// Proper TSV parser — handles Excel-style quoted fields with embedded newlines/tabs
+function parseTSVRobust(text) {
+  const rows = [];
+  let row = [], cell = '', inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i], nx = text[i+1];
+    if (ch === '"') {
+      if (inQ && nx === '"') { cell += '"'; i++; } // escaped quote
+      else inQ = !inQ;
+    } else if (ch === '\t' && !inQ) {
+      row.push(cell.replace(/^"|"$/g,'').trim()); cell = '';
+    } else if ((ch === '\n' || ch === '\r') && !inQ) {
+      if (ch === '\r' && nx === '\n') i++;
+      row.push(cell.replace(/^"|"$/g,'').trim());
+      if (row.some(c=>c)) rows.push(row);
+      row = []; cell = '';
+    } else { cell += ch; }
+  }
+  if (cell || row.length) { row.push(cell.replace(/^"|"$/g,'').trim()); if (row.some(c=>c)) rows.push(row); }
+  return rows;
+}
+
+function parseRawData(text) {
+  const rows = parseTSVRobust(text);
+
+  // Find first row where cell[0] parses as a valid date — that's where data starts
+  let dataStartIdx = -1;
+  for (let i = 0; i < Math.min(rows.length, 15); i++) {
+    if (rows[i].length > 1 && parseDate(rows[i][0])) { dataStartIdx = i; break; }
+  }
+  if (dataStartIdx < 0) dataStartIdx = 1;
+
+  // Best header = row before data that has the MOST non-empty cells
+  let headerIdx = 0, maxCells = 0;
+  for (let i = 0; i < dataStartIdx; i++) {
+    const n = rows[i].filter(c=>c).length;
+    if (n > maxCells) { maxCells = n; headerIdx = i; }
+  }
+  const headerRow = rows[headerIdx];
+  const startIdx = dataStartIdx;
+
+  const {cols, tempStaff} = buildColMap(headerRow);
+  DETECTED_COLS = cols;
+  TEMP_STAFF = tempStaff;
+
+  const C = cols;
+  const data = [];
+
+  for (let i = startIdx; i < rows.length; i++) {
+    const r = rows[i];
+    if (r.length < 6) continue;
+
+    const dateStr = parseDate(r[C.date]);
+    if (!dateStr) continue;
+
+    const day        = (r[C.day]     || '').trim();
+    const overnight  = (r[C.overnight] !== undefined ? r[C.overnight] : '').trim();
+    const backupRaw  = (r[C.backup]  !== undefined ? r[C.backup]  : '').trim();
+    const clarRaw    = (r[C.clarification] !== undefined ? r[C.clarification] : '').trim();
+    const ftRaw      = (C.fasttrack !== undefined ? (r[C.fasttrack]||'') : C.clarification !== undefined ? (r[C.clarification]||'') : '').trim();
+    const traineeRaw = (C.residents !== undefined ? (r[C.residents]||'') : '').trim();
+
+    const bkp       = extractPsychBackup(backupRaw);
+    const ftFowler  = fowlerInFT(ftRaw);
+    const trainees  = extractTrainees(traineeRaw);
+
+    // Core provider assignments — skip names routed to TEMP_PSYCH_FORCED so
+    // they don't double-count in core staffing (rule 4).
+    const providerAsgns = {};
+    for (const p of CORE_PROVIDERS) {
+      if (TEMP_PSYCH_FORCED.includes(p)) { providerAsgns[p] = ''; continue; }
+      const key = p.toLowerCase();
+      providerAsgns[p] = C[key] !== undefined ? (r[C[key]] || '').trim() : '';
+    }
+
+    // Temp staff assignments
+    const tempAsgns = {};
+    for (const {name, col} of tempStaff) {
+      tempAsgns[name] = col < r.length ? (r[col] || '').trim() : '';
+    }
+
+    const workingCore = CORE_PROVIDERS.filter(p => isWorking(providerAsgns[p]) && !isPostCall(providerAsgns[p]));
+    const workingTemp = tempStaff.filter(({name}) => isWorking(tempAsgns[name]) && !isPostCall(tempAsgns[name])).map(({name}) => name);
+    const allWorking  = [...workingCore, ...workingTemp];
+    const count       = allWorking.length;
+    const coreCount   = workingCore.length;
+
+    const isWeekend   = ['Saturday','Sunday','Sat','Sun'].some(s => day.startsWith(s));
+    const atMin       = isWeekend ? coreCount <= 2 : coreCount <= 4;
+
+    const fowlerAsgn    = providerAsgns.Fowler;
+    const fowlerWorking = isWorking(fowlerAsgn);
+    const fowlerCls     = classify(fowlerAsgn);
+    const fowlerPC      = isPostCall(fowlerAsgn);
+
+    // PTO risk — post-call counts as off
+    let ptoRisk = 'N/A (Weekend)';
+    if (!isWeekend) {
+      const available = CORE_PROVIDERS.filter(p => p !== 'Fowler' && isAvailableForPTO(providerAsgns[p])).length
+                      + tempStaff.filter(({name}) => isAvailableForPTO(tempAsgns[name])).length;
+      ptoRisk = available >= 5 ? 'Feasible' : available === 4 ? 'Caution' : 'Not Feasible';
+    }
+
+    data.push({
+      date:dateStr, day, overnight, backupRaw, clarRaw, ftRaw, traineeRaw, trainees,
+      bkpPerson:bkp.person, fowlerBackup:bkp.fowler, carterBackup:bkp.carter, ondreykaBackup:bkp.ondreyka,
+      fowlerFT:ftFowler,
+      fowlerAsgn, fowlerClass:fowlerCls, fowlerWorking, fowlerPC,
+      carterPC:false, ondreykaPC:false,
+      providerAsgns, tempAsgns, workingCore, workingTemp, allWorking, count, coreCount,
+      isWeekend, atMin, ptoRisk, streak:0,
+    });
+  }
+
+  // Thin-staffing streaks
+  let streak = 0;
+  for (const row of data) {
+    if (!row.isWeekend && row.atMin) { streak++; }
+    else { streak = 0; }
+    row.streak = streak;
+  }
+
+  // Post-call second pass: set PC flag the day AFTER an overnight shift.
+  // Use textMentionsProvider so name variants/aliases all match consistently.
+  for (let i = 1; i < data.length; i++) {
+    const ov = data[i-1].overnight || '';
+    if (textMentionsProvider(ov,'Fowler'))   data[i].fowlerPC = true;
+    if (textMentionsProvider(ov,'Carter'))   data[i].carterPC = true;
+    if (textMentionsProvider(ov,'Ondreyka')) data[i].ondreykaPC = true;
+  }
+
+  return data;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// APP STATE
+// ═══════════════════════════════════════════════════════════════════════════
+
+let DATA = [];
+let selectedProvider = 'Fowler';
+let TODAY = new Date().toISOString().slice(0,10);
+let bkpFilter = 'upcoming';
+let dashPage = 0;
+let calYear, calMonth;
+let PG = 80;
+
+// Global date-range filter state (in-memory only)
+let globalRange = { start: null, end: null, autoStart: null, autoEnd: null };
+
+// Auto-detect end of schedule using a staffing-drop rule:
+//   - Walk rows chronologically.
+//   - Adequate staffing: 4+ psych providers on non-holiday weekdays, 2+ on holidays/weekends.
+//     "Assigned" = core provider with a non-empty cell that isn't pure OFF/PTO/post-call-only
+//     placeholder (i.e., counted in workingCore OR explicitly post-call — post-call still
+//     counts the provider as scheduled, just not available).
+//   - The "no longer up to date" point is where 5 consecutive non-holiday WEEKDAYS are
+//     under-staffed (3 or fewer assigned). From there, backtrack to the last date prior
+//     to that stretch where adequate minimum staffing held.
+//   - Fallback: if no such 5-weekday gap is found, return the dataset's last date.
+//
+// Holiday source: NC_HOLIDAYS_2026 keyed by ISO date. If a holiday calendar isn't
+// available for a given year, those dates fall back to weekend/weekday classification.
+function detectScheduleEnd(data) {
+  if (!data || !data.length) return null;
+
+  const isHoliday = iso => !!NC_HOLIDAYS_2026[iso];
+  const adequateFor = row => {
+    const minN = (row.isWeekend || isHoliday(row.date)) ? 2 : 4;
+    // Count core providers with any non-trivial assignment (working OR post-call).
+    // Empty/whitespace cells don't count.
+    let assigned = 0;
+    for (const p of CORE_PROVIDERS) {
+      const v = (row.providerAsgns && row.providerAsgns[p] || '').trim();
+      if (!v) continue;
+      assigned++;
+    }
+    return { ok: assigned >= minN, assigned, minN };
+  };
+
+  // Find first index of a 5-consecutive-non-holiday-weekday run with <= 3 assigned.
+  let runStart = -1, runLen = 0, gapIdx = -1;
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    if (row.isWeekend || isHoliday(row.date)) continue; // weekends/holidays don't count toward the run
+    let assigned = 0;
+    for (const p of CORE_PROVIDERS) {
+      const v = (row.providerAsgns && row.providerAsgns[p] || '').trim();
+      if (v) assigned++;
+    }
+    if (assigned <= 3) {
+      if (runStart < 0) runStart = i;
+      runLen++;
+      if (runLen >= 5) { gapIdx = runStart; break; }
+    } else {
+      runStart = -1;
+      runLen = 0;
+    }
+  }
+
+  if (gapIdx < 0) {
+    // No incomplete stretch — last row is the last good date.
+    return data[data.length - 1].date;
+  }
+
+  // Backtrack to last date BEFORE gapIdx where adequate staffing held.
+  for (let j = gapIdx - 1; j >= 0; j--) {
+    if (adequateFor(data[j]).ok) return data[j].date;
+  }
+  // Nothing adequate before the gap → use first row's date as a defensive fallback.
+  return data[0].date;
+}
+
+function applyGlobalRange(rows) {
+  if (!rows || !rows.length) return rows || [];
+  const s = globalRange.start, e = globalRange.end;
+  if (!s && !e) return rows;
+  return rows.filter(r => (!s || r.date >= s) && (!e || r.date <= e));
+}
+
+function activeViewId() {
+  return document.querySelector('.view.active')?.id?.replace('view-','') || 'paste';
+}
+
+function rerenderActiveView() {
+  const id = activeViewId();
+  if(id==='dashboard') renderDashboard();
+  else if(id==='backup') renderBackup();
+  else if(id==='calendar') renderCalendar();
+}
+
+function onGlobalRangeChange() {
+  const s = document.getElementById('gf-start').value || null;
+  const e = document.getElementById('gf-end').value || null;
+  globalRange.start = s;
+  globalRange.end   = e;
+  rerenderActiveView();
+}
+
+function resetGlobalRange() {
+  globalRange.start = globalRange.autoStart;
+  globalRange.end   = globalRange.autoEnd;
+  const sEl = document.getElementById('gf-start');
+  const eEl = document.getElementById('gf-end');
+  if(sEl) sEl.value = globalRange.start || '';
+  if(eEl) eEl.value = globalRange.end   || '';
+  rerenderActiveView();
+}
+
+function initGlobalRange() {
+  if (!DATA.length) return;
+  const dates = DATA.map(r=>r.date).sort();
+  const dataStart = dates[0];
+  const dataEnd   = dates[dates.length-1];
+  // Auto start = today, clamped to data range
+  let autoStart = TODAY;
+  if (autoStart < dataStart) autoStart = dataStart;
+  if (autoStart > dataEnd)   autoStart = dataStart;
+  // Auto end = last date where schedule still appears populated; fallback to dataEnd
+  const autoEnd = detectScheduleEnd(DATA) || dataEnd;
+  globalRange.autoStart = autoStart;
+  globalRange.autoEnd   = autoEnd;
+  globalRange.start = autoStart;
+  globalRange.end   = autoEnd;
+
+  const sEl = document.getElementById('gf-start');
+  const eEl = document.getElementById('gf-end');
+  const hintEl = document.getElementById('gf-end-hint');
+  const barEl  = document.getElementById('global-filter-bar');
+  if (sEl) { sEl.min = dataStart; sEl.max = dataEnd; sEl.value = autoStart; }
+  if (eEl) { eEl.min = dataStart; eEl.max = dataEnd; eEl.value = autoEnd; }
+  if (hintEl) hintEl.textContent = autoEnd ? `schedule appears complete through ${fmtDate(autoEnd)} based on minimum staffing continuity` : '';
+  if (barEl) barEl.classList.remove('hidden');
+}
+
+function parseAndLoad() {
+  const text = document.getElementById('paste-area').value.trim();
+  const res  = document.getElementById('parse-result');
+  if (!text) { showResult(res,'error','Please paste schedule data first.'); return; }
+  try {
+    const parsed = parseRawData(text);
+    if (!parsed.length) { showResult(res,'error','No valid date rows found. Include the header row.'); return; }
+    DATA = parsed;
+    // Default calendar to current month or first month of data
+    const first = new Date(DATA[0].date+'T12:00:00');
+    calYear  = first.getFullYear();
+    calMonth = first.getMonth();
+    // Jump to today's month if data includes today
+    const now = new Date();
+    if (DATA.some(r => r.date >= TODAY)) { calYear = now.getFullYear(); calMonth = now.getMonth(); }
+    onDataLoaded();
+    const tempNote = TEMP_STAFF.length ? ` + ${TEMP_STAFF.length} temp staff auto-detected` : '';
+    showResult(res,'ok',`✓ Parsed ${parsed.length} dates · ${CORE_PROVIDERS.length} core providers${tempNote}. Schedule ready.`);
+  } catch(e) {
+    showResult(res,'error','Parse error: '+e.message);
+  }
+}
+
+function showResult(el,type,msg){
+  el.style.display='block';
+  el.className='parse-result '+(type==='ok'?'parse-ok':'parse-err');
+  el.textContent=msg;
+}
+
+function onDataLoaded() {
+  ['dashboard','backup','calendar'].forEach(id=>{
+    const el=document.getElementById('nav-'+id);
+    if(el) el.classList.remove('disabled');
+  });
+  const dates=DATA.map(r=>r.date).sort();
+  document.getElementById('status-pill').textContent=`${DATA.length} dates`;
+  document.getElementById('status-pill').className='status-pill status-loaded';
+  document.getElementById('topbar-meta').textContent=
+    `${dates[0]} → ${dates[dates.length-1]} · ${CORE_PROVIDERS.length} core + ${TEMP_STAFF.length} temp providers`;
+  document.getElementById('clear-btn').style.display='flex';
+  // populate provider dropdown
+  const _sel = document.getElementById('provider-select');
+  if(_sel) _sel.innerHTML = CORE_PROVIDERS.filter(p=>!PROVIDER_SELECT_HIDE.has(p)).map(p=>`<option value="${p}"${p===selectedProvider?' selected':''}>${p}</option>`).join('');
+  // set today badge
+  const todayFmt = fmtDate(TODAY);
+  document.getElementById('today-badge').textContent = 'Today: '+todayFmt;
+  initGlobalRange();
+  showView('dashboard');
+}
+
+function clearData() {
+  DATA=[]; TEMP_STAFF=[]; DETECTED_COLS={};
+  document.getElementById('paste-area').value='';
+  document.getElementById('parse-result').style.display='none';
+  ['dashboard','backup','calendar'].forEach(id=>{
+    const el=document.getElementById('nav-'+id);
+    if(el) el.classList.add('disabled');
+  });
+  document.getElementById('status-pill').textContent='No Data';
+  document.getElementById('status-pill').className='status-pill status-empty';
+  document.getElementById('topbar-meta').textContent='No schedule loaded — paste data to begin';
+  document.getElementById('today-badge').textContent='';
+  document.getElementById('clear-btn').style.display='none';
+  globalRange = { start:null, end:null, autoStart:null, autoEnd:null };
+  const gbar = document.getElementById('global-filter-bar');
+  if(gbar) gbar.classList.add('hidden');
+  showView('paste');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════════════════
+
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  const view=document.getElementById('view-'+id);
+  const nav=document.querySelector(`[data-view="${id}"]`);
+  if(view) view.classList.add('active');
+  if(nav)  nav.classList.add('active');
+  closeSidebar();
+  if(DATA.length===0 && id!=='paste') return;
+  if(id==='dashboard') renderDashboard();
+  else if(id==='backup') renderBackup();
+  else if(id==='calendar') renderCalendar();
+}
+
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const ov = document.querySelector('.sidebar-overlay');
+  if(!sb || !ov) return;
+  const isOpen = sb.classList.toggle('open');
+  ov.classList.toggle('open', isOpen);
+}
+function closeSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const ov = document.querySelector('.sidebar-overlay');
+  if(sb) sb.classList.remove('open');
+  if(ov) ov.classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════════════════
+
+function isFuture(d){ return d>=TODAY; }
+function isPast(d){ return d<TODAY; }
+function dayShort(d){ return (d||'').slice(0,3); }
+function isWknd(d){ return ['Saturday','Sunday','Sat','Sun'].some(s=>(d||'').startsWith(s)); }
+
+function fmtDate(d) {
+  if(!d) return '';
+  const dt=new Date(d+'T12:00:00');
+  return dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function holDateCell(dateStr) {
+  return `<td class="mono">${fmtDate(dateStr)}</td>`;
+}
+function holColCell(dateStr) {
+  const h = NC_HOLIDAYS_2026[dateStr];
+  return h ? `<td class="col-hol"><span class="hol-col-tag">${h}</span></td>` : '<td class="col-hol"></td>';
+}
+function rowCls(r) {
+  const cls = [r.isWeekend?'wknd-row':'', NC_HOLIDAYS_2026[r.date]?'holiday-row':''].filter(Boolean).join(' ');
+  return cls ? ` class="${cls}"` : '';
+}
+function ptoBadge(v){
+  if(v==='Feasible')     return '<span class="badge bg">✅ Feasible</span>';
+  if(v==='Caution')      return '<span class="badge ba">⚠️ Caution</span>';
+  if(v==='Not Feasible') return '<span class="badge br">🚫 Not Feasible</span>';
+  if(v==='N/A (Weekend)') return '<span class="badge bk">Weekend</span>';
+  return '<span class="badge bk">—</span>';
+}
+function clsBadge(v){
+  if(!v) return '';
+  const k=v.includes('Clinical')?'Clinical':v.includes('Admin')?'Admin':v.includes('Off')?'Off':'Training';
+  return `<span class="cc cc-${k}">${k}</span>`;
+}
+function cntBadge(coreN, tempN, wknd){
+  const k=wknd?'cnt-wk':coreN>=6?'cnt-6':coreN===5?'cnt-5':'cnt-low';
+  const tempSpan=tempN>0?`<span class="cnt-temp">+${tempN}T</span>`:'';
+  return `<span class="cnt ${k}">${coreN}</span>${tempSpan}`;
+}
+function isFowlerOvernight(r){
+  return textMentionsProvider(r.overnight||'','Fowler');
+}
+function isProviderOvernight(r, name){
+  return textMentionsProvider(r.overnight||'', name);
+}
+function callBadge(r){
+  let out='';
+  if(r.fowlerBackup)       out+='<span class="badge bb">Backup</span> ';
+  if(r.fowlerPC)           out+='<span class="badge bk">↩ Post-Call</span> ';
+  if(isFowlerOvernight(r)) out+='<span class="badge bp">Overnight</span>';
+  return out.trim()||'<span style="color:var(--faint)">—</span>';
+}
+function buildTable(cols,trows,empty){
+  if(!trows.length) return `<div class="empty"><p>${empty||'No matching records'}</p></div>`;
+  return `<table><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${trows.map(r=>`<tr>${r}</tr>`).join('')}</tbody></table>`;
+}
+function pagBar(total,pg,onFn){
+  const pages=Math.ceil(total/PG);
+  if(pages<=1) return '';
+  const from=pg*PG+1,to=Math.min((pg+1)*PG,total);
+  let btns='';
+  for(let i=0;i<Math.min(pages,8);i++) btns+=`<button class="pb${i===pg?' active':''}" onclick="${onFn}(${i})">${i+1}</button>`;
+  if(pages>8) btns+=`<span style="color:var(--muted);font-size:11px;padding:4px">…${pages}p</span>`;
+  return `<div class="pag"><span>${from}–${to} of ${total}</span><div class="pag-btns">${btns}</div></div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// COLUMN SYSTEM — MY SCHEDULE
+// ═══════════════════════════════════════════════════════════════════════════
+
+const SCHED_COLS_ALL = [
+  {id:'day',         label:'Day',              sortable:true,  sortKey:r=>r.date},
+  {id:'date',        label:'Date',             sortable:true,  sortKey:r=>r.date},
+  {id:'asgn',        label:'My Assignment',    sortable:false},
+  {id:'call',        label:'Call',             sortable:false},
+  {id:'ptoRisk',     label:'PTO Risk',         sortable:true,  sortKey:r=>({Feasible:0,Caution:1,'Not Feasible':2}[r.ptoRisk]??9)},
+  {id:'staffTotal',  label:'Total Staff<br>Core+Temp', sortable:true,  sortKey:r=>r.count},
+
+  {id:'overnight',   label:'Overnight',        sortable:false},
+  {id:'backupPerson',label:'Backup Person',    sortable:false},
+  {id:'providers',   label:'Working Providers',sortable:false},
+  {id:'streak',      label:'Thin Run',         sortable:true,  sortKey:r=>r.streak},
+  {id:'ftPhone',     label:'FT Phone',         sortable:false},
+  {id:'anderson',    label:'Anderson',         sortable:false},
+  {id:'fowler',      label:'Fowler',           sortable:false},
+  {id:'carter',      label:'Carter',           sortable:false},
+  {id:'ondreyka',    label:'Ondreyka',         sortable:false},
+  {id:'smith',       label:'Smith',            sortable:false},
+  {id:'cooley',      label:'Cooley',           sortable:false},
+  {id:'trainees',    label:'Trainees',         sortable:true,  sortKey:r=>(r.trainees||[]).join(',')},
+];
+
+let schedActiveCols = ['day','date','asgn','call','trainees'];
+let schedWeekdaysOnly = false;
+let schedSort = {col:'date', dir:1};
+let schedDragId = null;
+
+// Render an assignment cell for a given provider using the SAME logic the
+// 'asgn' (My Assignment) column uses for the selected provider. Used by the
+// My Assignment column AND the per-provider toggle columns (Anderson, Carter,
+// Ondreyka, Fowler, Smith, Cooley) so a toggled column is rendered as if that
+// provider were the selected provider, side-by-side with My Assignment.
+function renderAsgnCellFor(r, providerName) {
+  const asgn = (r.providerAsgns && r.providerAsgns[providerName]) || '';
+  return `<td>${asgn||'<span style="color:var(--faint)">—</span>'}</td>`;
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[ch]));
+}
+
+function renderWorkingProviderName(name, opts={}) {
+  const label = escapeHtml(name);
+  const content = opts.strong ? `<strong>${label}</strong>` : label;
+  const phone = PROVIDER_PHONES[name];
+  if(!phone) return content;
+  return `<a href="sms:${phone}" class="working-provider-link">${content}</a>`;
+}
+
+function renderTextAllButton(names) {
+  const phones = names
+    .filter(name => name !== 'Fowler')
+    .map(name => PROVIDER_PHONES[name])
+    .filter(Boolean);
+  if(phones.length < 2) return '';
+  return `<a href="sms:${phones.join(',')}" class="sms-all-btn" title="Text all working providers" aria-label="Text all working providers">💬</a>`;
+}
+function schedCell(id, r) {
+  const dayChip = `<span class="${r.isWeekend?'day-chip weekend':'day-chip'}">${dayShort(r.day)}</span>`;
+  switch(id) {
+    case 'day':         return `<td class="col-day">${dayChip}</td>`;
+    case 'date':        return holDateCell(r.date);
+    case 'asgn':        return renderAsgnCellFor(r, selectedProvider);
+    case 'call':        return `<td>${provCallBadge(r)}</td>`;
+    case 'ptoRisk':     return `<td>${ptoBadge(r.ptoRisk)}</td>`;
+    case 'staffTotal': {
+      const tN=(r.workingTemp||[]).length;
+      const totalK=r.isWeekend?'cnt-wk':r.count>=6?'cnt-6':r.count===5?'cnt-5':'cnt-low';
+      return `<td><span class="cnt ${totalK}">${r.count}</span><span class="cnt-temp" style="font-size:10px;margin-left:4px">${r.coreCount}c${tN?`+${tN}t`:''}</span></td>`;
+    }
+    case 'overnight':   return `<td style="font-size:11px;color:var(--muted)">${r.overnight||'<span style="color:var(--faint)">—</span>'}</td>`;
+    case 'backupPerson':return `<td>${r.bkpPerson||'<span style="color:var(--faint)">—</span>'}</td>`;
+   case 'providers': {
+  const workingCore = r.workingCore || [];
+  const workingTemp = r.workingTemp || [];
+  const coreNames = workingCore.map(n=>renderWorkingProviderName(n, {strong:true}));
+  const tempNames = workingTemp.map(n=>renderWorkingProviderName(n));
+  const all = [...coreNames,...tempNames];
+  const textAll = renderTextAllButton([...workingCore,...workingTemp]);
+  return `<td class="working-providers-cell">${all.join(', ')||'—'}${textAll}</td>`;
+}
+    case 'streak':      return `<td>${r.streak>=3?`<span class="badge br">Day ${r.streak}</span>`:r.atMin&&!r.isWeekend?'<span class="badge ba">At min</span>':'<span style="color:var(--faint)">—</span>'}</td>`;
+    case 'ftPhone':     return `<td>${r.fowlerFT?'<span class="badge bb">Yes</span>':'<span style="color:var(--faint)">—</span>'}</td>`;
+    case 'anderson':    return renderAsgnCellFor(r, 'Anderson');
+    case 'fowler':      return renderAsgnCellFor(r, 'Fowler');
+    case 'carter':      return renderAsgnCellFor(r, 'Carter');
+    case 'ondreyka':    return renderAsgnCellFor(r, 'Ondreyka');
+    case 'smith':       return renderAsgnCellFor(r, 'Smith');
+    case 'cooley':      return renderAsgnCellFor(r, 'Cooley');
+    case 'trainees': {
+      const ts = r.trainees || [];
+      if (!ts.length) return '<td><span style="color:var(--faint)">—</span></td>';
+      const html = ts.map(t => {
+        const isF = /-F$/i.test(t);
+        const cls = isF ? 'badge bp' : 'badge bb';
+        return `<span class="${cls}" style="margin-right:3px">${t}</span>`;
+      }).join('');
+      return `<td style="font-size:11px;white-space:normal">${html}</td>`;
+    }
+    default:            return '<td>—</td>';
+  }
+}
+
+function schedSortBy(colId) {
+  if(schedSort.col===colId) schedSort.dir*=-1;
+  else { schedSort.col=colId; schedSort.dir=1; }
+  dashPage=0;
+  renderDashboard();
+}
+
+function schedToggleCol(id) {
+  if(id==='day'||id==='date') return; // locked pinned columns
+  const idx = schedActiveCols.indexOf(id);
+  if(idx>=0) { if(schedActiveCols.filter(c=>c!=='day'&&c!=='date').length>1) schedActiveCols.splice(idx,1); }
+  else {
+    const asgnIdx = schedActiveCols.indexOf('asgn');
+    const insertAt = asgnIdx >= 0 ? asgnIdx + 1 : schedActiveCols.length;
+    schedActiveCols.splice(insertAt, 0, id);
+  }
+  renderColPicker();
+  renderDashboard();
+}
+
+function schedDragStart(id) { schedDragId=id; }
+function schedDragOverPill(e,id) { e.preventDefault(); schedDragTargetId=id; }
+function schedDrop(id) {
+  if(!schedDragId||schedDragId===id) return;
+  if(schedDragId==='day'||schedDragId==='date') return; // locked
+  if(id==='day'||id==='date') return; // can't drop onto locked cols
+  const from=schedActiveCols.indexOf(schedDragId);
+  const to=schedActiveCols.indexOf(id);
+  if(from<0||to<0) return;
+  if(to<2) return; // enforce Day+Date stay at front
+  schedActiveCols.splice(from,1);
+  schedActiveCols.splice(to,0,schedDragId);
+  schedDragId=null;
+  renderColPicker();
+  renderDashboard();
+}
+function schedDragEnd() { schedDragId=null; renderColPicker(); }
+
+function renderColPicker() {
+  // Fixed ordered grid — most-used first. Day/Date are always pinned (not shown here).
+  const PICKER_ORDER = ['asgn','call','trainees','ptoRisk','staffTotal','providers','overnight',
+    'backupPerson','streak','ftPhone','anderson','fowler','carter','ondreyka','smith','cooley'];
+  // Provider-type ids — those rendered by renderAsgnCellFor/providerCell
+  const PROVIDER_IDS = ['anderson','fowler','carter','ondreyka','smith','cooley'];
+  // Change 3: hide the chip for whichever provider is currently selected in the dropdown
+  const hiddenProv = (selectedProvider||'').toLowerCase();
+
+  // Determine visible provider chips (after hiding active provider's chip)
+  const visibleProviderIds = PROVIDER_IDS.filter(id => id !== hiddenProv);
+
+  // Change 2: compute "All Providers" state — all visible provider chips active?
+  const allProvsOn = visibleProviderIds.length > 0 &&
+    visibleProviderIds.every(id => schedActiveCols.includes(id));
+
+  // Change 2: "All Providers" chip
+  const allProvsChip = `<label class="col-toggle-chip ${allProvsOn?'on':''}" title="Toggle all provider columns" onclick="schedToggleAllProviders()">
+      <span class="col-chip-check">${allProvsOn?'✓':''}</span>
+      All Providers
+    </label>`;
+
+  const grid = PICKER_ORDER.map(id=>{
+    const col = SCHED_COLS_ALL.find(c=>c.id===id);
+    if(!col) return '';
+    // Change 3: skip rendering the chip for the currently selected provider
+    if(PROVIDER_IDS.includes(id) && id === hiddenProv) return '';
+    const on = schedActiveCols.includes(id);
+    return `<label class="col-toggle-chip ${on?'on':''}" title="${col.label}">
+      <input type="checkbox" ${on?'checked':''} onchange="schedToggleCol('${id}')" style="display:none">
+      <span class="col-chip-check">${on?'✓':''}</span>
+      ${col.label.replace('<br>',' / ')}
+    </label>`;
+  }).join('');
+  document.getElementById('col-pills-active').innerHTML =
+    `<div class="col-toggle-grid">${allProvsChip}${grid}</div>`;
+  document.getElementById('col-pills-inactive').innerHTML = '';
+  const weekdaysBtn = document.getElementById('sched-weekdays-btn');
+  if(weekdaysBtn) weekdaysBtn.classList.toggle('active', schedWeekdaysOnly);
+}
+
+// Change 2: toggle all provider columns on/off
+function schedToggleAllProviders() {
+  const PROVIDER_IDS = ['anderson','fowler','carter','ondreyka','smith','cooley'];
+  const hiddenProv = (selectedProvider||'').toLowerCase();
+  const visibleProviderIds = PROVIDER_IDS.filter(id => id !== hiddenProv);
+  const allProvsOn = visibleProviderIds.length > 0 &&
+    visibleProviderIds.every(id => schedActiveCols.includes(id));
+  if(allProvsOn) {
+    // Deactivate all visible provider columns
+    visibleProviderIds.forEach(id => {
+      const idx = schedActiveCols.indexOf(id);
+      if(idx >= 0) schedActiveCols.splice(idx, 1);
+    });
+  } else {
+    // Activate all visible provider columns not yet in schedActiveCols,
+    // inserting each right after 'asgn' (Change 1 insertion rule)
+    visibleProviderIds.forEach(id => {
+      if(!schedActiveCols.includes(id)) {
+        const asgnIdx = schedActiveCols.indexOf('asgn');
+        const insertAt = asgnIdx >= 0 ? asgnIdx + 1 : schedActiveCols.length;
+        schedActiveCols.splice(insertAt, 0, id);
+      }
+    });
+  }
+  renderColPicker();
+  renderDashboard();
+}
+
+
+function resetSchedCols() {
+  schedActiveCols = ['day','date','asgn','call','trainees'];
+  renderColPicker();
+  renderDashboard();
+}
+
+function toggleSchedWeekdaysOnly() {
+  schedWeekdaysOnly = !schedWeekdaysOnly;
+  dashPage = 0;
+  renderColPicker();
+  renderDashboard();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PROVIDER PROFILE SWITCHER — v3
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Accessor helpers — all views use these instead of hardcoded r.fowlerXxx
+function provAsgn(r)   { return (r.providerAsgns && r.providerAsgns[selectedProvider]) || ''; }
+function provClass(r)  { return classify(provAsgn(r)); }
+function provWorking(r){ return isWorking(provAsgn(r)); }
+function provPC(r) {
+  if(selectedProvider === 'Fowler')   return !!r.fowlerPC;
+  if(selectedProvider === 'Carter')   return !!r.carterPC;
+  if(selectedProvider === 'Ondreyka') return !!r.ondreykaPC;
+  return isPostCall(provAsgn(r));
+}
+function isProvOvernight(r) {
+  return textMentionsProvider(r.overnight||'', selectedProvider);
+}
+function provBackup(r) {
+  if(selectedProvider === 'Fowler')   return !!r.fowlerBackup;
+  if(selectedProvider === 'Carter')   return !!r.carterBackup;
+  if(selectedProvider === 'Ondreyka') return !!r.ondreykaBackup;
+  return false;
+}
+function provCallBadge(r) {
+  let out = '';
+  if(provBackup(r))      out += '<span class="badge bb">Backup</span> ';
+  if(provPC(r))          out += '<span class="badge bk">&#8617; Post-Call</span> ';
+  if(isProvOvernight(r)) out += '<span class="badge bp">Overnight</span>';
+  return out.trim() || '<span style="color:var(--faint)">&#8212;</span>';
+}
+
+function recomputePTORisk() {
+  for(const row of DATA) {
+    if(row.isWeekend) { row.ptoRisk = 'N/A (Weekend)'; continue; }
+    const available = CORE_PROVIDERS.filter(p => p !== selectedProvider && isAvailableForPTO(row.providerAsgns[p])).length
+                    + TEMP_STAFF.filter(({name}) => isAvailableForPTO(row.tempAsgns[name])).length;
+    row.ptoRisk = available >= 5 ? 'Feasible' : available === 4 ? 'Caution' : 'Not Feasible';
+  }
+}
+
+function onProviderChange(prov) {
+  selectedProvider = prov;
+  // Auto-deselect the column toggle for the newly-selected provider so the
+  // My Assignment column and the provider's own column don't duplicate data.
+  const provColId = (prov||'').toLowerCase();
+  const idx = schedActiveCols.indexOf(provColId);
+  if(idx >= 0) schedActiveCols.splice(idx, 1);
+  recomputePTORisk();
+  // Re-render whichever view is currently active
+  const activeId = document.querySelector('.view.active')?.id?.replace('view-','');
+  if(activeId === 'dashboard') { renderColPicker(); renderDashboard(); }
+  else if(activeId === 'backup')   renderBackup();
+  else if(activeId === 'calendar') renderCalendar();
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GOOGLE DRIVE LOAD (Apps Script doGet integration)
+// ═══════════════════════════════════════════════════════════════════════════
+
+function jsonToTSV(json) {
+  // Rebuild a TSV string from the Apps Script JSON response so parseTSVRobust()
+  // can consume it unchanged. Cells with tabs/newlines/quotes are quoted per RFC4180.
+  const allRows = [json.headers, ...json.rows];
+  return allRows.map(row =>
+    row.map(cell => {
+      const s = String(cell == null ? '' : cell);
+      if (s.includes('\t') || s.includes('\n') || s.includes('"')) {
+        return '"' + s.replace(/"/g, '""') + '"';
+      }
+      return s;
+    }).join('\t')
+  ).join('\n');
+}
+
+// Helper: emit TSV from a SheetJS sheet by reading the AoA and joining with
+// tabs/newlines. This avoids sheet_to_csv FS option quirks across versions
+// and guarantees parseTSVRobust() (which only splits on \t / \n) gets the
+// right delimiters.
+function __sheetToTSV(sheet) {
+  const aoa = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
+  return aoa.map(row =>
+    row.map(cell => {
+      const s = (cell == null) ? '' : String(cell);
+      // Quote cells containing tab/newline/quote so parseTSVRobust handles them.
+      if (/[\t\n\r"]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+      return s;
+    }).join('\t')
+  ).join('\n');
+}
+
+function __excelReport(ok, msg) {
+  const el = document.getElementById('parse-result');
+  if (el) showResult(el, ok ? 'ok' : 'error', msg);
+}
+
+function handleExcelDrop(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  const zone = document.getElementById('excel-drop-zone');
+  if (zone) zone.classList.remove('drag-active');
+  const dt = event.dataTransfer;
+  const file = dt && dt.files && dt.files[0];
+  if (!file) { __excelReport(false, 'No file detected in drop'); return; }
+  if (!/\.(xlsx|xls)$/i.test(file.name)) {
+    __excelReport(false, 'File must be .xlsx or .xls (got: ' + file.name + ')');
+    return;
+  }
+  handleExcelFile(file);
+}
+
+function handleExcelFile(file) {
+  if (!file) { __excelReport(false, 'No file selected'); return; }
+  if (typeof XLSX === 'undefined') {
+    __excelReport(false, 'Excel library failed to load — check network/CDN');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const workbook = XLSX.read(e.target.result, { type: 'array' });
+      if (!workbook.SheetNames || !workbook.SheetNames.length) {
+        __excelReport(false, 'Workbook contains no sheets');
+        return;
+      }
+      // Always use first sheet by INDEX — handles tab name mismatch
+      // between the Excel staff schedule and the Google Sheet source.
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const tsv = __sheetToTSV(sheet);
+      if (!tsv || tsv.trim().length < 10) {
+        __excelReport(false, 'Sheet "' + sheetName + '" appears empty');
+        return;
+      }
+      // Stuff TSV into the paste-area so the user can see it parsed; this
+      // also lets parseAndLoad() reuse all its existing error reporting.
+      const pa = document.getElementById('paste-area');
+      if (pa) pa.value = tsv;
+      // Route through the same path the paste workflow uses, which assigns
+      // to global DATA, calls onDataLoaded(), and reports success via
+      // showResult(). After it runs, augment the message to indicate the
+      // Excel source.
+      parseAndLoad();
+      if (typeof DATA !== 'undefined' && DATA && DATA.length > 0) {
+        __excelReport(true,
+          '✓ Loaded from Excel · First sheet: "' + sheetName + '" · ' +
+          DATA.length + ' dates parsed'
+        );
+        // Build full 2D array (header + data rows) and sync to Drive
+        const aoa = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
+        pushToDrive(aoa);
+      }
+    } catch (err) {
+      __excelReport(false, 'Excel parse error: ' + err.message);
+    }
+  };
+  reader.onerror = function() { __excelReport(false, 'File read failed'); };
+  reader.readAsArrayBuffer(file);
+}
+
+
+async function pushToDrive(rows) {
+  if (!DRIVE_EXEC_URL) return;
+  const statusEl = document.getElementById('drive-status');
+  try {
+    if (statusEl) { statusEl.textContent = 'Syncing to Drive…'; statusEl.className = 'drive-status'; }
+    const res = await fetch(DRIVE_EXEC_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ rows })
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'Write failed');
+    if (statusEl) {
+      statusEl.textContent = 'Synced to Drive ✓ (' + json.rowCount + ' rows)';
+      statusEl.className = 'drive-status ok';
+    }
+    await fetchDriveMeta();
+  } catch(err) {
+    if (statusEl) {
+      statusEl.textContent = 'Drive sync failed: ' + err.message;
+      statusEl.className = 'drive-status err';
+    }
+  }
+}
+async function loadFromDrive() {
+  const btn    = document.getElementById('drive-load-btn');
+  const status = document.getElementById('drive-status');
+  const uncfg  = document.getElementById('drive-uncfg');
+
+  if (!DRIVE_EXEC_URL) {
+    uncfg.style.display = 'block';
+    status.textContent  = 'Not configured';
+    status.className    = 'drive-status err';
+    return;
+  }
+  uncfg.style.display = 'none';
+
+  btn.disabled        = true;
+  status.textContent  = 'Fetching from Google Drive…';
+  status.className    = 'drive-status';
+
+  try {
+    const url      = DRIVE_EXEC_URL + (DRIVE_EXEC_URL.includes('?') ? '&' : '?') + '_cb=' + Date.now();
+    const res      = await fetch(url);
+    if (!res.ok)   throw new Error('HTTP ' + res.status);
+    const json     = await res.json();
+    if (json.error) throw new Error(json.error);
+
+    driveStatus = { fetchedAt: json.fetchedAt, rowCount: json.rowCount, error: null };
+
+    // Convert JSON → TSV and feed through the existing paste pipeline
+    const tsv = jsonToTSV(json);
+    document.getElementById('paste-area').value = tsv;
+    parseAndLoad();
+
+    status.textContent = '\u2713 Loaded ' + json.rowCount + ' rows · ' +
+      new Date(json.fetchedAt).toLocaleString();
+    status.className   = 'drive-status ok';
+    await fetchDriveMeta();
+  } catch(err) {
+    driveStatus = { fetchedAt: null, rowCount: 0, error: err.message };
+    status.textContent = 'Error: ' + err.message;
+    status.className   = 'drive-status err';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RENDER: DASHBOARD (My Schedule)
+// ═══════════════════════════════════════════════════════════════════════════
+
+function renderDashboard(pg) {
+  if(pg !== undefined) dashPage = pg;
+  renderColPicker();
+
+  // Filters
+  const fClass   = document.getElementById('f-class').value;
+  const fPeriod  = document.getElementById('f-period').value;
+  const fPTO     = document.getElementById('f-pto-dash').value;
+
+  // Global date range takes precedence — if either bound set, skip f-period filter
+  const useGlobal = !!(globalRange.start || globalRange.end);
+  let rows = applyGlobalRange([...DATA]);
+  if(!useGlobal){
+    if(fPeriod==='future') rows = rows.filter(r=>isFuture(r.date));
+    else if(fPeriod==='past') rows = rows.filter(r=>isPast(r.date));
+  }
+  if(fClass==='weekdays' || schedWeekdaysOnly) rows = rows.filter(r=>!r.isWeekend);
+  else if(fClass==='Clinical') rows = rows.filter(r=>provClass(r)==='Clinical');
+  else if(fClass==='Admin')    rows = rows.filter(r=>provClass(r)==='Admin/Remote');
+  else if(fClass==='Off')      rows = rows.filter(r=>provClass(r)==='Off/Unavailable');
+  else if(fClass==='Training') rows = rows.filter(r=>provClass(r)==='Training/Non-clinical');
+  if(fPTO) rows = rows.filter(r=>r.ptoRisk===fPTO);
+  // Sort
+  const sortDef = SCHED_COLS_ALL.find(c=>c.id===schedSort.col);
+  if(sortDef?.sortKey) {
+    rows.sort((a,b)=>{
+      const ka=sortDef.sortKey(a), kb=sortDef.sortKey(b);
+      return ka<kb ? -schedSort.dir : ka>kb ? schedSort.dir : 0;
+    });
+  }
+
+  document.getElementById('dash-rc').textContent = `${rows.length} dates · ${useGlobal ? 'in selected range' : (fPeriod==='future' ? 'upcoming' : fPeriod==='past' ? 'past' : 'all dates')}`;
+  const t = rows.length;
+  const page = rows.slice(dashPage*PG, (dashPage+1)*PG);
+
+  // Build table with configurable columns — holiday column always first
+  const hdrs = schedActiveCols.map(id=>{
+    const col = SCHED_COLS_ALL.find(c=>c.id===id);
+    const isLocked = id==='day'||id==='date';
+    const isSortActive = schedSort.col===id;
+    const sortCls = col.sortable ? (isSortActive ? (schedSort.dir===1?'sort-asc':'sort-desc') : 'sortable') : '';
+    const sortClick = col.sortable ? `onclick="schedSortBy('${id}')"` : '';
+    if(isLocked) return `<th class="${sortCls}" ${sortClick}>${col.label}</th>`;
+    const wrapStyle = col.label.includes('<br>') ? 'white-space:normal;min-width:70px;' : '';
+    return `<th class="${sortCls} th-draggable" ${sortClick} style="${wrapStyle}"
+      draggable="true"
+      ondragstart="thDragStart(event,'${id}')"
+      ondragover="thDragOver(event)"
+      ondragleave="thDragLeave(event)"
+      ondrop="thDrop(event,'${id}')"
+      ondragend="thDragEnd(event)">${col.label}</th>`;
+  }).join('');
+
+  const trows = page.map(r=>{
+    const cells = schedActiveCols.map(id=>schedCell(id,r)).join('');
+    return `<tr${rowCls(r)}>${cells}${holColCell(r.date)}</tr>`;
+  }).join('');
+
+  const tbl = trows ? `<table><thead><tr>${hdrs}<th class="col-hol" style="background:var(--surface2)"></th></tr></thead><tbody>${trows}</tbody></table>` :
+    '<div class="empty"><p>No matching dates</p></div>';
+
+  document.getElementById('dash-table').innerHTML = tbl + pagBar(t, dashPage, 'renderDashboard');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RENDER: BACKUP CALL
+// ═══════════════════════════════════════════════════════════════════════════
+
+function setBkpFilter(f) {
+  bkpFilter=f;
+  document.querySelectorAll('[id^="bkp-btn"]').forEach(b=>b.classList.remove('active'));
+  document.getElementById('bkp-btn-'+f).classList.add('active');
+  renderBackup();
+}
+
+// Returns cell content for a backup pool provider: call badge, unavailability in red, or —
+function providerCell(isBackup, asgn, isOvernight, isPC) {
+  const badges = [];
+  const pc  = isPC;
+  const cls = asgn ? classify(asgn) : 'Off/Unavailable';
+  if (isBackup) badges.push('<span class="badge bb">Backup</span>');
+  if (pc) badges.push('<span class="badge bk">↩ Post-Call</span>');
+  if (!isBackup && !pc) {
+    if (cls === 'Off/Unavailable')            badges.push('<span class="badge br">Off</span>');
+    else if (cls === 'Training/Non-clinical') badges.push('<span class="badge ba">Training</span>');
+    else if (cls === 'Admin/Remote')          badges.push('<span class="badge bt">Admin</span>');
+  }
+  if (isOvernight) badges.push('<span class="badge bp">Overnight</span>');
+  return badges.length ? badges.join(' ') : '<span style="color:var(--faint)">—</span>';
+}
+
+// Backup Call optional column toggles
+let bkpShowProviders  = false;
+let bkpShowStaffTotal = false;
+
+function bkpToggleCol(id) {
+  if(id === 'providers')  bkpShowProviders  = !bkpShowProviders;
+  if(id === 'staffTotal') bkpShowStaffTotal = !bkpShowStaffTotal;
+  renderBackup();
+}
+
+function renderBkpColPicker() {
+  const items = [
+    {id:'providers',  label:'Working Providers',     on:bkpShowProviders},
+    {id:'staffTotal', label:'Total Staff Core+Temp', on:bkpShowStaffTotal},
+  ];
+  const grid = items.map(it=>
+    `<label class="col-toggle-chip ${it.on?'on':''}" title="${it.label}">
+      <input type="checkbox" ${it.on?'checked':''} onchange="bkpToggleCol('${it.id}')" style="display:none">
+      <span class="col-chip-check">${it.on?'✓':''}</span>
+      ${it.label}
+    </label>`).join('');
+  const host = document.getElementById('bkp-col-pills');
+  if(host) host.innerHTML = `<div class="col-toggle-grid">${grid}</div>`;
+}
+
+function renderBackup() {
+  renderBkpColPicker();
+  let rows = applyGlobalRange(DATA).filter(r=>{
+    const fa=r.providerAsgns?r.providerAsgns.Fowler:'';
+    const ca=r.providerAsgns?r.providerAsgns.Carter:'';
+    const oa=r.providerAsgns?r.providerAsgns.Ondreyka:'';
+    return r.fowlerBackup || r.carterBackup || r.ondreykaBackup ||
+           r.fowlerPC || r.carterPC || r.ondreykaPC ||
+           isPostCall(fa) || isPostCall(ca) || isPostCall(oa);
+  });
+  const useGlobal = !!(globalRange.start || globalRange.end);
+  if(!useGlobal && bkpFilter==='upcoming') rows = rows.filter(r=>isFuture(r.date));
+  const bkpRangeLabel = useGlobal ? 'in selected range' : (bkpFilter==='upcoming' ? 'upcoming' : 'all dates');
+  document.getElementById('bkp-rc').textContent = `${rows.length} dates · ${bkpRangeLabel}`;
+
+  const cols = ['Day','Date','Fowler','Carter','Ondreyka'];
+  if(bkpShowProviders)  cols.push('Working Providers');
+  if(bkpShowStaffTotal) cols.push('Total Staff<br>Core+Temp');
+  cols.push('');
+  const trows = rows.map(r=>{
+    const fa = r.providerAsgns ? r.providerAsgns.Fowler : '';
+    const ca = r.providerAsgns ? r.providerAsgns.Carter : '';
+    const oa = r.providerAsgns ? r.providerAsgns.Ondreyka : '';
+    // Post-call: trust either the {name}PC flag OR a raw-cell isPostCall match
+    const fPC = r.fowlerPC   || isPostCall(fa);
+    const cPC = r.carterPC   || isPostCall(ca);
+    const oPC = r.ondreykaPC || isPostCall(oa);
+    let extra = '';
+    if(bkpShowProviders) {
+      const coreNames = (r.workingCore||[]).map(n=>`<strong>${n}</strong>`);
+      const tempNames = (r.workingTemp||[]);
+      const all = [...coreNames,...tempNames];
+      extra += `<td style="font-size:11px;color:var(--muted)">${all.join(', ')||'—'}</td>`;
+    }
+    if(bkpShowStaffTotal) {
+      const tN=(r.workingTemp||[]).length;
+      const totalK=r.isWeekend?'cnt-wk':r.count>=6?'cnt-6':r.count===5?'cnt-5':'cnt-low';
+      extra += `<td><span class="cnt ${totalK}">${r.count}</span><span class="cnt-temp" style="font-size:10px;margin-left:4px">${r.coreCount}c${tN?`+${tN}t`:''}</span></td>`;
+    }
+    return `${rowCls(r)}><td class="col-day"><span class="${r.isWeekend?'day-chip weekend':'day-chip'}">${dayShort(r.day)}</span></td>
+      ${holDateCell(r.date)}
+      <td>${providerCell(r.fowlerBackup, fa, isProviderOvernight(r,'Fowler'), fPC)}</td>
+      <td>${providerCell(r.carterBackup, ca, isProviderOvernight(r,'Carter'), cPC)}</td>
+      <td>${providerCell(r.ondreykaBackup, oa, isProviderOvernight(r,'Ondreyka'), oPC)}</td>
+      ${extra}
+      ${holColCell(r.date)}`;
+  }).map(r=>`<tr${r}`);
+
+  document.getElementById('bkp-table').innerHTML = buildTable(cols, trows, 'No backup call dates found');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RENDER: ALERTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CALENDAR
+// ═══════════════════════════════════════════════════════════════════════════
+
+function calPrev() {
+  calMonth--;
+  if(calMonth<0){calMonth=11;calYear--;}
+  renderCalendar();
+}
+function calNext() {
+  calMonth++;
+  if(calMonth>11){calMonth=0;calYear++;}
+  renderCalendar();
+}
+
+const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DOW_NAMES=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function calStaffLabel(row) {
+  const tempCount = (row.workingTemp || []).length;
+  return `${row.count} staff (${row.coreCount}c${tempCount ? `+${tempCount}t` : ''})`;
+}
+function calProviderLabel(row) {
+  return [...(row.workingCore || []), ...(row.workingTemp || [])].join(', ');
+}
+
+function renderCalendar() {
+  if(!DATA.length) return;
+
+  const showShifts       = document.getElementById('cb-shifts').checked;
+  const showBackup       = document.getElementById('cb-backup').checked;
+  const showPC           = document.getElementById('cb-postcall').checked;
+  const showMyOvernight  = document.getElementById('cb-my-overnight').checked;
+  const showAllOvernight = document.getElementById('cb-all-overnight').checked;
+  const showStaffTotal   = document.getElementById('cb-staff-total').checked;
+  const showTrainees     = document.getElementById('cb-trainees').checked;
+  const showProviders    = document.getElementById('cb-providers').checked;
+  const showFTPhone      = document.getElementById('cb-ftphone').checked;
+
+  document.getElementById('cal-month-label').textContent = `${MONTH_NAMES[calMonth]} ${calYear}`;
+
+  const firstDay  = new Date(calYear, calMonth, 1);
+  const lastDay   = new Date(calYear, calMonth+1, 0);
+  const startDow  = firstDay.getDay();
+  const totalDays = lastDay.getDate();
+
+  // Build week arrays
+  const weeks = [];
+  let week = [];
+  for(let i=0;i<startDow;i++) week.push(null);
+  for(let d=1;d<=totalDays;d++){
+    week.push(d);
+    if(week.length===7||d===totalDays){ while(week.length<7)week.push(null); weeks.push(week); week=[]; }
+  }
+
+  const filteredData = applyGlobalRange(DATA);
+  const byDate = {};
+  for(const row of filteredData) byDate[row.date]=row;
+  const getISO=(y,m,d)=>`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+
+  // Build span event sequences: [{start,end,cls,label}]
+  const spanSeqs = [];
+  function buildSeqs(predicate, cls, label){
+    let s=null,e=null;
+    for(const row of filteredData){
+      if(predicate(row)){ if(!s)s=row.date; e=row.date; }
+      else{ if(s)spanSeqs.push({start:s,end:e,cls,label}); s=null; }
+    }
+    if(s) spanSeqs.push({start:s,end:e,cls,label});
+  }
+  if(showBackup) buildSeqs(r=>provBackup(r),'cal-span-backup','Backup Call');
+
+  // Get which week-row cols each sequence occupies
+  function getWeekSpans(seq){
+    const spans=[];
+    weeks.forEach((wk,wi)=>{
+      let c0=null,c1=null;
+      wk.forEach((day,ci)=>{
+        if(day===null)return;
+        const iso=getISO(calYear,calMonth,day);
+        if(iso>=seq.start&&iso<=seq.end){ if(c0===null)c0=ci; c1=ci; }
+      });
+      if(c0!==null) spans.push({wi,c0,c1});
+    });
+    return spans;
+  }
+
+  // Assign a track (row) to each span event in each week via greedy algorithm
+  // weekTrack[wi] = [{c0,c1,seq,track}]
+  const weekTrack = weeks.map(()=>[]);
+  for(const seq of spanSeqs){
+    for(const ws of getWeekSpans(seq)){
+      const taken = weekTrack[ws.wi].filter(e=>e.c0<=ws.c1&&e.c1>=ws.c0);
+      let track=0; while(taken.some(e=>e.track===track)) track++;
+      weekTrack[ws.wi].push({...ws,seq,track});
+    }
+  }
+  const weekNumTracks = weekTrack.map(evts=>evts.length>0?Math.max(...evts.map(e=>e.track))+1:0);
+
+  const dowRow = DOW_NAMES.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+
+  const weeksHtml = weeks.map((wk,wi)=>{
+    const numTracks = weekNumTracks[wi];
+
+    // Span grid (multi-day events, in normal flow above day cells)
+    let spanGridHtml = '';
+    if(numTracks>0){
+      const items = weekTrack[wi].map(e=>{
+        const allSpans = getWeekSpans(e.seq);
+        const isFirst = allSpans[0].wi===wi;
+        const isLast  = allSpans[allSpans.length-1].wi===wi;
+        const brL = isFirst?'border-top-left-radius:3px;border-bottom-left-radius:3px':'border-left:none;border-top-left-radius:0;border-bottom-left-radius:0';
+        const brR = isLast?'border-top-right-radius:3px;border-bottom-right-radius:3px':'border-right:none;border-top-right-radius:0;border-bottom-right-radius:0';
+        return `<div class="${e.seq.cls}" style="grid-column:${e.c0+1}/${e.c1+2};grid-row:${e.track+1};${brL};${brR}" title="${e.seq.label||''}">${e.seq.label||''}</div>`;
+      }).join('');
+      spanGridHtml=`<div class="cal-span-grid" style="grid-template-rows:repeat(${numTracks},20px)">${items}</div>`;
+    }
+
+    // Day cells
+    const cellsHtml = wk.map((day,ci)=>{
+      if(day===null) return `<div class="cal-day-cell other-month"></div>`;
+      const iso=getISO(calYear,calMonth,day);
+      const row=byDate[iso];
+      const isToday=iso===TODAY;
+      const isWkend=ci===0||ci===6;
+      const dots=[];
+      if(row){
+        if(showShifts       && provWorking(row) && !provPC(row)) dots.push(`<span class="cal-dot cal-dot-shift">${escapeHtml(provAsgn(row).slice(0,14))}</span>`);
+        if(showMyOvernight  && isProvOvernight(row))               dots.push('<span class="cal-dot cal-dot-overnight">My overnight</span>');
+        if(showAllOvernight && row.overnight)                      dots.push(`<span class="cal-dot cal-dot-overnight">${escapeHtml(row.overnight)}</span>`);
+        if(showPC           && provPC(row))                        dots.push('<span class="cal-dot cal-dot-pc">Post-Call</span>');
+        if(showStaffTotal)                                         dots.push(`<span class="cal-dot cal-dot-staff">${escapeHtml(calStaffLabel(row))}</span>`);
+        if(showTrainees     && (row.trainees||[]).length)          dots.push(`<span class="cal-dot cal-dot-trainee">${escapeHtml((row.trainees||[]).join(', '))}</span>`);
+        if(showProviders) {
+          const providerText = calProviderLabel(row);
+          if(providerText) dots.push(`<span class="cal-dot cal-dot-provider">${escapeHtml(providerText)}</span>`);
+        }
+        if(showFTPhone      && row.fowlerFT)                       dots.push('<span class="cal-dot cal-dot-ft">FT Phone</span>');
+      }
+      return `<div class="cal-day-cell${isToday?' is-today':''}${isWkend?' is-weekend':''}">
+        <span class="cal-dn">${day}</span>
+        <div class="cal-dots">${dots.join('')}</div>
+      </div>`;
+    }).join('');
+
+    return `<div class="cal-week">${spanGridHtml}<div class="cal-cells-grid">${cellsHtml}</div></div>`;
+  }).join('');
+
+  document.getElementById('cal-grid-container').innerHTML=`<div class="cal-dow-row">${dowRow}</div><div class="cal-grid">${weeksHtml}</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ICS EXPORT
+// ═══════════════════════════════════════════════════════════════════════════
+
+function exportICS() {
+  if(!DATA.length) return;
+
+  const showShifts       = document.getElementById('cb-shifts').checked;
+  const showBackup       = document.getElementById('cb-backup').checked;
+  const showPC           = document.getElementById('cb-postcall').checked;
+  const showMyOvernight  = document.getElementById('cb-my-overnight').checked;
+  const showAllOvernight = document.getElementById('cb-all-overnight').checked;
+  const showStaffTotal   = document.getElementById('cb-staff-total').checked;
+  const showTrainees     = document.getElementById('cb-trainees').checked;
+  const showProviders    = document.getElementById('cb-providers').checked;
+  const showFTPhone      = document.getElementById('cb-ftphone').checked;
+
+  const toISODate = d => d.replace(/-/g,'');
+  const addOneDay = d => {
+    const dt = new Date(d+'T12:00:00');
+    dt.setDate(dt.getDate()+1);
+    return dt.toISOString().slice(0,10);
+  };
+  const UID_BASE = 'psych-sched-fowler';
+
+  const events = [];
+
+  // Backup Call — consecutive sequences as single events
+  if(showBackup) {
+    let seqStart=null, seqEnd=null;
+    for(const row of DATA) {
+      if(provBackup(row)) {
+        if(!seqStart) seqStart=row.date;
+        seqEnd=row.date;
+      } else {
+        if(seqStart) events.push({start:seqStart,end:addOneDay(seqEnd),summary:'Backup Call (Psych)',cat:'backup'});
+        seqStart=null; seqEnd=null;
+      }
+    }
+    if(seqStart) events.push({start:seqStart,end:addOneDay(seqEnd),summary:'Backup Call (Psych)',cat:'backup'});
+  }
+
+  // Post-Call
+  if(showPC) {
+    for(const row of DATA) {
+      if(provPC(row)) events.push({start:row.date,end:addOneDay(row.date),summary:'Post-Call (Off)',cat:'postcall'});
+    }
+  }
+
+  // My Overnight
+  if(showMyOvernight) {
+    for(const row of DATA) {
+      if(isProvOvernight(row)) events.push({start:row.date,end:addOneDay(row.date),summary:'My Overnight Call (Psych)',cat:'overnight'});
+    }
+  }
+
+  // All Overnight
+  if(showAllOvernight) {
+    for(const row of DATA) {
+      if(row.overnight) events.push({start:row.date,end:addOneDay(row.date),summary:`Overnight: ${row.overnight}`,cat:'allovernight'});
+    }
+  }
+
+  // My Shifts
+  if(showShifts) {
+    for(const row of DATA) {
+      if(provWorking(row) && !provPC(row))
+        events.push({start:row.date,end:addOneDay(row.date),summary:`Shift: ${provAsgn(row)||'Clinical'}`,cat:'shift'});
+    }
+  }
+
+  // Total staff, trainees, working providers, and FT Phone
+  for(const row of DATA) {
+    if(showStaffTotal) events.push({start:row.date,end:addOneDay(row.date),summary:`Total Staff: ${calStaffLabel(row)}`,cat:'staff'});
+    if(showTrainees && (row.trainees||[]).length) events.push({start:row.date,end:addOneDay(row.date),summary:`Trainees: ${(row.trainees||[]).join(', ')}`,cat:'trainees'});
+    if(showProviders) {
+      const providerText = calProviderLabel(row);
+      if(providerText) events.push({start:row.date,end:addOneDay(row.date),summary:`Working Providers: ${providerText}`,cat:'providers'});
+    }
+    if(showFTPhone && row.fowlerFT) events.push({start:row.date,end:addOneDay(row.date),summary:'FT Phone',cat:'ftphone'});
+  }
+
+  if(!events.length) { alert('No events to export (check filter selections).'); return; }
+
+  const now = new Date().toISOString().replace(/[-:.]/g,'').slice(0,15)+'Z';
+  let ics = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Psych Scheduler Fowler//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n`;
+
+  events.forEach((ev,i)=>{
+    ics += `BEGIN:VEVENT\r\n`;
+    ics += `UID:${UID_BASE}-${ev.cat}-${ev.start}-${i}@psych\r\n`;
+    ics += `DTSTAMP:${now}\r\n`;
+    ics += `DTSTART;VALUE=DATE:${toISODate(ev.start)}\r\n`;
+    ics += `DTEND;VALUE=DATE:${toISODate(ev.end)}\r\n`;
+    ics += `SUMMARY:${ev.summary}\r\n`;
+    ics += `END:VEVENT\r\n`;
+  });
+  ics += `END:VCALENDAR\r\n`;
+
+  const blob = new Blob([ics],{type:'text/calendar'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `fowler-schedule-${calYear}-${String(calMonth+1).padStart(2,'0')}.ics`;
+  a.click();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TABLE COLUMN DRAG-TO-REORDER (Dashboard th headers)
+// ═══════════════════════════════════════════════════════════════════════════
+
+let thDragColId = null;
+
+function thDragStart(e, id) {
+  thDragColId = id;
+  e.dataTransfer.effectAllowed = 'move';
+  e.currentTarget.classList.add('th-dragging');
+}
+function thDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('th-drag-over');
+}
+function thDragLeave(e) {
+  e.currentTarget.classList.remove('th-drag-over');
+}
+function thDrop(e, targetId) {
+  e.preventDefault();
+  e.stopPropagation();
+  e.currentTarget.classList.remove('th-drag-over');
+  if(!thDragColId || thDragColId === targetId) { thDragColId=null; return; }
+  if(targetId==='day'||targetId==='date') { thDragColId=null; return; }
+  const from = schedActiveCols.indexOf(thDragColId);
+  const to   = schedActiveCols.indexOf(targetId);
+  if(from<0||to<0||from<2||to<2) { thDragColId=null; return; }
+  schedActiveCols.splice(from,1);
+  schedActiveCols.splice(to,0,thDragColId);
+  thDragColId = null;
+  renderColPicker();
+  renderDashboard();
+}
+function thDragEnd(e) {
+  e.currentTarget.classList.remove('th-dragging');
+  document.querySelectorAll('.th-drag-over').forEach(el=>el.classList.remove('th-drag-over'));
+  thDragColId = null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FONT SIZE
+// ═══════════════════════════════════════════════════════════════════════════
+
+let baseFontPx = 20;
+const FONT_MIN = 11, FONT_MAX = 32;
+function changeFontSize(delta) {
+  baseFontPx = Math.max(FONT_MIN, Math.min(FONT_MAX, baseFontPx + delta));
+  const contentEl = document.querySelector('.content');
+  if(contentEl) contentEl.style.zoom = (baseFontPx / 16).toFixed(3);
+  const badge = document.getElementById('font-size-badge');
+  if(badge) badge.textContent = baseFontPx + 'px';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// THEME
+// ═══════════════════════════════════════════════════════════════════════════
+
+function cycleTheme() {
+  const html = document.documentElement;
+  const cur = html.getAttribute('data-theme') || 'dark';
+  const next = cur==='dark'?'light':cur==='light'?'slate':'dark';
+  html.setAttribute('data-theme', next);
+  updateThemeBtn(next);
+}
+function updateThemeBtn(theme) {
+  const btn = document.getElementById('theme-cycle-btn');
+  if(!btn) return;
+  const icons = {
+    dark:  {icon:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>', label:'Dark'},
+    light: {icon:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>', label:'Light'},
+    slate: {icon:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>', label:'Slate'},
+  };
+  const {icon, label} = icons[theme]||icons.dark;
+  btn.innerHTML = icon + ' ' + label;
+}
+
+// Set today badge on load
+function formatTimeAgo(date) {
+  const diffMs  = Date.now() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  const diffHr  = Math.floor(diffMs / 3600000);
+  const diffDay = Math.floor(diffMs / 86400000);
+  if (diffMin < 2)  return 'just now';
+  if (diffMin < 60) return diffMin + ' minutes ago';
+  if (diffHr  < 24) return diffHr  + ' hour'  + (diffHr  > 1 ? 's' : '') + ' ago';
+  if (diffDay < 7)  return diffDay + ' day'   + (diffDay > 1 ? 's' : '') + ' ago';
+  const diffWk = Math.floor(diffDay / 7);
+  if (diffWk  < 5)  return diffWk  + ' week'  + (diffWk  > 1 ? 's' : '') + ' ago';
+  const diffMo = Math.floor(diffDay / 30);
+  return diffMo + ' month' + (diffMo > 1 ? 's' : '') + ' ago';
+}
+
+async function fetchDriveMeta() {
+  if (!DRIVE_EXEC_URL) return;
+  try {
+    const res  = await fetch(DRIVE_EXEC_URL + '?meta=1');
+    const json = await res.json();
+    if (json.lastModified) {
+      const d     = new Date(json.lastModified);
+      const label = document.getElementById('drive-meta-label');
+      if (label) label.textContent = 'Sheet last updated: ' + formatTimeAgo(d) +
+        ' (' + d.toLocaleDateString(undefined, {month:'short',day:'numeric',year:'numeric'}) +
+        ' at ' + d.toLocaleTimeString(undefined, {hour:'numeric',minute:'2-digit'}) + ')';
+    }
+  } catch(_) {}  // silent fail — metadata is non-critical
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const todayFmt = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+  document.getElementById('today-badge').textContent = todayFmt;
+  // populate provider dropdown on initial load
+  const _initSel = document.getElementById('provider-select');
+  if(_initSel) _initSel.innerHTML = CORE_PROVIDERS.filter(p=>!PROVIDER_SELECT_HIDE.has(p)).map(p=>`<option value="${p}"${p===selectedProvider?' selected':''}>${p}</option>`).join('');
+  document.getElementById('paste-area').addEventListener('paste', () => setTimeout(parseAndLoad, 80));
+
+  // Window-level guards: if the user misses the drop zone, keep the browser
+  // from navigating away to open the file. Dropping anywhere outside the
+  // zone is treated as a no-op (we only act on drops within the zone).
+  ['dragenter','dragover'].forEach(evt => {
+    window.addEventListener(evt, e => { e.preventDefault(); }, false);
+  });
+  window.addEventListener('drop', e => {
+    if (!e.target.closest || !e.target.closest('#excel-drop-zone')) {
+      e.preventDefault();
+    }
+  }, false);
+
+  // Print: temporarily show all rows, then restore
+  window.addEventListener('beforeprint', () => {
+    window._pgSave = PG; PG = 99999;
+    const id = document.querySelector('.view.active')?.id?.replace('view-','');
+    if(id==='dashboard') renderDashboard(0);
+    else if(id==='backup') renderBackup();
+  });
+  window.addEventListener('afterprint', () => {
+    if(window._pgSave !== undefined){ PG = window._pgSave; window._pgSave = undefined;
+      const id = document.querySelector('.view.active')?.id?.replace('view-','');
+      if(id==='dashboard') renderDashboard();
+      else if(id==='backup') renderBackup();
+    }
+  });
+  const cEl = document.querySelector('.content');
+  if(cEl) cEl.style.zoom = (baseFontPx / 16).toFixed(3);
+  updateThemeBtn(document.documentElement.getAttribute('data-theme')||'dark');
+  fetchDriveMeta();
+});
+
+function openFeedbackModal(){
+  const ov = document.getElementById('fb-overlay');
+  if(!ov) return;
+  const msg = document.getElementById('fb-msg');
+  if(msg){ msg.className = 'fb-msg'; msg.textContent = ''; }
+  ov.classList.add('open');
+  setTimeout(function(){ const n = document.getElementById('fb-name'); if(n) n.focus(); }, 30);
+}
+function closeFeedbackModal(){
+  const ov = document.getElementById('fb-overlay');
+  if(!ov) return;
+  ov.classList.remove('open');
+}
+function submitFeedback(event){
+  // Feedback collection: email-only via FormSubmit.
+  // NOTE: DRIVE_EXEC_URL / Apps Script above is for schedule-data ingestion only — do not remove.
+  if(event && event.preventDefault) event.preventDefault();
+  const nameEl = document.getElementById('fb-name');
+  const commentEl = document.getElementById('fb-comment');
+  const submitBtn = document.getElementById('fb-submit');
+  const msg = document.getElementById('fb-msg');
+  if(!nameEl || !commentEl || !submitBtn) return false;
+  const name = (nameEl.value || '').trim();
+  const comment = (commentEl.value || '').trim();
+  if(!name || !comment){
+    if(msg){ msg.className = 'fb-msg fb-error'; msg.textContent = 'Please fill out both fields.'; }
+    return false;
+  }
+  const origText = submitBtn.textContent;
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Sending…';
+  if(msg){ msg.className = 'fb-msg'; msg.textContent = ''; }
+  const timestamp = new Date().toISOString();
+  const page = document.title;
+
+  const fd = new FormData();
+  fd.append('name', name);
+  fd.append('comment', comment);
+  fd.append('page', page);
+  fd.append('timestamp', timestamp);
+  fd.append('_subject', 'Psych Scheduler Maintenance Request');
+  fd.append('_template', 'table');
+  fd.append('_captcha', 'false');
+
+  fetch('https://formsubmit.co/ajax/troyfowlermd@gmail.com', {
+    method: 'POST',
+    body: fd
+  }).then(function(r){
+    submitBtn.disabled = false;
+    submitBtn.textContent = origText || 'Send';
+    if(r.ok){
+      if(msg){ msg.className = 'fb-msg fb-success'; msg.textContent = 'Thanks — your feedback was sent.'; }
+      const form = document.getElementById('fb-form');
+      if(form) form.reset();
+    } else {
+      console.warn('[feedback] FormSubmit returned HTTP', r.status);
+      if(msg){ msg.className = 'fb-msg fb-error'; msg.textContent = 'Sorry — we couldn’t send your feedback. Please try again later.'; }
+    }
+  }).catch(function(err){
+    submitBtn.disabled = false;
+    submitBtn.textContent = origText || 'Send';
+    console.warn('[feedback] fetch error:', err);
+    if(msg){ msg.className = 'fb-msg fb-error'; msg.textContent = 'Sorry — we couldn’t send your feedback. Please try again later.'; }
+  });
+  return false;
+}
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape'){
+    const ov = document.getElementById('fb-overlay');
+    if(ov && ov.classList.contains('open')) closeFeedbackModal();
+  }
+});
+</script>
+</body>
+</html>
