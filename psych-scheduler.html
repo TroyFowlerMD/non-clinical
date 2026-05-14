@@ -182,11 +182,18 @@ th.th-drag-over{background:var(--primary-bg)!important;color:var(--primary)!impo
 .col-pill.drag-over{border-color:var(--amber);background:var(--amber-bg)}
 .col-grip{font-size:10px;cursor:grab;opacity:0.5;margin-right:2px}
 .col-toggle-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:12px;cursor:pointer;transition:all 140ms}
-.col-toggle-btn:hover,.col-toggle-btn.open{background:var(--primary-bg);border-color:var(--primary);color:var(--primary)}
+.col-toggle-btn:hover,.col-toggle-btn.open,.col-toggle-btn.active{background:var(--primary-bg);border-color:var(--primary);color:var(--primary);font-weight:600}
 th{padding:6px 8px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);
   text-transform:uppercase;letter-spacing:0.05em;background:var(--surface2);
   border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;z-index:1;vertical-align:top}
 td{padding:5px 8px;border-bottom:1px solid var(--divider);vertical-align:middle}
+@media (max-width:768px){
+  #dash-table th:nth-child(1),#dash-table td:nth-child(1){position:sticky;left:0;z-index:4;min-width:48px;max-width:48px;background:var(--surface)}
+  #dash-table th:nth-child(2),#dash-table td:nth-child(2){position:sticky;left:48px;z-index:4;min-width:96px;background:var(--surface);box-shadow:2px 0 0 var(--border)}
+  #dash-table th:nth-child(1),#dash-table th:nth-child(2){z-index:6;background:var(--surface2)}
+  #dash-table tr.wknd-row td:nth-child(1),#dash-table tr.wknd-row td:nth-child(2){background:var(--wknd-bg)}
+  #dash-table tr.holiday-row td:nth-child(1),#dash-table tr.holiday-row td:nth-child(2){background:var(--amber-bg)!important}
+}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--surface2)}
 tr.wknd-row td{background:var(--wknd-bg)}
@@ -279,6 +286,10 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
 .cal-dot-thin{background:var(--red-bg);color:var(--red-text);font-size:9px}
 .cal-dot-pto-f{background:var(--green-bg);color:var(--green-text);font-size:9px;opacity:0.7}
 .cal-dot-pto-c{background:var(--amber-bg);color:var(--amber-text);font-size:9px;opacity:0.7}
+.cal-dot-staff{background:var(--primary-bg);color:var(--primary);font-size:9px}
+.cal-dot-trainee{background:var(--purple-bg);color:var(--purple);font-size:9px}
+.cal-dot-provider{background:var(--teal-bg);color:var(--teal);font-size:9px}
+.cal-dot-ft{background:var(--amber-bg);color:var(--amber-text);font-size:9px}
 
 /* Spanning call event bar */
 .cal-span-layer{position:absolute;top:0;left:0;right:0;pointer-events:none;overflow:visible}
@@ -662,10 +673,6 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
       Print view
     </button>
-    <button class="footer-btn" onclick="toggleTheme()">
-      <svg id="theme-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
-      Toggle theme
-    </button>
   </div>
 </nav>
 
@@ -778,13 +785,6 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
           <option value="Caution">⚠️ Caution</option>
           <option value="Not Feasible">🚫 Not Feasible</option>
         </select>
-        <select class="filter-select" id="f-trainee" onchange="renderDashboard()" title="Filter by trainee presence">
-          <option value="">Any trainees</option>
-          <option value="any">Has trainee</option>
-          <option value="resident">Resident only</option>
-          <option value="fellow">Fellow only</option>
-          <option value="none">No trainee</option>
-        </select>
         <span class="rcount" id="dash-rc"></span>
       </div>
       <div class="col-panel" id="col-panel">
@@ -792,6 +792,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
           <span class="col-panel-label">Toggle columns — drag headers in the table to reorder</span>
           <div id="col-pills-active" style="width:100%"></div>
           <div id="col-pills-inactive" style="display:none"></div>
+          <button class="col-toggle-btn" id="sched-weekdays-btn" onclick="toggleSchedWeekdaysOnly()" title="Hide Saturday and Sunday rows from My Schedule">Weekdays only</button>
           <button class="col-toggle-btn" onclick="resetSchedCols()" title="Restore all columns to default visibility and order"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74"/><polyline points="3 3 3 9 9 9"/></svg> Reset columns</button>
         </div>
       </div>
@@ -833,9 +834,12 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
               <label class="cal-cb-label"><input type="checkbox" id="cb-shifts" checked onchange="renderCalendar()"> My Shifts</label>
               <label class="cal-cb-label"><input type="checkbox" id="cb-backup" checked onchange="renderCalendar()"> Backup Call</label>
               <label class="cal-cb-label"><input type="checkbox" id="cb-postcall" checked onchange="renderCalendar()"> Post-Call</label>
-              <label class="cal-cb-label"><input type="checkbox" id="cb-overnight" checked onchange="renderCalendar()"> Overnight</label>
-              <label class="cal-cb-label"><input type="checkbox" id="cb-thin" onchange="renderCalendar()"> Thin Staffing</label>
-              <label class="cal-cb-label"><input type="checkbox" id="cb-pto" onchange="renderCalendar()"> PTO Feasibility</label>
+              <label class="cal-cb-label"><input type="checkbox" id="cb-my-overnight" checked onchange="renderCalendar()"> My overnight</label>
+              <label class="cal-cb-label"><input type="checkbox" id="cb-all-overnight" onchange="renderCalendar()"> All overnight</label>
+              <label class="cal-cb-label"><input type="checkbox" id="cb-staff-total" onchange="renderCalendar()"> Total Staff Core+Temp</label>
+              <label class="cal-cb-label"><input type="checkbox" id="cb-trainees" onchange="renderCalendar()"> Trainees</label>
+              <label class="cal-cb-label"><input type="checkbox" id="cb-providers" onchange="renderCalendar()"> Working providers</label>
+              <label class="cal-cb-label"><input type="checkbox" id="cb-ftphone" onchange="renderCalendar()"> FT Phone</label>
             </div>
             <button class="cal-export-btn" onclick="exportICS()">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -1644,6 +1648,7 @@ const SCHED_COLS_ALL = [
 ];
 
 let schedActiveCols = ['day','date','asgn','call','trainees'];
+let schedWeekdaysOnly = false;
 let schedSort = {col:'date', dir:1};
 let schedDragId = null;
 
@@ -1799,6 +1804,8 @@ function renderColPicker() {
   document.getElementById('col-pills-active').innerHTML =
     `<div class="col-toggle-grid">${allProvsChip}${grid}</div>`;
   document.getElementById('col-pills-inactive').innerHTML = '';
+  const weekdaysBtn = document.getElementById('sched-weekdays-btn');
+  if(weekdaysBtn) weekdaysBtn.classList.toggle('active', schedWeekdaysOnly);
 }
 
 // Change 2: toggle all provider columns on/off
@@ -1832,6 +1839,13 @@ function schedToggleAllProviders() {
 
 function resetSchedCols() {
   schedActiveCols = ['day','date','asgn','call','trainees'];
+  renderColPicker();
+  renderDashboard();
+}
+
+function toggleSchedWeekdaysOnly() {
+  schedWeekdaysOnly = !schedWeekdaysOnly;
+  dashPage = 0;
   renderColPicker();
   renderDashboard();
 }
@@ -2077,7 +2091,6 @@ function renderDashboard(pg) {
   const fClass   = document.getElementById('f-class').value;
   const fPeriod  = document.getElementById('f-period').value;
   const fPTO     = document.getElementById('f-pto-dash').value;
-  const fTrainee = document.getElementById('f-trainee')?.value || '';
 
   // Global date range takes precedence — if either bound set, skip f-period filter
   const useGlobal = !!(globalRange.start || globalRange.end);
@@ -2086,25 +2099,12 @@ function renderDashboard(pg) {
     if(fPeriod==='future') rows = rows.filter(r=>isFuture(r.date));
     else if(fPeriod==='past') rows = rows.filter(r=>isPast(r.date));
   }
-  if(fClass==='weekdays') rows = rows.filter(r=>!r.isWeekend);
+  if(fClass==='weekdays' || schedWeekdaysOnly) rows = rows.filter(r=>!r.isWeekend);
   else if(fClass==='Clinical') rows = rows.filter(r=>provClass(r)==='Clinical');
   else if(fClass==='Admin')    rows = rows.filter(r=>provClass(r)==='Admin/Remote');
   else if(fClass==='Off')      rows = rows.filter(r=>provClass(r)==='Off/Unavailable');
   else if(fClass==='Training') rows = rows.filter(r=>provClass(r)==='Training/Non-clinical');
   if(fPTO) rows = rows.filter(r=>r.ptoRisk===fPTO);
-  if(fTrainee) {
-    rows = rows.filter(r => {
-      const ts = r.trainees || [];
-      const hasR = ts.some(t => /-R$/i.test(t));
-      const hasF = ts.some(t => /-F$/i.test(t));
-      if (fTrainee === 'any')      return ts.length > 0;
-      if (fTrainee === 'resident') return hasR;
-      if (fTrainee === 'fellow')   return hasF;
-      if (fTrainee === 'none')     return ts.length === 0;
-      return true;
-    });
-  }
-
   // Sort
   const sortDef = SCHED_COLS_ALL.find(c=>c.id===schedSort.col);
   if(sortDef?.sortKey) {
@@ -2273,15 +2273,26 @@ function calNext() {
 const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DOW_NAMES=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
+function calStaffLabel(row) {
+  const tempCount = (row.workingTemp || []).length;
+  return `${row.count} staff (${row.coreCount}c${tempCount ? `+${tempCount}t` : ''})`;
+}
+function calProviderLabel(row) {
+  return [...(row.workingCore || []), ...(row.workingTemp || [])].join(', ');
+}
+
 function renderCalendar() {
   if(!DATA.length) return;
 
-  const showShifts    = document.getElementById('cb-shifts').checked;
-  const showBackup    = document.getElementById('cb-backup').checked;
-  const showPC        = document.getElementById('cb-postcall').checked;
-  const showOvernight = document.getElementById('cb-overnight').checked;
-  const showThin      = document.getElementById('cb-thin').checked;
-  const showPTO       = document.getElementById('cb-pto').checked;
+  const showShifts       = document.getElementById('cb-shifts').checked;
+  const showBackup       = document.getElementById('cb-backup').checked;
+  const showPC           = document.getElementById('cb-postcall').checked;
+  const showMyOvernight  = document.getElementById('cb-my-overnight').checked;
+  const showAllOvernight = document.getElementById('cb-all-overnight').checked;
+  const showStaffTotal   = document.getElementById('cb-staff-total').checked;
+  const showTrainees     = document.getElementById('cb-trainees').checked;
+  const showProviders    = document.getElementById('cb-providers').checked;
+  const showFTPhone      = document.getElementById('cb-ftphone').checked;
 
   document.getElementById('cal-month-label').textContent = `${MONTH_NAMES[calMonth]} ${calYear}`;
 
@@ -2371,12 +2382,17 @@ function renderCalendar() {
       const isWkend=ci===0||ci===6;
       const dots=[];
       if(row){
-        if(showShifts    && provWorking(row) && !provPC(row)) dots.push(`<span class="cal-dot cal-dot-shift">${provAsgn(row).slice(0,14)}</span>`);
-        if(showOvernight && isProvOvernight(row))               dots.push('<span class="cal-dot cal-dot-overnight">Overnight</span>');
-        if(showPC        && provPC(row))                        dots.push('<span class="cal-dot cal-dot-pc">Post-Call</span>');
-        if(showThin      && !row.isWeekend && row.atMin)        dots.push('<span class="cal-dot cal-dot-thin">⚠ Thin</span>');
-        if(showPTO       && row.ptoRisk==='Feasible')           dots.push('<span class="cal-dot cal-dot-pto-f">PTO ✅</span>');
-        if(showPTO       && row.ptoRisk==='Caution')            dots.push('<span class="cal-dot cal-dot-pto-c">PTO ⚠</span>');
+        if(showShifts       && provWorking(row) && !provPC(row)) dots.push(`<span class="cal-dot cal-dot-shift">${escapeHtml(provAsgn(row).slice(0,14))}</span>`);
+        if(showMyOvernight  && isProvOvernight(row))               dots.push('<span class="cal-dot cal-dot-overnight">My overnight</span>');
+        if(showAllOvernight && row.overnight)                      dots.push(`<span class="cal-dot cal-dot-overnight">${escapeHtml(row.overnight)}</span>`);
+        if(showPC           && provPC(row))                        dots.push('<span class="cal-dot cal-dot-pc">Post-Call</span>');
+        if(showStaffTotal)                                         dots.push(`<span class="cal-dot cal-dot-staff">${escapeHtml(calStaffLabel(row))}</span>`);
+        if(showTrainees     && (row.trainees||[]).length)          dots.push(`<span class="cal-dot cal-dot-trainee">${escapeHtml((row.trainees||[]).join(', '))}</span>`);
+        if(showProviders) {
+          const providerText = calProviderLabel(row);
+          if(providerText) dots.push(`<span class="cal-dot cal-dot-provider">${escapeHtml(providerText)}</span>`);
+        }
+        if(showFTPhone      && row.fowlerFT)                       dots.push('<span class="cal-dot cal-dot-ft">FT Phone</span>');
       }
       return `<div class="cal-day-cell${isToday?' is-today':''}${isWkend?' is-weekend':''}">
         <span class="cal-dn">${day}</span>
@@ -2397,12 +2413,15 @@ function renderCalendar() {
 function exportICS() {
   if(!DATA.length) return;
 
-  const showShifts    = document.getElementById('cb-shifts').checked;
-  const showBackup    = document.getElementById('cb-backup').checked;
-  const showPC        = document.getElementById('cb-postcall').checked;
-  const showOvernight = document.getElementById('cb-overnight').checked;
-  const showThin      = document.getElementById('cb-thin').checked;
-  const showPTO       = document.getElementById('cb-pto').checked;
+  const showShifts       = document.getElementById('cb-shifts').checked;
+  const showBackup       = document.getElementById('cb-backup').checked;
+  const showPC           = document.getElementById('cb-postcall').checked;
+  const showMyOvernight  = document.getElementById('cb-my-overnight').checked;
+  const showAllOvernight = document.getElementById('cb-all-overnight').checked;
+  const showStaffTotal   = document.getElementById('cb-staff-total').checked;
+  const showTrainees     = document.getElementById('cb-trainees').checked;
+  const showProviders    = document.getElementById('cb-providers').checked;
+  const showFTPhone      = document.getElementById('cb-ftphone').checked;
 
   const toISODate = d => d.replace(/-/g,'');
   const addOneDay = d => {
@@ -2436,10 +2455,17 @@ function exportICS() {
     }
   }
 
-  // Overnight
-  if(showOvernight) {
+  // My Overnight
+  if(showMyOvernight) {
     for(const row of DATA) {
-      if(isProvOvernight(row)) events.push({start:row.date,end:addOneDay(row.date),summary:'Overnight Call (Psych)',cat:'overnight'});
+      if(isProvOvernight(row)) events.push({start:row.date,end:addOneDay(row.date),summary:'My Overnight Call (Psych)',cat:'overnight'});
+    }
+  }
+
+  // All Overnight
+  if(showAllOvernight) {
+    for(const row of DATA) {
+      if(row.overnight) events.push({start:row.date,end:addOneDay(row.date),summary:`Overnight: ${row.overnight}`,cat:'allovernight'});
     }
   }
 
@@ -2451,22 +2477,15 @@ function exportICS() {
     }
   }
 
-  // Thin Staffing
-  if(showThin) {
-    for(const row of DATA) {
-      if(!row.isWeekend && row.atMin)
-        events.push({start:row.date,end:addOneDay(row.date),summary:`⚠ Thin Staffing (${row.coreCount} core)`,cat:'thin'});
+  // Total staff, trainees, working providers, and FT Phone
+  for(const row of DATA) {
+    if(showStaffTotal) events.push({start:row.date,end:addOneDay(row.date),summary:`Total Staff: ${calStaffLabel(row)}`,cat:'staff'});
+    if(showTrainees && (row.trainees||[]).length) events.push({start:row.date,end:addOneDay(row.date),summary:`Trainees: ${(row.trainees||[]).join(', ')}`,cat:'trainees'});
+    if(showProviders) {
+      const providerText = calProviderLabel(row);
+      if(providerText) events.push({start:row.date,end:addOneDay(row.date),summary:`Working Providers: ${providerText}`,cat:'providers'});
     }
-  }
-
-  // PTO Feasibility
-  if(showPTO) {
-    for(const row of DATA) {
-      if(row.ptoRisk==='Feasible')
-        events.push({start:row.date,end:addOneDay(row.date),summary:'PTO Feasible',cat:'pto'});
-      else if(row.ptoRisk==='Caution')
-        events.push({start:row.date,end:addOneDay(row.date),summary:'PTO Caution',cat:'pto'});
-    }
+    if(showFTPhone && row.fowlerFT) events.push({start:row.date,end:addOneDay(row.date),summary:'FT Phone',cat:'ftphone'});
   }
 
   if(!events.length) { alert('No events to export (check filter selections).'); return; }
