@@ -156,10 +156,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh
 .rcount{font-size:11px;color:var(--muted);margin-left:auto}
 
 /* TABLE */
-/* ── CHANGE 2: sticky header offset variable ──
-   With the topbar removed, the only persistent chrome above .table-wrap is the
-   global-filter-bar (~48px). The variable lets the offset be tuned per-breakpoint. */
-:root{--table-top-offset:60px}
 .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
   overflow-x:auto;overflow-y:visible;max-height:none;box-shadow:var(--shadow)}
 .table-wrap>table{border-radius:inherit}
@@ -167,6 +163,16 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh
 .table-hdr-title{font-size:13px;font-weight:600}
 table{width:max-content;border-collapse:collapse;font-size:12px;table-layout:auto}
 td,th{white-space:nowrap}
+#dash-table table{min-width:100%;table-layout:auto}
+#dash-table th{position:static;top:auto}
+#dash-table.sticky-ready th{position:sticky;top:0}
+#dash-table th,#dash-table td{max-width:160px}
+#dash-table .assignment-cell{min-width:88px;max-width:130px;white-space:normal;overflow-wrap:anywhere;word-break:normal;line-height:1.25}
+#dash-table .call-cell{min-width:74px;max-width:96px;white-space:normal;line-height:1.2}
+#dash-table .call-cell .badge,#dash-table .trainees-cell .badge{display:block;width:max-content;max-width:100%;margin:0 0 3px 0;white-space:normal;overflow-wrap:anywhere;line-height:1.15}
+#dash-table .call-cell .badge:last-child,#dash-table .trainees-cell .badge:last-child{margin-bottom:0}
+#dash-table .trainees-cell{min-width:86px;max-width:112px;white-space:normal;font-size:11px;line-height:1.2}
+#dash-table .working-providers-cell{min-width:130px;max-width:190px;white-space:normal;overflow-wrap:anywhere;line-height:1.25}
 .col-day{width:1%;padding-right:4px!important}
 .col-date{min-width:82px;max-width:92px;white-space:normal!important;line-height:1.2}
 .date-stack{display:flex;align-items:center;gap:6px}
@@ -538,10 +544,12 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
   table{min-width:100%}
   .filter-bar{gap:6px}
   .cal-container{max-width:100%}
-  /* CHANGE 2: more generous sticky offset on mobile to account for wrapped
-     global-filter-bar + col-panel rows on narrow screens. */
-  :root{--table-top-offset:110px}
-  /* CHANGE 3: shrink chips on narrow screens so more fit per wrapped row. */
+  #dash-table th,#dash-table td{max-width:140px}
+  #dash-table .assignment-cell{max-width:116px}
+  #dash-table .call-cell{max-width:88px}
+  #dash-table .trainees-cell{max-width:104px}
+  #dash-table .working-providers-cell{max-width:170px}
+  /* Keep chips small on narrow screens so more fit per wrapped row. */
   .col-toggle-chip{font-size:10px;padding:4px 8px}
   .col-panel{padding:12px}
   .col-panel-filters .filter-select{flex:1 1 140px;min-width:0}
@@ -1674,7 +1682,7 @@ function pagBar(total,pg,onFn){
 
 const SCHED_COLS_ALL = [
   {id:'date',        label:'Day / Date',       sortable:true,  sortKey:r=>r.date},
-  {id:'asgn',        label:'My Assignment',    sortable:false},
+  {id:'asgn',        label:'Selected Provider', sortable:false},
   {id:'call',        label:'Call',             sortable:false},
   {id:'ptoFeasible', label:'PTO Feasible',     sortable:true,  sortKey:r=>r.count},
   {id:'staffTotal',  label:'Total Staff<br>Core+Temp', sortable:true,  sortKey:r=>r.count},
@@ -1704,7 +1712,7 @@ let schedDragId = null;
 // provider were the selected provider, side-by-side with My Assignment.
 function renderAsgnCellFor(r, providerName) {
   const asgn = (r.providerAsgns && r.providerAsgns[providerName]) || '';
-  return `<td>${asgn||'<span style="color:var(--faint)">—</span>'}</td>`;
+  return `<td class="assignment-cell">${asgn||'<span style="color:var(--faint)">—</span>'}</td>`;
 }
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, ch => ({
@@ -1720,6 +1728,20 @@ function renderWorkingProviderName(name, opts={}) {
   return `<a href="sms:${phone}" class="working-provider-link">${content}</a>`;
 }
 
+function schedColLabel(id, context='header') {
+  if(id === 'asgn') {
+    const provider = selectedProvider || 'Selected Provider';
+    return context === 'picker' ? `Selected Provider (${provider})` : provider;
+  }
+  const col = SCHED_COLS_ALL.find(c=>c.id===id);
+  return col ? col.label : id;
+}
+function stripHtmlLabel(label) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = label;
+  return tmp.textContent || tmp.innerText || '';
+}
+
 function renderTextAllButton(names) {
   const phones = names
     .filter(name => name !== 'Fowler')
@@ -1733,7 +1755,7 @@ function schedCell(id, r) {
   switch(id) {
     case 'date':        return `<td class="col-date"><div class="date-stack">${dayChip}<span class="mono">${fmtDate(r.date)}</span></div></td>`;
     case 'asgn':        return renderAsgnCellFor(r, selectedProvider);
-    case 'call':        return `<td>${provCallBadge(r)}</td>`;
+    case 'call':        return `<td class="call-cell">${provCallBadge(r)}</td>`;
     case 'ptoFeasible': return `<td>${ptoFeasibleBadge(r)}</td>`;
     case 'staffTotal': {
       const tN=(r.workingTemp||[]).length;
@@ -1767,7 +1789,7 @@ function schedCell(id, r) {
         const cls = isF ? 'badge bp' : 'badge bb';
         return `<span class="${cls}" style="margin-right:3px">${t}</span>`;
       }).join('');
-      return `<td style="font-size:11px;white-space:normal">${html}</td>`;
+      return `<td class="trainees-cell">${html}</td>`;
     }
     default:            return '<td>—</td>';
   }
@@ -1848,10 +1870,11 @@ function renderColPicker() {
     // Change 3: skip rendering the chip for the currently selected provider
     if(PROVIDER_IDS.includes(id) && id === hiddenProv) return '';
     const on = schedActiveCols.includes(id);
-    return `<label class="col-toggle-chip ${on?'on':''}" title="${col.label}">
+    const label = schedColLabel(id, 'picker');
+    return `<label class="col-toggle-chip ${on?'on':''}" title="${stripHtmlLabel(label)}">
       <input type="checkbox" ${on?'checked':''} onchange="schedToggleCol('${id}')" style="display:none">
       <span class="col-chip-check">${on?'✓':''}</span>
-      ${col.label.replace('<br>',' / ')}
+      ${label.replace('<br>',' / ')}
     </label>`;
   }).join('');
   document.getElementById('col-pills-active').innerHTML =
@@ -2188,15 +2211,16 @@ function renderDashboard(pg) {
     const isSortActive = schedSort.col===id;
     const sortCls = col.sortable ? (isSortActive ? (schedSort.dir===1?'sort-asc':'sort-desc') : 'sortable') : '';
     const sortClick = col.sortable ? `onclick="schedSortBy('${id}')"` : '';
-    if(isLocked) return `<th class="${sortCls}" ${sortClick}>${col.label}</th>`;
-    const wrapStyle = col.label.includes('<br>') ? 'white-space:normal;min-width:70px;' : '';
+    const label = schedColLabel(id);
+    if(isLocked) return `<th class="${sortCls}" ${sortClick}>${label}</th>`;
+    const wrapStyle = label.includes('<br>') ? 'white-space:normal;min-width:70px;' : '';
     return `<th class="${sortCls} th-draggable" ${sortClick} style="${wrapStyle}"
       draggable="true"
       ondragstart="thDragStart(event,'${id}')"
       ondragover="thDragOver(event)"
       ondragleave="thDragLeave(event)"
       ondrop="thDrop(event,'${id}')"
-      ondragend="thDragEnd(event)">${col.label}</th>`;
+      ondragend="thDragEnd(event)">${label}</th>`;
   }).join('');
 
   const trows = page.map(r=>{
@@ -2208,6 +2232,7 @@ function renderDashboard(pg) {
     '<div class="empty"><p>No matching dates</p></div>';
 
   document.getElementById('dash-table').innerHTML = tbl + pagBar(t, dashPage, 'renderDashboard');
+  updateDashboardStickyHeader();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2618,6 +2643,24 @@ function thDragEnd(e) {
   thDragColId = null;
 }
 
+
+function updateDashboardStickyHeader() {
+  const wrap = document.getElementById('dash-table');
+  const main = document.querySelector('.main');
+  if(!wrap || !main) return;
+  const wrapTop = wrap.getBoundingClientRect().top;
+  const mainTop = main.getBoundingClientRect().top;
+  wrap.classList.toggle('sticky-ready', wrapTop <= mainTop + 1);
+}
+
+function installDashboardStickyWatcher() {
+  const main = document.querySelector('.main');
+  if(main) main.addEventListener('scroll', updateDashboardStickyHeader, {passive:true});
+  window.addEventListener('scroll', updateDashboardStickyHeader, {passive:true});
+  window.addEventListener('resize', updateDashboardStickyHeader);
+  updateDashboardStickyHeader();
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // FONT SIZE
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2759,6 +2802,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   const cEl = document.querySelector('.content');
   if(cEl) cEl.style.zoom = (baseFontPx / 16).toFixed(3);
   updateThemeBtn(document.documentElement.getAttribute('data-theme')||'dark');
+  installDashboardStickyWatcher();
   loadFromDrive();
 });
 
