@@ -167,16 +167,19 @@ td,th{white-space:nowrap}
 #dash-table th{position:static;top:auto}
 #dash-table.sticky-ready th{position:sticky;top:0}
 #dash-table th,#dash-table td{max-width:160px}
-#dash-table .assignment-cell{min-width:88px;max-width:130px;white-space:normal;overflow-wrap:anywhere;word-break:normal;line-height:1.25}
-#dash-table .call-cell{min-width:74px;max-width:96px;white-space:normal;line-height:1.2}
-#dash-table .call-cell .badge,#dash-table .trainees-cell .badge{display:block;width:max-content;max-width:100%;margin:0 0 3px 0;white-space:normal;overflow-wrap:anywhere;line-height:1.15}
+#dash-table .sched-col-date{width:1%;min-width:78px;max-width:86px;white-space:normal}
+#dash-table .sched-col-asgn{min-width:74px;max-width:116px;white-space:normal}
+#dash-table .sched-col-call{min-width:68px;max-width:92px;white-space:normal}
+#dash-table .assignment-cell{min-width:74px;max-width:116px;white-space:normal;overflow-wrap:anywhere;word-break:normal;line-height:1.2}
+#dash-table .call-cell{min-width:68px;max-width:92px;white-space:normal;line-height:1.15}
+#dash-table .call-cell .badge,#dash-table .trainees-cell .badge{display:block;width:max-content;max-width:100%;margin:0 0 2px 0;white-space:normal;overflow-wrap:anywhere;line-height:1.12}
 #dash-table .call-cell .badge:last-child,#dash-table .trainees-cell .badge:last-child{margin-bottom:0}
-#dash-table .trainees-cell{min-width:86px;max-width:112px;white-space:normal;font-size:11px;line-height:1.2}
-#dash-table .working-providers-cell{min-width:130px;max-width:190px;white-space:normal;overflow-wrap:anywhere;line-height:1.25}
+#dash-table .trainees-cell{min-width:78px;max-width:108px;white-space:normal;font-size:11px;line-height:1.15}
+#dash-table .working-providers-cell{min-width:126px;max-width:190px;white-space:normal;overflow-wrap:anywhere;line-height:1.22}
 .col-day{width:1%;padding-right:4px!important}
-.col-date{min-width:82px;max-width:92px;white-space:normal!important;line-height:1.2}
-.date-stack{display:flex;align-items:center;gap:6px}
-.date-stack .mono{font-size:10px;line-height:1.2;white-space:normal}
+.col-date{width:1%;min-width:78px;max-width:86px;white-space:normal!important;line-height:1.15}
+.date-stack{display:flex;align-items:center;gap:4px}
+.date-stack .mono{font-size:10px;line-height:1.15;white-space:normal}
 .col-day+td,.col-day+th{padding-left:6px!important}
 th.sortable{cursor:pointer;user-select:none}
 th.sortable:hover{color:var(--text);background:var(--surface3)}
@@ -213,10 +216,7 @@ th{padding:6px 8px;text-align:left;font-size:10px;font-weight:700;color:var(--mu
   border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;z-index:1;vertical-align:top}
 td{padding:5px 8px;border-bottom:1px solid var(--divider);vertical-align:middle}
 @media (max-width:768px){
-  #dash-table th:nth-child(1),#dash-table td:nth-child(1){position:sticky;left:0;z-index:4;min-width:82px;max-width:92px;background:var(--surface);box-shadow:2px 0 0 var(--border)}
-  #dash-table th:nth-child(1){z-index:6;background:var(--surface2)}
-  #dash-table tr.wknd-row td:nth-child(1){background:var(--wknd-bg)}
-  #dash-table tr.holiday-row td:nth-child(1){background:var(--amber-bg)!important}
+  #dash-table th:nth-child(1),#dash-table td:nth-child(1){left:auto;box-shadow:none}
 }
 tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--surface2)}
@@ -544,11 +544,17 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
   table{min-width:100%}
   .filter-bar{gap:6px}
   .cal-container{max-width:100%}
-  #dash-table th,#dash-table td{max-width:140px}
-  #dash-table .assignment-cell{max-width:116px}
-  #dash-table .call-cell{max-width:88px}
-  #dash-table .trainees-cell{max-width:104px}
-  #dash-table .working-providers-cell{max-width:170px}
+  #dash-table th,#dash-table td{max-width:126px;padding:4px 6px}
+  #dash-table .sched-col-date,#dash-table .col-date{width:1%;min-width:72px;max-width:80px;padding-left:6px;padding-right:4px}
+  #dash-table .sched-col-asgn,#dash-table .assignment-cell{min-width:62px;max-width:88px}
+  #dash-table .sched-col-call,#dash-table .call-cell{min-width:62px;max-width:78px}
+  #dash-table .trainees-cell{min-width:72px;max-width:96px}
+  #dash-table .working-providers-cell{min-width:116px;max-width:154px}
+  #dash-table .date-stack{gap:3px}
+  #dash-table .day-chip{padding-left:4px;padding-right:4px}
+  #dash-table .call-cell .badge{padding-left:5px;padding-right:5px;font-size:10px}
+  #dash-table tr.wknd-row td{padding-top:3px;padding-bottom:3px}
+  #dash-table tr.wknd-row .assignment-cell,#dash-table tr.wknd-row .call-cell,#dash-table tr.wknd-row .trainees-cell{line-height:1.1}
   /* Keep chips small on narrow screens so more fit per wrapped row. */
   .col-toggle-chip{font-size:10px;padding:4px 8px}
   .col-panel{padding:12px}
@@ -2212,9 +2218,10 @@ function renderDashboard(pg) {
     const sortCls = col.sortable ? (isSortActive ? (schedSort.dir===1?'sort-asc':'sort-desc') : 'sortable') : '';
     const sortClick = col.sortable ? `onclick="schedSortBy('${id}')"` : '';
     const label = schedColLabel(id);
-    if(isLocked) return `<th class="${sortCls}" ${sortClick}>${label}</th>`;
+    const colClass = `sched-col-${id}`;
+    if(isLocked) return `<th class="${sortCls} ${colClass}" ${sortClick}>${label}</th>`;
     const wrapStyle = label.includes('<br>') ? 'white-space:normal;min-width:70px;' : '';
-    return `<th class="${sortCls} th-draggable" ${sortClick} style="${wrapStyle}"
+    return `<th class="${sortCls} ${colClass} th-draggable" ${sortClick} style="${wrapStyle}"
       draggable="true"
       ondragstart="thDragStart(event,'${id}')"
       ondragover="thDragOver(event)"
