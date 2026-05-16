@@ -69,6 +69,19 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh
 
 /* MAIN */
 .main{flex:1;display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;min-width:0;height:100vh}
+.initial-loading-screen{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:28px;background:var(--bg);overflow:hidden}
+.initial-loading-screen.hidden{display:none}
+.initial-loading-canvas{position:absolute;inset:0;width:100%;height:100%;opacity:0.88}
+.initial-loading-panel{position:relative;z-index:1;width:min(520px,100%);padding:28px;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);background:color-mix(in srgb,var(--surface) 88%,transparent);box-shadow:var(--shadow);backdrop-filter:blur(12px);text-align:center}
+.initial-loading-kicker{font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px}
+.initial-loading-title{font-size:26px;font-weight:750;line-height:1.15;margin-bottom:10px;color:var(--text)}
+.initial-loading-copy{font-size:13px;line-height:1.55;color:var(--muted);margin-bottom:18px}
+.initial-loading-meter{position:relative;height:5px;width:100%;overflow:hidden;border-radius:999px;background:var(--surface2)}
+.initial-loading-meter::after{content:"";position:absolute;inset:0;width:38%;border-radius:inherit;background:linear-gradient(90deg,transparent,var(--primary),transparent);animation:loadingSweep 1.35s ease-in-out infinite}
+.initial-loading-pulse{display:inline-flex;align-items:center;gap:6px;justify-content:center;font-size:12px;color:var(--muted);font-family:var(--mono)}
+.initial-loading-pulse::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 0 var(--primary-bg);animation:loadingPulse 1.2s ease-out infinite}
+@keyframes loadingSweep{0%{transform:translateX(-110%)}100%{transform:translateX(280%)}}
+@keyframes loadingPulse{0%{box-shadow:0 0 0 0 var(--primary-bg)}70%{box-shadow:0 0 0 10px transparent}100%{box-shadow:0 0 0 0 transparent}}
 
 /* ── Topbar removed from layout on screen (CHANGE 1) ──
    Hidden universally; print stylesheet re-enables it via its own `display:flex !important` rule.
@@ -705,6 +718,17 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
 </nav>
 
 <div class="main">
+  <div class="initial-loading-screen" id="initial-loading-screen" aria-live="polite" aria-busy="true">
+    <canvas class="initial-loading-canvas" id="initial-loading-canvas"></canvas>
+    <div class="initial-loading-panel">
+      <div class="initial-loading-kicker">JFK Schedule Analyzer</div>
+      <div class="initial-loading-title">Loading schedule</div>
+      <div class="initial-loading-copy">Reading the latest Google Sheet so the schedule opens with current data.</div>
+      <div class="initial-loading-pulse">Reading Google Sheet...</div>
+      <div class="initial-loading-meter" aria-hidden="true" style="margin-top:18px"></div>
+    </div>
+  </div>
+
   <!-- CHANGE 1: Topbar hidden via CSS on screen (kept in DOM for JS targets + print stylesheet).
        Status pill, today badge, and topbar-meta remain so getElementById() calls still resolve. -->
   <div class="topbar">
@@ -2117,12 +2141,130 @@ async function pushToDrive(rows) {
     }
   }
 }
-async function loadFromDrive() {
+let loadingCanvasAnim = null;
+
+function startLoadingCanvas() {
+  const canvas = document.getElementById('initial-loading-canvas');
+  if (!canvas || loadingCanvasAnim) return;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  const dots = Array.from({length: 42}, (_, i) => ({
+    x: Math.random(),
+    y: Math.random(),
+    r: 1.8 + Math.random() * 3.4,
+    vx: (Math.random() - 0.5) * 0.00045,
+    vy: (Math.random() - 0.5) * 0.00045,
+    phase: i * 0.47
+  }));
+
+  function resize() {
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.max(1, Math.floor(canvas.clientWidth * dpr));
+    canvas.height = Math.max(1, Math.floor(canvas.clientHeight * dpr));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function cssColor(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  function draw(t) {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const primary = cssColor('--primary') || '#4f9be8';
+    const surface = cssColor('--surface2') || '#1c2538';
+    ctx.clearRect(0, 0, w, h);
+
+    const grad = ctx.createRadialGradient(w * 0.5, h * 0.48, 0, w * 0.5, h * 0.48, Math.max(w, h) * 0.72);
+    grad.addColorStop(0, 'rgba(255,255,255,0.05)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+
+    dots.forEach((dot, idx) => {
+      dot.x += dot.vx;
+      dot.y += dot.vy;
+      if (dot.x < -0.05) dot.x = 1.05;
+      if (dot.x > 1.05) dot.x = -0.05;
+      if (dot.y < -0.05) dot.y = 1.05;
+      if (dot.y > 1.05) dot.y = -0.05;
+
+      const x = dot.x * w;
+      const y = dot.y * h;
+      const pulse = 0.55 + Math.sin(t * 0.0016 + dot.phase) * 0.25;
+      ctx.beginPath();
+      ctx.arc(x, y, dot.r + pulse, 0, Math.PI * 2);
+      ctx.fillStyle = idx % 3 === 0 ? primary : surface;
+      ctx.globalAlpha = idx % 3 === 0 ? 0.20 : 0.16;
+      ctx.fill();
+    });
+
+    ctx.globalAlpha = 0.14;
+    ctx.strokeStyle = primary;
+    ctx.lineWidth = 1;
+    for (let i = 0; i < dots.length; i++) {
+      for (let j = i + 1; j < dots.length; j++) {
+        const ax = dots[i].x * w;
+        const ay = dots[i].y * h;
+        const bx = dots[j].x * w;
+        const by = dots[j].y * h;
+        const dist = Math.hypot(ax - bx, ay - by);
+        if (dist < 130) {
+          ctx.globalAlpha = (1 - dist / 130) * 0.12;
+          ctx.beginPath();
+          ctx.moveTo(ax, ay);
+          ctx.lineTo(bx, by);
+          ctx.stroke();
+        }
+      }
+    }
+    ctx.globalAlpha = 1;
+    loadingCanvasAnim = requestAnimationFrame(draw);
+  }
+
+  resize();
+  window.addEventListener('resize', resize);
+  canvas._loadingResize = resize;
+  loadingCanvasAnim = requestAnimationFrame(draw);
+}
+
+function stopLoadingCanvas() {
+  const canvas = document.getElementById('initial-loading-canvas');
+  if (loadingCanvasAnim) {
+    cancelAnimationFrame(loadingCanvasAnim);
+    loadingCanvasAnim = null;
+  }
+  if (canvas && canvas._loadingResize) {
+    window.removeEventListener('resize', canvas._loadingResize);
+    canvas._loadingResize = null;
+  }
+}
+
+function showInitialLoading() {
+  const screen = document.getElementById('initial-loading-screen');
+  if (!screen) return;
+  screen.classList.remove('hidden');
+  screen.setAttribute('aria-busy', 'true');
+  startLoadingCanvas();
+}
+
+function hideInitialLoading() {
+  const screen = document.getElementById('initial-loading-screen');
+  if (!screen) return;
+  screen.classList.add('hidden');
+  screen.setAttribute('aria-busy', 'false');
+  stopLoadingCanvas();
+}
+
+async function loadFromDrive(opts = {}) {
+  const initialLoad = !!opts.initialLoad;
   const btn    = document.getElementById('drive-load-btn');
   const status = document.getElementById('drive-status');
   const uncfg  = document.getElementById('drive-uncfg');
 
   if (!DRIVE_EXEC_URL) {
+    if (initialLoad) hideInitialLoading();
     if (uncfg) uncfg.style.display = 'block';
     if (status) {
       status.textContent  = 'Not configured';
@@ -2162,6 +2304,7 @@ async function loadFromDrive() {
     updateDataUpdatedBar('ok', json.fetchedAt, json.fetchedAt ? '' : '(Google Sheet loaded; timestamp unavailable)');
     await fetchDriveMeta();
   } catch(err) {
+    if (initialLoad) showView('paste');
     driveStatus = { fetchedAt: null, rowCount: 0, error: err.message };
     if (status) {
       status.textContent = 'Error: ' + err.message;
@@ -2170,6 +2313,7 @@ async function loadFromDrive() {
     updateDataUpdatedBar('error', null, 'automatic Google Sheet load failed: ' + err.message);
   } finally {
     if (btn) btn.disabled = false;
+    if (initialLoad) hideInitialLoading();
   }
 }
 
@@ -2810,7 +2954,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(cEl) cEl.style.zoom = (baseFontPx / 16).toFixed(3);
   updateThemeBtn(document.documentElement.getAttribute('data-theme')||'dark');
   installDashboardStickyWatcher();
-  loadFromDrive();
+  showInitialLoading();
+  loadFromDrive({ initialLoad: true });
 });
 
 function openFeedbackModal(){
