@@ -176,19 +176,29 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh
 .table-hdr-title{font-size:13px;font-weight:600}
 table{width:max-content;border-collapse:collapse;font-size:12px;table-layout:auto}
 td,th{white-space:nowrap}
-#dash-table table{min-width:100%;table-layout:auto}
+#dash-table table{width:var(--sched-table-width,max-content);min-width:0;table-layout:fixed}
+#dash-table col{width:104px}
+#dash-table col.sched-col-date{width:86px}
+#dash-table col.sched-col-asgn,#dash-table col.sched-col-anderson,#dash-table col.sched-col-fowler,#dash-table col.sched-col-carter,#dash-table col.sched-col-ondreyka,#dash-table col.sched-col-smith,#dash-table col.sched-col-cooley{width:108px}
+#dash-table col.sched-col-call{width:86px}
+#dash-table col.sched-col-trainees{width:108px}
+#dash-table col.sched-col-providers{width:232px}
+#dash-table col.col-hol{width:92px}
 #dash-table th{position:static;top:auto}
 #dash-table.sticky-ready th{position:sticky;top:0}
-#dash-table th,#dash-table td{max-width:160px}
-#dash-table .sched-col-date{width:1%;min-width:78px;max-width:86px;white-space:normal}
-#dash-table .sched-col-asgn{min-width:74px;max-width:116px;white-space:normal}
-#dash-table .sched-col-call{min-width:68px;max-width:92px;white-space:normal}
-#dash-table .assignment-cell{min-width:74px;max-width:116px;white-space:normal;overflow-wrap:anywhere;word-break:normal;line-height:1.2}
-#dash-table .call-cell{min-width:68px;max-width:92px;white-space:normal;line-height:1.15}
+#dash-table th,#dash-table td{box-sizing:border-box;width:104px;min-width:0;max-width:104px;white-space:normal;overflow-wrap:anywhere;word-break:normal;vertical-align:middle}
+#dash-table th{line-height:1.15}
+#dash-table .sched-col-date,#dash-table .col-date{width:86px;max-width:86px}
+#dash-table .sched-col-providers,#dash-table .working-providers-cell{width:232px;max-width:232px}
+#dash-table .sched-col-date{min-width:78px;white-space:normal}
+#dash-table .sched-col-asgn{width:108px;max-width:108px;white-space:normal}
+#dash-table .sched-col-call{width:86px;max-width:86px;white-space:normal}
+#dash-table .assignment-cell{width:108px;max-width:108px;white-space:normal;overflow-wrap:anywhere;word-break:normal;line-height:1.2}
+#dash-table .call-cell{width:86px;max-width:86px;white-space:normal;line-height:1.15}
 #dash-table .call-cell .badge,#dash-table .trainees-cell .badge{display:block;width:max-content;max-width:100%;margin:0 0 2px 0;white-space:normal;overflow-wrap:anywhere;line-height:1.12}
 #dash-table .call-cell .badge:last-child,#dash-table .trainees-cell .badge:last-child{margin-bottom:0}
-#dash-table .trainees-cell{min-width:78px;max-width:108px;white-space:normal;font-size:11px;line-height:1.15}
-#dash-table .working-providers-cell{min-width:126px;max-width:190px;white-space:normal;overflow-wrap:anywhere;line-height:1.22}
+#dash-table .trainees-cell{width:108px;max-width:108px;white-space:normal;font-size:11px;line-height:1.15}
+#dash-table .working-providers-cell{white-space:normal;overflow-wrap:anywhere;line-height:1.22}
 .col-day{width:1%;padding-right:4px!important}
 .col-date{width:1%;min-width:78px;max-width:86px;white-space:normal!important;line-height:1.15}
 .date-stack{display:flex;align-items:center;gap:4px}
@@ -557,12 +567,20 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
   table{min-width:100%}
   .filter-bar{gap:6px}
   .cal-container{max-width:100%}
-  #dash-table th,#dash-table td{max-width:126px;padding:4px 6px}
-  #dash-table .sched-col-date,#dash-table .col-date{width:1%;min-width:72px;max-width:80px;padding-left:6px;padding-right:4px}
-  #dash-table .sched-col-asgn,#dash-table .assignment-cell{min-width:62px;max-width:88px}
-  #dash-table .sched-col-call,#dash-table .call-cell{min-width:62px;max-width:78px}
-  #dash-table .trainees-cell{min-width:72px;max-width:96px}
-  #dash-table .working-providers-cell{min-width:116px;max-width:154px}
+  #dash-table table{width:max-content;min-width:0}
+  #dash-table col{width:88px}
+  #dash-table col.sched-col-date{width:76px}
+  #dash-table col.sched-col-asgn,#dash-table col.sched-col-anderson,#dash-table col.sched-col-fowler,#dash-table col.sched-col-carter,#dash-table col.sched-col-ondreyka,#dash-table col.sched-col-smith,#dash-table col.sched-col-cooley{width:86px}
+  #dash-table col.sched-col-call{width:74px}
+  #dash-table col.sched-col-trainees{width:94px}
+  #dash-table col.sched-col-providers{width:154px}
+  #dash-table col.col-hol{width:86px}
+  #dash-table th,#dash-table td{width:88px;max-width:88px;padding:4px 6px}
+  #dash-table .sched-col-date,#dash-table .col-date{width:76px;max-width:76px;padding-left:6px;padding-right:4px}
+  #dash-table .sched-col-asgn,#dash-table .assignment-cell{width:86px;max-width:86px}
+  #dash-table .sched-col-call,#dash-table .call-cell{width:74px;max-width:74px}
+  #dash-table .trainees-cell{width:94px;max-width:94px}
+  #dash-table .sched-col-providers,#dash-table .working-providers-cell{width:154px;max-width:154px}
   #dash-table .date-stack{gap:3px}
   #dash-table .day-chip{padding-left:4px;padding-right:4px}
   #dash-table .call-cell .badge{padding-left:5px;padding-right:5px;font-size:10px}
@@ -1734,15 +1752,33 @@ let schedActiveCols = ['date','asgn','call','trainees','providers'];
 let schedWeekdaysOnly = false;
 let schedSort = {col:'date', dir:1};
 let schedDragId = null;
+const SCHED_COL_WIDTHS = {date:86, asgn:108, call:86, trainees:108, providers:232,
+  ptoFeasible:104, staffTotal:104, overnight:104, backupPerson:104, ftPhone:104,
+  anderson:108, fowler:108, carter:108, ondreyka:108, smith:108, cooley:108, streak:104};
+const SCHED_COL_WIDTHS_MOBILE = {date:76, asgn:86, call:74, trainees:94, providers:154,
+  ptoFeasible:88, staffTotal:88, overnight:88, backupPerson:88, ftPhone:88,
+  anderson:86, fowler:86, carter:86, ondreyka:86, smith:86, cooley:86, streak:88};
+function schedColWidth(id) {
+  const mobile = window.matchMedia && window.matchMedia('(max-width:768px)').matches;
+  const widths = mobile ? SCHED_COL_WIDTHS_MOBILE : SCHED_COL_WIDTHS;
+  return widths[id] || (mobile ? 88 : 104);
+}
+function schedTableWidth() {
+  const mobile = window.matchMedia && window.matchMedia('(max-width:768px)').matches;
+  return schedActiveCols.reduce((sum, id) => sum + schedColWidth(id), mobile ? 86 : 92);
+}
 
 // Render an assignment cell for a given provider using the SAME logic the
 // 'asgn' (My Assignment) column uses for the selected provider. Used by the
 // My Assignment column AND the per-provider toggle columns (Anderson, Carter,
 // Ondreyka, Fowler, Smith, Cooley) so a toggled column is rendered as if that
 // provider were the selected provider, side-by-side with My Assignment.
+function compactAssignmentLabel(value) {
+  return String(value).replace(/\bHOL\s*\(\s*Req(?:ue|u)sted\s+Off\s*\)/ig, 'HOL (off)');
+}
 function renderAsgnCellFor(r, providerName) {
   const asgn = (r.providerAsgns && r.providerAsgns[providerName]) || '';
-  return `<td class="assignment-cell">${asgn||'<span style="color:var(--faint)">—</span>'}</td>`;
+  return `<td class="assignment-cell">${asgn ? escapeHtml(compactAssignmentLabel(asgn)) : '<span style="color:var(--faint)">—</span>'}</td>`;
 }
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, ch => ({
@@ -2379,7 +2415,8 @@ function renderDashboard(pg) {
     return `<tr${rowCls(r)}>${cells}${holColCell(r.date)}</tr>`;
   }).join('');
 
-  const tbl = trows ? `<table><thead><tr>${hdrs}<th class="col-hol" style="background:var(--surface2)"></th></tr></thead><tbody>${trows}</tbody></table>` :
+  const colGroup = `<colgroup>${schedActiveCols.map(id=>`<col class="sched-col-${id}">`).join('')}<col class="col-hol"></colgroup>`;
+  const tbl = trows ? `<table style="--sched-table-width:${schedTableWidth()}px">${colGroup}<thead><tr>${hdrs}<th class="col-hol" style="background:var(--surface2)"></th></tr></thead><tbody>${trows}</tbody></table>` :
     '<div class="empty"><p>No matching dates</p></div>';
 
   document.getElementById('dash-table').innerHTML = tbl + pagBar(t, dashPage, 'renderDashboard');
