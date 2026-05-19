@@ -38,3 +38,8 @@ Also noticed a pre-existing typo in `PICKER_ORDER`: the entry `'thinRun'` did no
 
 ## Repo
 [https://github.com/TroyFowlerMD/non-clinical/commit/28f6343](https://github.com/TroyFowlerMD/non-clinical/commit/28f6343)
+
+## 2026-05-19 Follow-up
+- Added a separate My Schedule table-control button: "Show only PTO feasible".
+- The button filters rows to the selected provider's current `ptoRisk === 'Feasible'`, excluding caution, not feasible, and weekend rows.
+- This is a row filter, not another visible table column, and it preserves the existing column-toggle system.

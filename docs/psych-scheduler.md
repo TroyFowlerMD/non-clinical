@@ -13,6 +13,9 @@ Current deployed file is `psych-scheduler.html` on `main` at commit `28f6343`. C
 
 **Known open bug remains:** mobile vs. desktop divergence - desktop correctly ignores non-psych staff; mobile still includes them. Suspected stale cache or render-path divergence.
 
+## 2026-05-19 Local Maintenance Note
+Unreleased local changes repair the feedback modal fallback path and add a My Schedule "Show only PTO feasible" filter. The filter uses the selected provider's recalculated `ptoRisk` and hides caution, not-feasible, and weekend rows.
+
 ## 2026-05-14 Consolidation Note
 No direct Psych Scheduler code changes were made during the broader repo-consolidation pass. The surrounding repo context **did** change locally:
 - `non-clinical` was cloned locally and its hub page was reorganized to better reflect a likely future `professional` / `personal` split

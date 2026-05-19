@@ -43,7 +43,7 @@
 3. Update DECISIONS.md if an architectural, workflow, safety, or publishing decision was made.
 4. Run the relevant tests/checks, or explain why they were not run.
 5. Run git status --short and summarize the exact files changed.
-6. Recommend a commit message, but ask before running git commit or git push.
+6. By default, after approved work is complete and relevant checks have passed, commit and push automatically unless Dr. Fowler explicitly says not to push yet. Stop and ask before committing or pushing if the changes are unclear, checks fail, deployment/config/secrets are involved, or the repo appears production-sensitive.
 
 ## Worklog Entry Format
 Append entries to WORKLOG.md using this shape:

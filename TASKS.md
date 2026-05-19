@@ -17,6 +17,8 @@
 - [ ] Re-test public non-clinical hub links after future dashboard or repo-routing changes.
 
 ## Completed (last 30 days)
+- [x] Repaired Psych Scheduler feedback submission so the modal has a maintenance-log fallback when email submission fails.
+- [x] Added a My Schedule "Show only PTO feasible" filter button that hides dates where PTO is not feasible for the selected provider.
 - [x] Added Psych Scheduler Excel drag-and-drop ingestion via SheetJS.
 - [x] Fixed Excel ingestion FileList-to-File bug.
 - [x] Reworked Excel ingestion so it routes through existing `parseAndLoad()` and real app globals.

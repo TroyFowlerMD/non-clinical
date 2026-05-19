@@ -33,3 +33,9 @@ Context: Psych Scheduler evolved from paste-only to a live Google Sheets-backed 
 Decision: Use the live Google Sheet as the default entry source and keep paste/Excel fallback paths available.
 Rationale: The live Sheet reduces manual loading while preserving resilience if the bridge fails or stale data is suspected.
 Consequences: Startup/loading changes should preserve `loadFromDrive()` behavior and fallback UI rather than replacing the ingestion model.
+
+### 2026-05-19 - Feedback Modal Keeps A Maintenance-Log Fallback
+Context: The feedback modal was showing a user-facing failure when the current email-only FormSubmit path failed.
+Decision: Keep feedback submission as a dual-path workflow: FormSubmit email plus the maintenance-request Apps Script logger. Send the Apps Script request in a no-CORS-compatible shape from the static GitHub Pages app.
+Rationale: Psych Scheduler has no backend server, so the modal needs at least one browser-safe external path to accept maintenance requests.
+Consequences: Future feedback changes should preserve an independent maintenance-log fallback and should be browser-tested from the static page context before publishing.

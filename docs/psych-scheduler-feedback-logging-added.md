@@ -21,3 +21,8 @@ Added a maintenance-request feedback layer to `psych-scheduler.html` in `TroyFow
 
 ## Follow-up
 No separate Asana Build & Dev task was found. Matching unprojected Asana capture task was completed after this deployment.
+
+## 2026-05-19 Repair Note
+- Current failure mode: the modal had drifted to an email-only FormSubmit path, so a FormSubmit failure produced the user-facing "couldn't send" message.
+- Repair: restored dual submission with FormSubmit email plus the maintenance-request Apps Script logger. The Apps Script request now avoids a CORS preflight so it can work from the static GitHub Pages app.
+- Verification: local browser test loaded the live schedule, submitted one Codex-labeled feedback test, and showed the modal success message.

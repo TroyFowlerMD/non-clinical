@@ -881,6 +881,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
           </div>
           <div class="col-panel-actions">
             <button class="col-toggle-btn" id="sched-weekdays-btn" onclick="toggleSchedWeekdaysOnly()" title="Hide Saturday and Sunday rows from My Schedule">Weekdays only</button>
+            <button class="col-toggle-btn" id="sched-pto-only-btn" onclick="toggleSchedPTOFeasibleOnly()" title="Show only dates where PTO is feasible for the selected provider">Show only PTO feasible</button>
             <button class="col-toggle-btn" onclick="resetSchedCols()" title="Restore all columns to default visibility and order"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74"/><polyline points="3 3 3 9 9 9"/></svg> Reset columns</button>
           </div>
         </div>
@@ -976,6 +977,7 @@ const BACKUP_POOL    = ['Fowler','Carter','Ondreyka'];
 // ── Google Drive / Apps Script integration ────────────────────────────────
 // After deploying Code.gs as a Web App, paste the /exec URL here:
 const DRIVE_EXEC_URL = 'https://script.google.com/macros/s/AKfycbyMi0090cG0OpaW8vijCrijox-R1Y_d-4uGBbeg2Jq8KAYmICqctoF3ctZlqheHyEWC/exec'; // e.g. 'https://script.google.com/macros/s/AKfy.../exec'
+const FEEDBACK_EXEC_URL = 'https://script.google.com/macros/s/AKfycbxtM_sCWARu_IWy7MZe9ZD7grBX5WrlSr42ECmxa60Fpg7ZHm2eIUgDnO2Yp1xBCVYf/exec';
 let driveStatus = null;    // { fetchedAt, rowCount, error }
 const NP_STAFF       = ['Anderson','Smith','Cooley'];
 
@@ -1752,6 +1754,7 @@ const SCHED_COLS_ALL = [
 
 let schedActiveCols = ['date','asgn','call','trainees','providers'];
 let schedWeekdaysOnly = false;
+let schedPTOFeasibleOnly = false;
 let schedSort = {col:'date', dir:1};
 let schedDragId = null;
 const SCHED_COL_WIDTHS = {date:86, asgn:108, call:86, trainees:108, providers:232,
@@ -1954,6 +1957,8 @@ function renderColPicker() {
   document.getElementById('col-pills-inactive').innerHTML = '';
   const weekdaysBtn = document.getElementById('sched-weekdays-btn');
   if(weekdaysBtn) weekdaysBtn.classList.toggle('active', schedWeekdaysOnly);
+  const ptoOnlyBtn = document.getElementById('sched-pto-only-btn');
+  if(ptoOnlyBtn) ptoOnlyBtn.classList.toggle('active', schedPTOFeasibleOnly);
 }
 
 // Change 2: toggle all provider columns on/off
@@ -1993,6 +1998,13 @@ function resetSchedCols() {
 
 function toggleSchedWeekdaysOnly() {
   schedWeekdaysOnly = !schedWeekdaysOnly;
+  dashPage = 0;
+  renderColPicker();
+  renderDashboard();
+}
+
+function toggleSchedPTOFeasibleOnly() {
+  schedPTOFeasibleOnly = !schedPTOFeasibleOnly;
   dashPage = 0;
   renderColPicker();
   renderDashboard();
@@ -2383,6 +2395,7 @@ function renderDashboard(pg) {
   else if(fClass==='Admin')    rows = rows.filter(r=>provClass(r)==='Admin/Remote');
   else if(fClass==='Off')      rows = rows.filter(r=>provClass(r)==='Off/Unavailable');
   else if(fClass==='Training') rows = rows.filter(r=>provClass(r)==='Training/Non-clinical');
+  if(schedPTOFeasibleOnly) rows = rows.filter(r=>r.ptoRisk === 'Feasible');
   // Sort
   const sortDef = SCHED_COLS_ALL.find(c=>c.id===schedSort.col);
   if(sortDef?.sortKey) {
@@ -2392,7 +2405,8 @@ function renderDashboard(pg) {
     });
   }
 
-  document.getElementById('dash-rc').textContent = `${rows.length} dates · ${useGlobal ? 'in selected range' : (fPeriod==='future' ? 'upcoming' : fPeriod==='past' ? 'past' : 'all dates')}`;
+  const scopeLabel = useGlobal ? 'in selected range' : (fPeriod==='future' ? 'upcoming' : fPeriod==='past' ? 'past' : 'all dates');
+  document.getElementById('dash-rc').textContent = `${rows.length} dates · ${scopeLabel}${schedPTOFeasibleOnly ? ' · PTO feasible only' : ''}`;
   const t = rows.length;
   const page = rows.slice(dashPage*PG, (dashPage+1)*PG);
 
@@ -3015,8 +3029,6 @@ function closeFeedbackModal(){
   ov.classList.remove('open');
 }
 function submitFeedback(event){
-  // Feedback collection: email-only via FormSubmit.
-  // NOTE: DRIVE_EXEC_URL / Apps Script above is for schedule-data ingestion only — do not remove.
   if(event && event.preventDefault) event.preventDefault();
   const nameEl = document.getElementById('fb-name');
   const commentEl = document.getElementById('fb-comment');
@@ -3045,18 +3057,39 @@ function submitFeedback(event){
   fd.append('_template', 'table');
   fd.append('_captcha', 'false');
 
-  fetch('https://formsubmit.co/ajax/troyfowlermd@gmail.com', {
+  const emailReq = fetch('https://formsubmit.co/ajax/troyfowlermd@gmail.com', {
     method: 'POST',
     body: fd
   }).then(function(r){
+    if(!r.ok) throw new Error('email failed: HTTP ' + r.status);
+    return r;
+  });
+
+  const feedbackPayload = {
+    site: document.title || window.location.pathname,
+    name: name,
+    comment: comment,
+    page: page,
+    url: window.location.href,
+    timestamp: timestamp,
+    source: 'psych-scheduler-feedback-modal'
+  };
+  const sheetReq = FEEDBACK_EXEC_URL ? fetch(FEEDBACK_EXEC_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    body: JSON.stringify(feedbackPayload)
+  }).then(function(r){ return r; }) : Promise.reject(new Error('feedback sheet URL missing'));
+
+  Promise.allSettled([emailReq, sheetReq]).then(function(results){
+    const anyOk = results.some(function(r){ return r.status === 'fulfilled'; });
     submitBtn.disabled = false;
     submitBtn.textContent = origText || 'Send';
-    if(r.ok){
+    if(anyOk){
       if(msg){ msg.className = 'fb-msg fb-success'; msg.textContent = 'Thanks — your feedback was sent.'; }
       const form = document.getElementById('fb-form');
       if(form) form.reset();
     } else {
-      console.warn('[feedback] FormSubmit returned HTTP', r.status);
+      console.warn('[feedback] all submit paths failed', results);
       if(msg){ msg.className = 'fb-msg fb-error'; msg.textContent = 'Sorry — we couldn’t send your feedback. Please try again later.'; }
     }
   }).catch(function(err){
