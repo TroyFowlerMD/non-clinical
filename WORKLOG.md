@@ -18,3 +18,10 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
     - In progress: ...
     - Blockers/notes: ...
 
+### 2026-05-19 - Codex desktop - Repository maintenance sweep
+- Completed: Fast-forward pulled `origin/main` and confirmed the working tree was clean before maintenance logging.
+- Completed: Smoke-checked the live Psych Scheduler URL; it returned HTTP 200 with expected schedule/provider text.
+- Completed: Ran a local relative href/src scan. The only findings were expected GitHub Pages base-path and dynamic SMS references, not missing static assets.
+- In progress: Existing stale-data badge/source-display, Apps Script redeployment cadence, repo organization, and public link retest tasks remain open in TASKS.md.
+- Blockers/notes: No app code changed during this maintenance sweep; TASKS.md and DECISIONS.md were not changed.
+
