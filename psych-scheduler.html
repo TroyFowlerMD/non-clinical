@@ -251,7 +251,9 @@ tr.holiday-row:hover td{background:color-mix(in srgb,var(--amber-bg) 160%,var(--
 .hol-col-tag{display:inline-block;font-size:9px;font-weight:700;color:var(--amber-text);background:var(--amber-bg);border-radius:3px;padding:2px 5px;white-space:nowrap;letter-spacing:0.01em}
 .mono{font-family:var(--mono);font-size:11px}
 .muted-cell{color:var(--muted)}
-.day-chip{display:inline-block;font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px;background:var(--surface3);color:var(--muted)}
+.day-chip{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  font-size:9px;font-weight:600;line-height:1;padding:3px 2px;border-radius:3px;background:var(--surface3);color:var(--muted)}
+.day-chip-letter{display:block;line-height:1}
 .day-chip.weekend{background:var(--teal-bg);color:var(--teal)}
 .working-providers-cell{font-size:11px;color:var(--muted)}
 .working-provider-link{display:inline-flex;align-items:center;min-height:20px;color:var(--primary);text-decoration:none;border-radius:var(--radius-sm);padding:0 2px}
@@ -582,7 +584,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
   #dash-table .trainees-cell{width:94px;max-width:94px}
   #dash-table .sched-col-providers,#dash-table .working-providers-cell{width:154px;max-width:154px}
   #dash-table .date-stack{gap:3px}
-  #dash-table .day-chip{padding-left:4px;padding-right:4px}
+  #dash-table .day-chip{padding:2px}
   #dash-table .call-cell .badge{padding-left:5px;padding-right:5px;font-size:10px}
   #dash-table tr.wknd-row td{padding-top:3px;padding-bottom:3px}
   #dash-table tr.wknd-row .assignment-cell,#dash-table tr.wknd-row .call-cell,#dash-table tr.wknd-row .trainees-cell{line-height:1.1}
@@ -1763,6 +1765,10 @@ function schedColWidth(id) {
   const widths = mobile ? SCHED_COL_WIDTHS_MOBILE : SCHED_COL_WIDTHS;
   return widths[id] || (mobile ? 88 : 104);
 }
+function dayChipHtml(day, isWeekend=false) {
+  const letters = dayShort(day).split('').map(ch=>`<span class="day-chip-letter">${escapeHtml(ch)}</span>`).join('');
+  return `<span class="${isWeekend?'day-chip weekend':'day-chip'}" aria-label="${escapeHtml(dayShort(day))}">${letters}</span>`;
+}
 function schedTableWidth() {
   const mobile = window.matchMedia && window.matchMedia('(max-width:768px)').matches;
   return schedActiveCols.reduce((sum, id) => sum + schedColWidth(id), mobile ? 86 : 92);
@@ -1817,7 +1823,7 @@ function renderTextAllButton(names) {
   return `<a href="sms:${phones.join(',')}" class="sms-all-btn" title="Text all working providers" aria-label="Text all working providers">💬</a>`;
 }
 function schedCell(id, r) {
-  const dayChip = `<span class="${r.isWeekend?'day-chip weekend':'day-chip'}">${dayShort(r.day)}</span>`;
+  const dayChip = dayChipHtml(r.day, r.isWeekend);
   switch(id) {
     case 'date':        return `<td class="col-date"><div class="date-stack">${dayChip}<span class="mono">${fmtDate(r.date)}</span></div></td>`;
     case 'asgn':        return renderAsgnCellFor(r, selectedProvider);
@@ -2514,7 +2520,7 @@ function renderBackup() {
       const totalK=staffTotalClass(r);
       extra += `<td><span class="cnt ${totalK}">${r.count}</span><span class="cnt-temp" style="font-size:10px;margin-left:4px">${r.coreCount}c${tN?`+${tN}t`:''}</span></td>`;
     }
-    return `${rowCls(r)}><td class="col-day"><span class="${r.isWeekend?'day-chip weekend':'day-chip'}">${dayShort(r.day)}</span></td>
+    return `${rowCls(r)}><td class="col-day">${dayChipHtml(r.day, r.isWeekend)}</td>
       ${holDateCell(r.date)}
       <td>${providerCell(r.fowlerBackup, fa, isProviderOvernight(r,'Fowler'), fPC)}</td>
       <td>${providerCell(r.carterBackup, ca, isProviderOvernight(r,'Carter'), cPC)}</td>
