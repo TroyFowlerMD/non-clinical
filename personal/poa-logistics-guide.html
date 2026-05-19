@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-text-size="normal">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POA Logistics Checklist</title>
+<style>
+:root {
+  --bg: #f7f8f4;
+  --surface: #ffffff;
+  --surface-2: #f0f3ee;
+  --surface-3: #e7ece5;
+  --text: #202721;
+  --muted: #536057;
+  --faint: #778177;
+  --border: #d8dfd5;
+  --accent: #2e7d6b;
+  --accent-2: #b36b32;
+  --urgent: #9f3b25;
+  --accent-soft: rgba(46, 125, 107, 0.12);
+  --warn-soft: rgba(179, 107, 50, 0.13);
+  --urgent-soft: rgba(159, 59, 37, 0.12);
+  --shadow: 0 16px 40px rgba(35, 48, 39, 0.12);
+  --radius: 8px;
+  --font-scale: 1;
+  --tr: 180ms ease;
+  color-scheme: light;
+}
+
+[data-theme="medium"] {
+  --bg: #e3e8e3;
+  --surface: #f8f6ef;
+  --surface-2: #d7dfda;
+  --surface-3: #cbd7d1;
+  --text: #1f2825;
+  --muted: #4f5f58;
+  --faint: #697971;
+  --border: #b9c7c0;
+  --accent: #245f73;
+  --accent-2: #8f5f22;
+  --urgent: #8e3324;
+  --accent-soft: rgba(36, 95, 115, 0.13);
+  --warn-soft: rgba(143, 95, 34, 0.14);
+  --urgent-soft: rgba(142, 51, 36, 0.13);
+  --shadow: 0 16px 36px rgba(31, 40, 37, 0.16);
+}
+
+[data-theme="dark"] {
+  --bg: #111816;
+  --surface: #19231f;
+  --surface-2: #21302a;
+  --surface-3: #2b3a35;
+  --text: #f1f5ef;
+  --muted: #bbc8bf;
+  --faint: #92a099;
+  --border: #34443d;
+  --accent: #76d3c0;
+  --accent-2: #f0b46e;
+  --urgent: #ff9d82;
+  --accent-soft: rgba(118, 211, 192, 0.12);
+  --warn-soft: rgba(240, 180, 110, 0.13);
+  --urgent-soft: rgba(255, 157, 130, 0.13);
+  --shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+  color-scheme: dark;
+}
+
+[data-text-size="small"] { --font-scale: 0.92; }
+[data-text-size="large"] { --font-scale: 1.12; }
+[data-text-size="xlarge"] { --font-scale: 1.26; }
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at top left, var(--accent-soft), transparent 30rem),
+    linear-gradient(180deg, var(--bg), var(--surface-2));
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: calc(16px * var(--font-scale));
+  line-height: 1.55;
+}
+
+button, summary { font: inherit; }
+a { color: var(--accent); }
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 20;
+  padding: 0.6rem 0.85rem;
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+.skip-link:focus { top: 1rem; }
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem max(1rem, calc((100vw - 1120px) / 2));
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+.brand {
+  min-width: 0;
+  font-weight: 850;
+  line-height: 1.15;
+}
+
+.brand span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.77em;
+  font-weight: 750;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.control-group {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+
+.control-btn {
+  min-height: 2.25rem;
+  min-width: 2.45rem;
+  padding: 0.38rem 0.65rem;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 850;
+  cursor: pointer;
+  transition: background var(--tr), color var(--tr), transform var(--tr);
+}
+
+.control-btn:hover, .control-btn[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.control-btn:active { transform: translateY(1px); }
+
+.wrap {
+  width: min(1120px, calc(100% - 2rem));
+  margin: 0 auto;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  gap: 1rem;
+  align-items: stretch;
+  padding: 2rem 0 1rem;
+}
+
+.panel, .card, .step, .contact-card, .script-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgba(26, 35, 31, 0.08);
+}
+
+.hero-copy {
+  padding: clamp(1.2rem, 4vw, 2.25rem);
+  box-shadow: var(--shadow);
+}
+
+.eyebrow {
+  margin: 0 0 0.6rem;
+  color: var(--accent);
+  font-size: 0.78em;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1, h2, h3, p, li { overflow-wrap: anywhere; }
+
+h1 {
+  max-width: 13ch;
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(2.1rem, 6.5vw, 4.6rem);
+  line-height: 0.98;
+  letter-spacing: 0;
+}
+
+.intro {
+  max-width: 60ch;
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: 1.06em;
+}
+
+.priority-box {
+  padding: 1rem;
+  border-left: 5px solid var(--urgent);
+  background: var(--urgent-soft);
+}
+
+.priority-box h2 {
+  margin: 0 0 0.55rem;
+  font-size: 1.05em;
+  color: var(--urgent);
+}
+
+.priority-box ol {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.priority-box li + li { margin-top: 0.35rem; }
+
+.nav-strip, .note-strip {
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.nav-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.nav-strip a {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.note-strip {
+  border-color: color-mix(in srgb, var(--accent-2) 45%, var(--border));
+  background: var(--warn-soft);
+}
+
+.note-strip strong { color: var(--accent-2); }
+
+.section-head { margin: 1.75rem 0 0.85rem; }
+.section-head h2 { margin: 0; font-size: 1.35em; }
+.section-head p { max-width: 72ch; margin: 0.25rem 0 0; color: var(--muted); }
+
+.grid-2, .grid-3 {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+.card, .step, .contact-card, .script-card { padding: 1rem; }
+
+.card h3, .step h3, .contact-card h3, .script-card h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1.03em;
+  line-height: 1.3;
+}
+
+.card p, .step p, .contact-card p, .script-card p {
+  margin: 0.35rem 0;
+  color: var(--muted);
+}
+
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.55rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.78em;
+  font-weight: 900;
+}
+
+.badge.urgent {
+  background: var(--urgent-soft);
+  color: var(--urgent);
+}
+
+.badge.remote {
+  background: color-mix(in srgb, var(--accent-soft) 70%, var(--surface-3));
+  color: var(--accent);
+}
+
+.checklist {
+  margin: 0.55rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.checklist li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem;
+  align-items: start;
+  color: var(--muted);
+}
+
+.checklist li + li { margin-top: 0.38rem; }
+
+.checklist input {
+  width: 1.05rem;
+  height: 1.05rem;
+  margin-top: 0.18rem;
+  accent-color: var(--accent);
+}
+
+details {
+  margin-top: 0.7rem;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+
+summary {
+  min-height: 2.7rem;
+  padding: 0.65rem 0.85rem;
+  color: var(--text);
+  font-weight: 850;
+  cursor: pointer;
+  list-style: none;
+}
+
+summary::-webkit-details-marker { display: none; }
+summary::after {
+  content: "+";
+  float: right;
+  margin-left: 0.75rem;
+  color: var(--accent);
+  font-size: 1.2em;
+  line-height: 1;
+}
+details[open] summary::after { content: "-"; }
+
+.detail-body {
+  padding: 0 0.85rem 0.85rem;
+  color: var(--muted);
+}
+
+.detail-body p { margin: 0.4rem 0; }
+.detail-body ul { margin: 0.45rem 0 0; padding-left: 1.2rem; }
+.detail-body li + li { margin-top: 0.32rem; }
+
+.script {
+  margin: 0.55rem 0 0;
+  padding: 0.75rem;
+  border-left: 4px solid var(--accent);
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 0.94em;
+}
+
+.source-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem 0.8rem;
+  margin: 0.55rem 0 0;
+  padding-left: 1.2rem;
+  color: var(--muted);
+}
+
+.footer {
+  margin: 2rem 0 0;
+  padding: 1.2rem 0 2.2rem;
+  color: var(--faint);
+  font-size: 0.92em;
+}
+
+.footer p { margin: 0.35rem 0; }
+
+@media (max-width: 900px) {
+  .hero, .grid-2, .grid-3, .source-list { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 620px) {
+  .topbar { align-items: flex-start; flex-direction: column; }
+  .controls { width: 100%; justify-content: flex-start; min-width: 0; }
+  .control-group { width: 100%; flex: 1 1 auto; min-width: 0; }
+  .control-btn { min-width: 0; flex: 1 1 auto; padding-inline: 0.4rem; }
+  .wrap { width: min(100% - 1rem, 1120px); }
+  .hero { padding-top: 1rem; }
+  .hero-copy, .priority-box, .card, .step, .contact-card, .script-card { padding: 0.85rem; }
+  h1 { max-width: 11ch; font-size: clamp(2rem, 13vw, 3.4rem); }
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to checklist</a>
+
+<header class="topbar" aria-label="Page controls">
+  <div class="brand">
+    POA Logistics Checklist
+    <span>What daughter needs to do, and when</span>
+  </div>
+  <div class="controls">
+    <div class="control-group" aria-label="Color theme">
+      <button class="control-btn" type="button" data-theme-button="light" aria-pressed="true">Light</button>
+      <button class="control-btn" type="button" data-theme-button="medium" aria-pressed="false">Medium</button>
+      <button class="control-btn" type="button" data-theme-button="dark" aria-pressed="false">Dark</button>
+    </div>
+    <div class="control-group" aria-label="Text size">
+      <button class="control-btn" type="button" id="textMinus" aria-label="Make text smaller">A-</button>
+      <button class="control-btn" type="button" id="textPlus" aria-label="Make text larger">A+</button>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+  <section class="hero" aria-labelledby="page-title">
+    <div class="panel hero-copy">
+      <p class="eyebrow">Lewis County, Washington</p>
+      <h1 id="page-title">Get the POA set up in one visit.</h1>
+      <p class="intro">This is a practical checklist for the daughter. Assume mother cannot do the legwork because of limited mobility. Daughter should prepare, print, schedule, drive, call, scan, mail or upload, and follow up.</p>
+    </div>
+    <aside class="panel priority-box" aria-label="Highest priority first steps">
+      <h2>Do these first. They take the most time.</h2>
+      <ol>
+        <li>Print all forms before the visit.</li>
+        <li>Schedule a notary or bank notary appointment.</li>
+        <li>Gather IDs, benefit cards, bank details, pension papers, tax records, and hospital bills.</li>
+        <li>Call the bank to ask what POA agent paperwork they require.</li>
+        <li>Call pension/union administrator with mother present or ready to join.</li>
+        <li>Scan every signed page to PDF before the day ends.</li>
+      </ol>
+    </aside>
+  </section>
+
+  <nav class="nav-strip" aria-label="POA guide navigation">
+    <strong>Companion page:</strong>
+    <a href="poa-guide.html">Read the plain-English POA explainer</a>
+    <a href="#in-person">Must do together</a>
+    <a href="#remote">Remote follow-up</a>
+    <a href="#scripts">Scripts</a>
+  </nav>
+
+  <div class="note-strip">
+    <strong>General information only:</strong> This page is an educational logistics checklist, not legal advice. Confirm forms, addresses, phone numbers, and eligibility rules directly with the office or agency before relying on them.
+  </div>
+
+  <section aria-labelledby="prep-title">
+    <div class="section-head">
+      <h2 id="prep-title">Before leaving the house</h2>
+      <p>Daughter should gather these. If something is missing, write down where to get it and keep moving.</p>
+    </div>
+    <div class="grid-2">
+      <article class="card">
+        <div class="badge-row"><span class="badge urgent">First step</span><span class="badge">Print or save</span></div>
+        <h3>Forms to have ready</h3>
+        <ul class="checklist">
+          <li><input type="checkbox"><span>Washington Durable Financial POA and Health Care POA from <a href="https://www.washingtonlawhelp.org/en/durable-power-attorney" target="_blank" rel="noopener">Washington Law Help</a>.</span></li>
+          <li><input type="checkbox"><span><a href="https://www.dshs.wa.gov/sites/default/files/forms/pdf/14-532.pdf" target="_blank" rel="noopener">DSHS Authorized Representative Form 14-532</a>.</span></li>
+          <li><input type="checkbox"><span><a href="https://www.irs.gov/forms-pubs/about-form-2848" target="_blank" rel="noopener">IRS Form 2848</a> and/or <a href="https://www.irs.gov/forms-pubs/about-form-8821" target="_blank" rel="noopener">IRS Form 8821</a>.</span></li>
+          <li><input type="checkbox"><span>Washington Department of Revenue <a href="https://dor.wa.gov/sites/default/files/2022-02/42-2446e.pdf" target="_blank" rel="noopener">Confidential Tax Information Authorization</a>, only if a Washington state tax, business, estate, or property tax issue applies.</span></li>
+          <li><input type="checkbox"><span>HIPAA or medical release forms from each hospital or clinic, if available.</span></li>
+          <li><input type="checkbox"><span>Bank POA certification or agent forms, if the bank requires its own form.</span></li>
+          <li><input type="checkbox"><span>Pension or union authorization form, if the plan provides one in advance.</span></li>
+        </ul>
+      </article>
+      <article class="card">
+        <div class="badge-row"><span class="badge urgent">Bring to appointment</span></div>
+        <h3>Information to gather</h3>
+        <ul class="checklist">
+          <li><input type="checkbox"><span>Mother's and daughter's government photo IDs.</span></li>
+          <li><input type="checkbox"><span>Social Security numbers for both.</span></li>
+          <li><input type="checkbox"><span>Medicare card or 65th birthday timing; Medicaid/Apple Health card or case number; insurance cards.</span></li>
+          <li><input type="checkbox"><span>Bank names, account numbers, routing numbers, recurring bills, and hospital account numbers.</span></li>
+          <li><input type="checkbox"><span>Pension payment stubs, 1099-R forms, divorce decree or property settlement, QDRO or pension letters.</span></li>
+          <li><input type="checkbox"><span>Prior tax returns, IRS notices, W-2s, 1099s, and Social Security statements.</span></li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section id="in-person" aria-labelledby="in-person-title">
+    <div class="section-head">
+      <h2 id="in-person-title">Must do while daughter is physically with mother</h2>
+      <p>These are the high-value tasks for the one-day visit because they require mother's signature, ID, voice authorization, or physical presence.</p>
+    </div>
+    <div class="grid-2">
+      <article class="step">
+        <div class="badge-row"><span class="badge urgent">Highest priority</span><span class="badge">Together</span></div>
+        <h3>1. Notarize the core documents</h3>
+        <p>Use a mobile notary, bank notary, UPS Store notary, or valid Washington remote online notary. Call ahead.</p>
+        <ul class="checklist">
+          <li><input type="checkbox"><span>Mother signs Washington Durable Financial POA.</span></li>
+          <li><input type="checkbox"><span>Mother signs Washington Health Care POA.</span></li>
+          <li><input type="checkbox"><span>Mother signs HIPAA/medical release authorization.</span></li>
+          <li><input type="checkbox"><span>Mother and daughter sign DSHS 14-532.</span></li>
+          <li><input type="checkbox"><span>Mother signs IRS 2848 and/or 8821.</span></li>
+          <li><input type="checkbox"><span>Mother signs Washington DOR tax authorization if a state tax issue applies.</span></li>
+          <li><input type="checkbox"><span>Mother signs bank or pension forms if obtained in advance.</span></li>
+        </ul>
+        <details open>
+          <summary>Local notary options</summary>
+          <div class="detail-body">
+            <p><strong>Jill's Mobile Notary Service</strong><br>266 Forest Napavine Rd E, Chehalis, WA 98532<br>Coverage includes Chehalis, Centralia, Winlock, and surrounding Lewis County areas.<br><a href="https://notaryjill.com" target="_blank" rel="noopener">notaryjill.com</a></p>
+            <p>Other options: mother's bank or credit union, UPS Store locations in Chehalis/Centralia, or Washington remote online notary through <a href="https://www.swiftkeynotary.com/washington-online-notary/chehalis" target="_blank" rel="noopener">SwiftKey Notary</a>.</p>
+          </div>
+        </details>
+      </article>
+
+      <article class="step">
+        <div class="badge-row"><span class="badge urgent">Do not skip</span><span class="badge">Together</span></div>
+        <h3>2. Visit the bank</h3>
+        <p>Ask to add daughter as <strong>agent under Power of Attorney</strong>, not joint owner. Joint ownership can create Medicaid, tax, and estate problems.</p>
+        <ul class="checklist">
+          <li><input type="checkbox"><span>Bring notarized durable financial POA and both IDs.</span></li>
+          <li><input type="checkbox"><span>Ask for the bank's internal POA certification or agent form.</span></li>
+          <li><input type="checkbox"><span>Ask for online/mobile banking access for the agent.</span></li>
+          <li><input type="checkbox"><span>Ask for bill pay setup and statement access.</span></li>
+          <li><input type="checkbox"><span>Get the direct phone number and remote follow-up procedure.</span></li>
+        </ul>
+      </article>
+
+      <article class="step">
+        <div class="badge-row"><span class="badge urgent">High priority</span><span class="badge">Together if possible</span></div>
+        <h3>3. DSHS / Apple Health Medicaid</h3>
+        <p>Submit DSHS 14-532 and the POA, or at least call with mother present. Ask daughter to receive notices, renewals, case information, and MCO details.</p>
+        <ul class="checklist">
+          <li><input type="checkbox"><span>Submit <a href="https://www.dshs.wa.gov/sites/default/files/forms/pdf/14-532.pdf" target="_blank" rel="noopener">DSHS 14-532</a>.</span></li>
+          <li><input type="checkbox"><span>Provide a copy of the notarized durable financial POA.</span></li>
+          <li><input type="checkbox"><span>Ask about long-term care Medicaid if in-home care or nursing care could be needed.</span></li>
+          <li><input type="checkbox"><span>Update mailing address, phone, email preferences, and managed care plan information.</span></li>
+        </ul>
+        <details>
+          <summary>Current DSHS office</summary>
+          <div class="detail-body">
+            <p><strong>DSHS Community Services Office, temporary Centralia location</strong><br>1247 Harrison Ave., Centralia, WA 98531<br>Customer Service: 877-501-2233<br><a href="https://www.dshs.wa.gov/node/38815" target="_blank" rel="noopener">Relocation notice</a> | <a href="https://www.washingtonconnection.org" target="_blank" rel="noopener">WashingtonConnection.org</a></p>
+            <p>Former Chehalis location listed in older notes: 151 NE Hampe Way, Chehalis. Use the Centralia address above unless DSHS tells you otherwise.</p>
+            <p>Call ahead to confirm walk-in hours and whether upload, mail, fax, or in-person delivery is best.</p>
+          </div>
+        </details>
+      </article>
+
+      <article class="step">
+        <div class="badge-row"><span class="badge urgent">Time-sensitive</span><span class="badge">Mother present by phone</span></div>
+        <h3>4. Pension / union administrator</h3>
+        <p>Call with mother present because ERISA pension plans may require their own authorization even when a state POA exists.</p>
+        <ul class="checklist">
+          <li><input type="checkbox"><span>Confirm exact plan name, administrator, and participant ID.</span></li>
+          <li><input type="checkbox"><span>Ask whether the Washington Durable Financial POA is accepted.</span></li>
+          <li><input type="checkbox"><span>Request plan-specific authorization if needed.</span></li>
+          <li><input type="checkbox"><span>Ask for missing 1099-R forms and confirm benefit amount, payment schedule, and direct deposit.</span></li>
+          <li><input type="checkbox"><span>Ask whether the divorce pension division order/QDRO is on file.</span></li>
+        </ul>
+        <details>
+          <summary>Possible pension contacts</summary>
+          <div class="detail-body">
+            <p>Check stubs or 1099-R first. Darigold workers in Washington have been represented by Teamsters Local 117, and the plan may be Western Conference of Teamsters Pension Trust or a related dairy industry plan.</p>
+            <ul>
+              <li><a href="https://www.wctpension.org" target="_blank" rel="noopener">Western Conference of Teamsters Pension Trust</a></li>
+              <li><a href="https://dairy.asp-benefits.com" target="_blank" rel="noopener">ASP Benefits, dairy industry plan administration</a></li>
+            </ul>
+          </div>
+        </details>
+      </article>
+
+      <article class="step">
+        <div class="badge-row"><span class="badge">Together preferred</span></div>
+        <h3>5. Hospitals and clinics</h3>
+        <p>If visiting in person is possible, sign release and proxy access forms while mother can sign. If not, daughter can call later and ask how to submit forms by fax, portal, or mail.</p>
+        <ul class="checklist">
+          <li><input type="checkbox"><span>Sign HIPAA/release of information forms.</span></li>
+          <li><input type="checkbox"><span>Sign patient portal proxy or representative access forms.</span></li>
+          <li><input type="checkbox"><span>Sign billing/financial assistance authorization.</span></li>
+          <li><input type="checkbox"><span>Request charity care or grant application packets.</span></li>
+          <li><input type="checkbox"><span>Ask for the required document checklist for financial assistance.</span></li>
+        </ul>
+      </article>
+
+      <article class="step">
+        <div class="badge-row"><span class="badge urgent">Before day ends</span></div>
+        <h3>6. Scan everything to PDF</h3>
+        <p>This is a required close-out task. Daughter should leave with digital copies, not just a folder of paper.</p>
+        <ul class="checklist">
+          <li><input type="checkbox"><span>Scan every signed page, including notary pages.</span></li>
+          <li><input type="checkbox"><span>Name files clearly: `2026-05-19 Washington Durable Financial POA.pdf`, etc.</span></li>
+          <li><input type="checkbox"><span>Store originals safely with mother or in a known family file.</span></li>
+          <li><input type="checkbox"><span>Keep PDFs ready for bank, DSHS, MCO, pension, hospitals, CPA, and Medicare follow-up.</span></li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section id="remote" aria-labelledby="remote-title">
+    <div class="section-head">
+      <h2 id="remote-title">Can be done remotely after daughter leaves</h2>
+      <p>These still matter, but they can usually be done from out of state once the signed documents are scanned.</p>
+    </div>
+    <div class="grid-2">
+      <article class="step">
+        <div class="badge-row"><span class="badge remote">Remote</span></div>
+        <h3>Apple Health managed care plan</h3>
+        <ul class="checklist">
+          <li><input type="checkbox"><span>After DSHS registers the representative, call the MCO separately.</span></li>
+          <li><input type="checkbox"><span>Ask for the plan's authorized representative or release form.</span></li>
+          <li><input type="checkbox"><span>Submit POA and plan-specific release.</span></li>
+          <li><input type="checkbox"><span>Use Washington HCA general line: 1-800-562-3022.</span></li>
+          <li><input type="checkbox"><span>Review <a href="https://www.hca.wa.gov/free-or-low-cost-health-care/apple-health-medicaid-coverage" target="_blank" rel="noopener">Apple Health Medicaid coverage</a>.</span></li>
+        </ul>
+      </article>
+
+      <article class="step">
+        <div class="badge-row"><span class="badge remote">Remote after signatures</span></div>
+        <h3>Taxes and IRS access</h3>
+        <ul class="checklist">
+          <li><input type="checkbox"><span>Submit IRS 2848 if a CPA, enrolled agent, or attorney will represent mother.</span></li>
+          <li><input type="checkbox"><span>Submit IRS 8821 if daughter or preparer only needs tax information access.</span></li>
+          <li><input type="checkbox"><span>List every missing tax year separately on the forms.</span></li>
+          <li><input type="checkbox"><span>Use <a href="https://www.irs.gov/individuals/get-transcript" target="_blank" rel="noopener">IRS Get Transcript</a> with the CPA/preparer.</span></li>
+          <li><input type="checkbox"><span>Request missing pension 1099-Rs, then file back-year returns with CPA assistance.</span></li>
+        </ul>
+        <details>
+          <summary>Washington DOR, if applicable</summary>
+          <div class="detail-body">
+            <p>Washington does not have personal income tax, so most ordinary back-year income tax work is federal IRS work. Use Washington DOR's Confidential Tax Information Authorization only if a Washington state tax, business, estate, or property tax matter applies.</p>
+            <p>Resource: <a href="https://www.dor.wa.gov/forms-publications" target="_blank" rel="noopener">Washington DOR forms</a> and <a href="https://dor.wa.gov/sites/default/files/2022-02/42-2446e.pdf" target="_blank" rel="noopener">Form 42 2446</a>.</p>
+          </div>
+        </details>
+      </article>
+
+      <article class="step">
+        <div class="badge-row"><span class="badge remote">Remote</span><span class="badge urgent">Watch dates</span></div>
+        <h3>Medicare</h3>
+        <p>Medicare enrollment starts 3 months before the 65th birthday and ends 3 months after. Missing the window can cause penalties.</p>
+        <ul class="checklist">
+          <li><input type="checkbox"><span>Check whether mother is already receiving Social Security and may be auto-enrolled in Parts A and B.</span></li>
+          <li><input type="checkbox"><span>If not auto-enrolled, apply through <a href="https://www.ssa.gov/medicare/sign-up" target="_blank" rel="noopener">SSA Medicare signup</a> or <a href="https://www.medicare.gov/basics/get-started-with-medicare/sign-up/how-do-i-sign-up-for-medicare" target="_blank" rel="noopener">Medicare.gov signup guidance</a>.</span></li>
+          <li><input type="checkbox"><span>Once on Medicare, use <a href="https://www.cms.gov/Medicare/CMS-Forms/CMS-Forms/CMS-Forms-Items/CMS012207" target="_blank" rel="noopener">CMS-1696 Appointment of Representative</a>, the <a href="https://www.cms.gov/medicare/cms-forms/cms-forms/downloads/cms1696.pdf" target="_blank" rel="noopener">CMS-1696 PDF</a>, or a CMS-accepted conforming written instrument.</span></li>
+          <li><input type="checkbox"><span>If mother becomes dual eligible, notify DSHS of Medicare enrollment.</span></li>
+        </ul>
+      </article>
+
+      <article class="step">
+        <div class="badge-row"><span class="badge remote">Remote</span></div>
+        <h3>Hospital billing and charity care</h3>
+        <ul class="checklist">
+          <li><input type="checkbox"><span>Submit signed release/proxy/billing authorization forms.</span></li>
+          <li><input type="checkbox"><span>Request itemized bills and financial assistance applications.</span></li>
+          <li><input type="checkbox"><span>Gather required tax records, bank statements, proof of income, and benefit letters.</span></li>
+          <li><input type="checkbox"><span>Track every submitted packet by date, fax/mail/upload method, and confirmation number.</span></li>
+        </ul>
+      </article>
+
+      <article class="step">
+        <div class="badge-row"><span class="badge remote">Remote if moving</span><span class="badge urgent">Plan early</span></div>
+        <h3>Potential move to North Carolina</h3>
+        <p>Medicaid does not transfer between states. Medicare is federal and moves with the person.</p>
+        <ul class="checklist">
+          <li><input type="checkbox"><span>Notify Washington DSHS/Apple Health and request termination at month end.</span></li>
+          <li><input type="checkbox"><span>Establish NC residency and proof of address.</span></li>
+          <li><input type="checkbox"><span>Apply through <a href="https://epass.nc.gov" target="_blank" rel="noopener">NC ePASS</a> or review <a href="https://medicaid.ncdhhs.gov/apply" target="_blank" rel="noopener">NC Medicaid application guidance</a>.</span></li>
+          <li><input type="checkbox"><span>Call NC Medicaid Contact Center: 1-888-245-0179.</span></li>
+          <li><input type="checkbox"><span>Verify current NC Medicaid income and resource rules before the move; older planning notes estimated about $20,000/year for a single adult.</span></li>
+          <li><input type="checkbox"><span>Expect up to 45 days processing, or up to 90 days for disability applications; keep medical receipts during any gap.</span></li>
+          <li><input type="checkbox"><span>Ask whether benefits can be retroactive to the application date and what receipts should be saved during any coverage gap.</span></li>
+          <li><input type="checkbox"><span>Submit <a href="https://medicaid.ncdhhs.gov/dma-5202c-ia/open" target="_blank" rel="noopener">NC DHHS DMA-5202c authorized representative form</a>.</span></li>
+          <li><input type="checkbox"><span>Consider NC Durable Financial POA and NC Health Care POA/Advance Directive after residency is established.</span></li>
+        </ul>
+      </article>
+
+      <article class="step">
+        <div class="badge-row"><span class="badge remote">Remote</span></div>
+        <h3>Legal help if needed</h3>
+        <ul class="checklist">
+          <li><input type="checkbox"><span>Use <a href="https://www.washingtonlawhelp.org" target="_blank" rel="noopener">Washington Law Help</a> for Washington legal forms/resources.</span></li>
+          <li><input type="checkbox"><span>Use <a href="https://nwjustice.org" target="_blank" rel="noopener">Northwest Justice Project</a> for low-income legal help in Washington.</span></li>
+          <li><input type="checkbox"><span>Use <a href="https://www.wsba.org/for-the-public/find-legal-help" target="_blank" rel="noopener">Washington State Bar Lawyer Referral</a> for attorney referral.</span></li>
+          <li><input type="checkbox"><span>If moving, use <a href="https://www.nclawhelp.org" target="_blank" rel="noopener">NC Law Help</a> and <a href="https://www.sosnc.gov/forms/by_title/_advance_healthcare_directives" target="_blank" rel="noopener">NC advance directive forms</a>.</span></li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section id="scripts" aria-labelledby="scripts-title">
+    <div class="section-head">
+      <h2 id="scripts-title">Short scripts daughter can use</h2>
+      <p>Keep calls short. The goal is to get the right form, signature rule, submission method, and next step.</p>
+    </div>
+    <div class="grid-2">
+      <article class="script-card">
+        <h3>Notary</h3>
+        <div class="script">"I need a notary appointment for my mother to sign several Washington POA and authorization documents. She has limited mobility. Can you come to her, what ID is required, what is the fee, and can we sign multiple documents in one visit?"</div>
+      </article>
+      <article class="script-card">
+        <h3>Bank</h3>
+        <div class="script">"My mother wants to add me as agent under her Power of Attorney, not as joint owner. What bank-specific POA certification or agent forms do you require, do both of us need to appear in person, and what documents should we bring?"</div>
+      </article>
+      <article class="script-card">
+        <h3>DSHS / Apple Health</h3>
+        <div class="script">"My mother wants me added as her authorized representative for Apple Health/Medicaid. We have DSHS Form 14-532 and a durable financial POA. How do we submit them, and how do I receive notices, renewal forms, and case information?"</div>
+      </article>
+      <article class="script-card">
+        <h3>Apple Health MCO</h3>
+        <div class="script">"I am being added as my mother's authorized representative through DSHS. What release or representative form does your plan require so I can discuss coverage, claims, care coordination, and notices?"</div>
+      </article>
+      <article class="script-card">
+        <h3>Pension / union plan</h3>
+        <div class="script">"My mother receives pension benefits and wants me authorized to help. Do you accept a Washington Durable Financial POA, or do you require your own representative form? We also need missing 1099-Rs, payment details, direct deposit confirmation, and confirmation that any divorce/QDRO order is on file."</div>
+      </article>
+      <article class="script-card">
+        <h3>Hospital records and billing</h3>
+        <div class="script">"My mother wants me authorized to help with medical records, billing, financial assistance, and portal access. Which release, proxy, and billing authorization forms should she sign, and how can we submit them if she has limited mobility?"</div>
+      </article>
+      <article class="script-card">
+        <h3>Medicare / CMS-1696</h3>
+        <div class="script">"I am helping my mother with Medicare. What is her enrollment status, what deadlines apply, and what is the current process to add me as an appointed representative using CMS-1696 or an accepted written authorization?"</div>
+      </article>
+      <article class="script-card">
+        <h3>Tax preparer / CPA</h3>
+        <div class="script">"My mother may have unfiled prior tax years. She can sign IRS 2848 or 8821. Which form do you need, which years should be listed, and can you request wage/income transcripts and help file back-year returns?"</div>
+      </article>
+      <article class="script-card">
+        <h3>NC Medicaid</h3>
+        <div class="script">"My mother may move from Washington to North Carolina. I understand Medicaid does not transfer. What proof of residency, income documents, authorized representative form, and timing should we prepare before applying through ePASS?"</div>
+      </article>
+    </div>
+  </section>
+
+  <section aria-labelledby="contacts-title">
+    <div class="section-head">
+      <h2 id="contacts-title">Local offices and contacts</h2>
+      <p>Call before going in person, especially because mother has limited mobility and some offices may require appointments or department-specific forms.</p>
+    </div>
+    <div class="grid-3">
+      <article class="contact-card">
+        <h3>DSHS Community Services Office</h3>
+        <p>1247 Harrison Ave., Centralia, WA 98531</p>
+        <p>877-501-2233</p>
+        <p><a href="https://www.dshs.wa.gov/node/38815" target="_blank" rel="noopener">Relocation notice</a> | <a href="https://www.washingtonconnection.org" target="_blank" rel="noopener">WashingtonConnection</a></p>
+      </article>
+      <article class="contact-card">
+        <h3>Lewis County Auditor, Recording</h3>
+        <p>351 NW North St, Chehalis, WA 98532</p>
+        <p>360-740-1165</p>
+        <p>Only needed if real estate is involved. <a href="https://lewiscountywa.gov/departments/public-records/lewis-county-auditor-recording-department/" target="_blank" rel="noopener">Recording page</a></p>
+      </article>
+      <article class="contact-card">
+        <h3>Jill's Mobile Notary</h3>
+        <p>266 Forest Napavine Rd E, Chehalis, WA 98532</p>
+        <p><a href="https://notaryjill.com" target="_blank" rel="noopener">notaryjill.com</a></p>
+      </article>
+      <article class="contact-card">
+        <h3>Providence Centralia Hospital</h3>
+        <p>914 S Scheuber Rd, Centralia, WA 98531</p>
+        <p>360-736-2803</p>
+        <p><a href="https://www.providence.org/locations/wa/centralia-hospital" target="_blank" rel="noopener">Providence Centralia</a></p>
+      </article>
+      <article class="contact-card">
+        <h3>PeaceHealth Southwest Medical Center</h3>
+        <p>400 NE Mother Joseph Pl, Vancouver, WA 98664</p>
+        <p>360-514-2000</p>
+        <p><a href="https://www.peacehealth.org/hospitals/southwest-medical-center" target="_blank" rel="noopener">PeaceHealth Southwest</a></p>
+      </article>
+      <article class="contact-card">
+        <h3>NC Medicaid</h3>
+        <p>Contact Center: 1-888-245-0179</p>
+        <p><a href="https://epass.nc.gov" target="_blank" rel="noopener">ePASS</a> | <a href="https://medicaid.ncdhhs.gov/apply" target="_blank" rel="noopener">How to apply</a></p>
+      </article>
+    </div>
+  </section>
+
+  <section aria-labelledby="health-care-title">
+    <div class="section-head">
+      <h2 id="health-care-title">Health care POA appendix</h2>
+      <p>This is separate from the financial POA and only covers medical decisions when mother cannot make or communicate her own decisions.</p>
+    </div>
+    <article class="card">
+      <ul class="checklist">
+        <li><input type="checkbox"><span>Sign Washington Durable Power of Attorney for Health Care; a backup agent is recommended. Resource: <a href="https://endoflifewa.org/tools-for-planning/durable-power-of-attorney/" target="_blank" rel="noopener">End of Life Washington durable POA planning</a>.</span></li>
+        <li><input type="checkbox"><span>Consider Washington Advance Directive / Living Will for CPR, ventilator, artificial nutrition, and comfort-focused care preferences. Resource: <a href="https://endoflifewa.org" target="_blank" rel="noopener">End of Life Washington</a>.</span></li>
+        <li><input type="checkbox"><span>Use notary or two disinterested witnesses; notarization is preferred for institutional acceptance.</span></li>
+        <li><input type="checkbox"><span>Give copies to primary care, specialists, hospital records, and daughter; ask for upload into the electronic medical record.</span></li>
+        <li><input type="checkbox"><span>Mother should carry a wallet card noting that a health care POA exists and where it is kept.</span></li>
+        <li><input type="checkbox"><span>If moving to NC, execute NC Health Care POA and NC Advance Directive after residency is established. Resources: <a href="https://www.sosnc.gov/forms/by_title/_advance_healthcare_directives" target="_blank" rel="noopener">NC advance directive forms</a> and <a href="https://www.ncdhhs.gov/supporting-choice-self-determination-english-04-08-22/open" target="_blank" rel="noopener">NC DHHS Supporting Choice</a>.</span></li>
+      </ul>
+    </article>
+  </section>
+
+  <section aria-labelledby="sources-title">
+    <div class="section-head">
+      <h2 id="sources-title">Official links used in this checklist</h2>
+      <p>These links are included so daughter can go directly to forms and agency pages.</p>
+    </div>
+    <ul class="source-list">
+      <li><a href="https://www.washingtonlawhelp.org/en/durable-power-attorney" target="_blank" rel="noopener">Washington Law Help durable POA</a></li>
+      <li><a href="https://www.dshs.wa.gov/sites/default/files/forms/pdf/14-532.pdf" target="_blank" rel="noopener">DSHS 14-532 PDF</a></li>
+      <li><a href="https://www.washingtonconnection.org" target="_blank" rel="noopener">WashingtonConnection</a></li>
+      <li><a href="https://www.hca.wa.gov/free-or-low-cost-health-care/apple-health-medicaid-coverage" target="_blank" rel="noopener">Apple Health Medicaid coverage</a></li>
+      <li><a href="https://www.irs.gov/forms-pubs/about-form-2848" target="_blank" rel="noopener">IRS Form 2848</a></li>
+      <li><a href="https://www.irs.gov/forms-pubs/about-form-8821" target="_blank" rel="noopener">IRS Form 8821</a></li>
+      <li><a href="https://www.irs.gov/individuals/get-transcript" target="_blank" rel="noopener">IRS Get Transcript</a></li>
+      <li><a href="https://www.dor.wa.gov/forms-publications" target="_blank" rel="noopener">Washington DOR forms</a></li>
+      <li><a href="https://dor.wa.gov/sites/default/files/2022-02/42-2446e.pdf" target="_blank" rel="noopener">Washington DOR Form 42 2446</a></li>
+      <li><a href="https://www.ssa.gov/medicare/sign-up" target="_blank" rel="noopener">SSA Medicare signup</a></li>
+      <li><a href="https://www.medicare.gov/basics/get-started-with-medicare/sign-up/how-do-i-sign-up-for-medicare" target="_blank" rel="noopener">Medicare.gov signup guidance</a></li>
+      <li><a href="https://www.cms.gov/Medicare/CMS-Forms/CMS-Forms/CMS-Forms-Items/CMS012207" target="_blank" rel="noopener">CMS-1696</a></li>
+      <li><a href="https://www.cms.gov/medicare/cms-forms/cms-forms/downloads/cms1696.pdf" target="_blank" rel="noopener">CMS-1696 PDF</a></li>
+      <li><a href="https://medicaid.ncdhhs.gov/apply" target="_blank" rel="noopener">NC Medicaid apply</a></li>
+      <li><a href="https://medicaid.ncdhhs.gov/dma-5202c-ia/open" target="_blank" rel="noopener">NC DMA-5202c</a></li>
+      <li><a href="https://www.nclawhelp.org" target="_blank" rel="noopener">NC Law Help</a></li>
+      <li><a href="https://www.sosnc.gov/forms/by_title/_advance_healthcare_directives" target="_blank" rel="noopener">NC advance directives</a></li>
+      <li><a href="https://www.ncdhhs.gov/supporting-choice-self-determination-english-04-08-22/open" target="_blank" rel="noopener">NC DHHS Supporting Choice</a></li>
+    </ul>
+  </section>
+
+  <footer class="footer">
+    <p>This page is for general informational purposes and is not legal advice. For situation-specific guidance, consult a Washington State elder law attorney or visit <a href="https://www.washingtonlawhelp.org" target="_blank" rel="noopener">Washington Law Help</a>.</p>
+    <p><a href="poa-guide.html">Back to the POA explainer</a></p>
+  </footer>
+</main>
+
+<script>
+const root = document.documentElement;
+const textSizes = ["small", "normal", "large", "xlarge"];
+let textIndex = 1;
+
+function setTheme(theme) {
+  root.dataset.theme = theme;
+  document.querySelectorAll("[data-theme-button]").forEach((button) => {
+    button.setAttribute("aria-pressed", String(button.dataset.themeButton === theme));
+  });
+}
+
+function setTextSize(nextIndex) {
+  textIndex = Math.max(0, Math.min(textSizes.length - 1, nextIndex));
+  root.dataset.textSize = textSizes[textIndex];
+  document.getElementById("textMinus").disabled = textIndex === 0;
+  document.getElementById("textPlus").disabled = textIndex === textSizes.length - 1;
+}
+
+document.querySelectorAll("[data-theme-button]").forEach((button) => {
+  button.addEventListener("click", () => setTheme(button.dataset.themeButton));
+});
+
+document.getElementById("textMinus").addEventListener("click", () => setTextSize(textIndex - 1));
+document.getElementById("textPlus").addEventListener("click", () => setTextSize(textIndex + 1));
+
+setTheme("light");
+setTextSize(textIndex);
+</script>
+</body>
+</html>

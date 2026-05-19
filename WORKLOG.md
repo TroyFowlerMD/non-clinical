@@ -4,6 +4,12 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 
 ---
 
+### 2026-05-19 - Codex desktop - Personal POA logistics checklist
+- Completed: Added `personal/poa-logistics-guide.html`, a self-contained mobile-friendly checklist for setting up POA documents, with first-priority tasks, in-person versus remote tracks, local offices, official links, and concise scripts.
+- Completed: Cross-linked the existing POA explainer to the new logistics checklist.
+- In progress: Existing Psych Scheduler mobile-vs-desktop divergence and live Google Sheet startup tasks remain open.
+- Blockers/notes: Publish verification should confirm the new logistics guide URL after push.
+
 ### 2026-05-19 - Codex desktop - Personal POA guide page
 - Completed: Added `personal/poa-guide.html`, a self-contained mobile-friendly Power of Attorney guide with topic cards, balanced expandable details, Light/Medium/Dark theme controls, and text-size controls.
 - Completed: Recorded the new `personal/` page organization in TASKS.md and DECISIONS.md.
