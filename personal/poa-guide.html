@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-text-size="normal">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Understanding Power of Attorney</title>
+<style>
+:root {
+  --bg: #f7f8f4;
+  --surface: #ffffff;
+  --surface-2: #f0f3ee;
+  --surface-3: #e7ece5;
+  --text: #202721;
+  --muted: #536057;
+  --faint: #778177;
+  --border: #d8dfd5;
+  --accent: #2e7d6b;
+  --accent-2: #b36b32;
+  --accent-soft: rgba(46, 125, 107, 0.12);
+  --warn-soft: rgba(179, 107, 50, 0.13);
+  --shadow: 0 16px 40px rgba(35, 48, 39, 0.12);
+  --radius: 8px;
+  --font-scale: 1;
+  --tr: 180ms ease;
+  color-scheme: light;
+}
+
+[data-theme="medium"] {
+  --bg: #e3e8e3;
+  --surface: #f8f6ef;
+  --surface-2: #d7dfda;
+  --surface-3: #cbd7d1;
+  --text: #1f2825;
+  --muted: #4f5f58;
+  --faint: #697971;
+  --border: #b9c7c0;
+  --accent: #245f73;
+  --accent-2: #8f5f22;
+  --accent-soft: rgba(36, 95, 115, 0.13);
+  --warn-soft: rgba(143, 95, 34, 0.14);
+  --shadow: 0 16px 36px rgba(31, 40, 37, 0.16);
+}
+
+[data-theme="dark"] {
+  --bg: #111816;
+  --surface: #19231f;
+  --surface-2: #21302a;
+  --surface-3: #2b3a35;
+  --text: #f1f5ef;
+  --muted: #bbc8bf;
+  --faint: #92a099;
+  --border: #34443d;
+  --accent: #76d3c0;
+  --accent-2: #f0b46e;
+  --accent-soft: rgba(118, 211, 192, 0.12);
+  --warn-soft: rgba(240, 180, 110, 0.13);
+  --shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+  color-scheme: dark;
+}
+
+[data-text-size="small"] { --font-scale: 0.92; }
+[data-text-size="large"] { --font-scale: 1.12; }
+[data-text-size="xlarge"] { --font-scale: 1.26; }
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at top left, var(--accent-soft), transparent 32rem),
+    linear-gradient(180deg, var(--bg), var(--surface-2));
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: calc(16px * var(--font-scale));
+  line-height: 1.6;
+}
+
+button,
+summary {
+  font: inherit;
+}
+
+a {
+  color: var(--accent);
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 20;
+  padding: 0.6rem 0.85rem;
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem max(1rem, calc((100vw - 1120px) / 2));
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+.brand {
+  min-width: 0;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.brand span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.77em;
+  font-weight: 700;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.control-group {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+
+.control-btn {
+  min-height: 2.25rem;
+  min-width: 2.45rem;
+  padding: 0.38rem 0.65rem;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 800;
+  cursor: pointer;
+  transition: background var(--tr), color var(--tr), transform var(--tr);
+}
+
+.control-btn:hover,
+.control-btn[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.control-btn:active {
+  transform: translateY(1px);
+}
+
+.wrap {
+  width: min(1120px, calc(100% - 2rem));
+  margin: 0 auto;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
+  gap: 1rem;
+  align-items: stretch;
+  padding: 2rem 0 1rem;
+}
+
+.hero-copy,
+.callout {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.hero-copy {
+  padding: clamp(1.2rem, 4vw, 2.25rem);
+}
+
+.eyebrow {
+  margin: 0 0 0.6rem;
+  color: var(--accent);
+  font-size: 0.78em;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3,
+p {
+  overflow-wrap: anywhere;
+}
+
+h1 {
+  max-width: 13ch;
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(2.2rem, 7vw, 5rem);
+  line-height: 0.98;
+  letter-spacing: 0;
+}
+
+.intro {
+  max-width: 58ch;
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: 1.08em;
+}
+
+.callout {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1.1rem;
+  border-left: 5px solid var(--accent);
+}
+
+.callout h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.05em;
+}
+
+.callout p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.note-strip {
+  margin: 0 0 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--accent-2) 45%, var(--border));
+  border-radius: var(--radius);
+  background: var(--warn-soft);
+  color: var(--text);
+}
+
+.note-strip strong {
+  color: var(--accent-2);
+}
+
+.section-head {
+  margin: 1.75rem 0 0.85rem;
+}
+
+.section-head h2 {
+  margin: 0;
+  font-size: 1.35em;
+}
+
+.section-head p {
+  max-width: 68ch;
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.topic-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgba(26, 35, 31, 0.08);
+}
+
+.topic-card h3 {
+  margin: 0;
+  font-size: 1.08em;
+  line-height: 1.3;
+}
+
+.takeaway {
+  margin: 0;
+  color: var(--muted);
+}
+
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.78em;
+  font-weight: 900;
+}
+
+.plain-list {
+  margin: 0.25rem 0 0;
+  padding-left: 1.2rem;
+  color: var(--muted);
+}
+
+.plain-list li + li {
+  margin-top: 0.3rem;
+}
+
+details {
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+
+summary {
+  min-height: 2.7rem;
+  padding: 0.65rem 0.85rem;
+  color: var(--text);
+  font-weight: 850;
+  cursor: pointer;
+  list-style: none;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+summary::after {
+  content: "+";
+  float: right;
+  color: var(--accent);
+  font-size: 1.2em;
+  line-height: 1;
+  margin-left: 0.75rem;
+}
+
+details[open] summary::after {
+  content: "-";
+}
+
+.detail-body {
+  padding: 0 0.85rem 0.85rem;
+  color: var(--muted);
+}
+
+.detail-body p {
+  margin: 0.4rem 0;
+}
+
+.detail-body ul {
+  margin: 0.45rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.detail-body li + li {
+  margin-top: 0.32rem;
+}
+
+.terms {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.term {
+  min-width: 0;
+  padding: 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.term strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--text);
+}
+
+.term span {
+  color: var(--muted);
+  font-size: 0.93em;
+}
+
+.comparison {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.compare-card {
+  min-width: 0;
+  padding: 0.95rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.compare-card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1em;
+}
+
+.compare-card p {
+  margin: 0.35rem 0;
+  color: var(--muted);
+}
+
+.compare-card b {
+  color: var(--text);
+}
+
+.footer {
+  margin: 2rem 0 0;
+  padding: 1.2rem 0 2.2rem;
+  color: var(--faint);
+  font-size: 0.92em;
+}
+
+.footer p {
+  margin: 0;
+}
+
+@media (max-width: 860px) {
+  .hero,
+  .card-grid,
+  .comparison {
+    grid-template-columns: 1fr;
+  }
+
+  .terms {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .controls {
+    width: 100%;
+    justify-content: flex-start;
+    min-width: 0;
+  }
+
+  .control-group {
+    width: 100%;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .control-btn {
+    min-width: 0;
+    flex: 1 1 auto;
+    padding-inline: 0.4rem;
+  }
+
+  .wrap {
+    width: min(100% - 1rem, 1120px);
+  }
+
+  .hero {
+    padding-top: 1rem;
+  }
+
+  .hero-copy,
+  .callout,
+  .topic-card,
+  .compare-card,
+  .term {
+    padding: 0.85rem;
+  }
+
+  h1 {
+    max-width: 10ch;
+    font-size: clamp(2rem, 13vw, 3.4rem);
+  }
+
+  .terms {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to guide</a>
+
+<header class="topbar" aria-label="Page controls">
+  <div class="brand">
+    Understanding Power of Attorney
+    <span>A plain-English guide for mom and daughter</span>
+  </div>
+  <div class="controls">
+    <div class="control-group" aria-label="Color theme">
+      <button class="control-btn" type="button" data-theme-button="light" aria-pressed="true">Light</button>
+      <button class="control-btn" type="button" data-theme-button="medium" aria-pressed="false">Medium</button>
+      <button class="control-btn" type="button" data-theme-button="dark" aria-pressed="false">Dark</button>
+    </div>
+    <div class="control-group" aria-label="Text size">
+      <button class="control-btn" type="button" id="textMinus" aria-label="Make text smaller">A-</button>
+      <button class="control-btn" type="button" id="textPlus" aria-label="Make text larger">A+</button>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+  <section class="hero" aria-labelledby="page-title">
+    <div class="hero-copy">
+      <p class="eyebrow">Power of Attorney Basics</p>
+      <h1 id="page-title">Help without giving up control.</h1>
+      <p class="intro">A Power of Attorney, or POA, lets a competent adult choose someone trusted to help with specific matters. The person signing it stays in charge, keeps their rights, and can limit or cancel the authority while they still have the ability to make decisions.</p>
+    </div>
+    <aside class="callout" aria-label="Important reassurance">
+      <h2>The main idea</h2>
+      <p>This is not guardianship. It is not a court taking rights away. It is the mother choosing, on her own terms, who can help and what kind of help is allowed.</p>
+    </aside>
+  </section>
+
+  <div class="note-strip">
+    <strong>General information only:</strong> This guide is educational and is not legal advice. For advice about a specific situation, talk with a Washington state elder law attorney or visit <a href="https://www.washingtonlawhelp.org" target="_blank" rel="noopener">Washington Law Help</a>.
+  </div>
+
+  <section aria-labelledby="terms-title">
+    <div class="section-head">
+      <h2 id="terms-title">Key Terms</h2>
+      <p>These words appear often in POA documents. Knowing them makes the paperwork less intimidating.</p>
+    </div>
+    <div class="terms">
+      <div class="term"><strong>Principal</strong><span>The person granting authority. In this guide, that is the mother.</span></div>
+      <div class="term"><strong>Agent</strong><span>The trusted helper. This can also be called attorney-in-fact.</span></div>
+      <div class="term"><strong>Durable</strong><span>The POA can keep working if the principal later cannot make decisions.</span></div>
+      <div class="term"><strong>Revoke</strong><span>Cancel or take back the POA while competent.</span></div>
+      <div class="term"><strong>Fiduciary</strong><span>The agent must act in the principal's best interest.</span></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="topics-title">
+    <div class="section-head">
+      <h2 id="topics-title">Topic Cards</h2>
+      <p>Start with the basic takeaway on each card. Open the dropdown when you want more detail.</p>
+    </div>
+
+    <div class="card-grid">
+      <article class="topic-card">
+        <div>
+          <div class="tag-row"><span class="tag">Start here</span></div>
+          <h3>What a POA does</h3>
+          <p class="takeaway">A POA lets the mother choose a trusted person to help with certain matters. It can be broad or narrow, depending on what she wants.</p>
+        </div>
+        <details>
+          <summary>More detail</summary>
+          <div class="detail-body">
+            <p>The mother can decide what the daughter may do, what she may not do, and whether the authority should be limited to one task or cover practical financial life more broadly.</p>
+            <p>Signing a POA does not mean the mother stops managing her own life. It simply gives someone else permission to help.</p>
+          </div>
+        </details>
+      </article>
+
+      <article class="topic-card">
+        <div>
+          <div class="tag-row"><span class="tag">Important</span></div>
+          <h3>What a POA is not</h3>
+          <p class="takeaway">It is not the same as guardianship or conservatorship. No judge removes rights just because a POA is signed.</p>
+        </div>
+        <details>
+          <summary>Why this matters</summary>
+          <div class="detail-body">
+            <p>Guardianship and conservatorship involve a court deciding that someone cannot make decisions and appointing another person to decide for them.</p>
+            <p>A POA is different. The mother grants authority voluntarily, and she can take it back while she has decision-making ability.</p>
+          </div>
+        </details>
+      </article>
+
+      <article class="topic-card">
+        <div>
+          <div class="tag-row"><span class="tag">Most practical</span><span class="tag">Financial</span></div>
+          <h3>Durable Financial Power of Attorney</h3>
+          <p class="takeaway">This is usually the most useful document for bills, banking, insurance, Medicaid or Apple Health, taxes, agencies, pension paperwork, and records.</p>
+        </div>
+        <details>
+          <summary>What it can cover</summary>
+          <div class="detail-body">
+            <ul>
+              <li>Pay bills, rent, utilities, and medical expenses.</li>
+              <li>Access and use bank accounts for the mother's benefit.</li>
+              <li>Deposit income, including pension payments and Social Security.</li>
+              <li>Manage insurance claims and Medicaid or Apple Health paperwork.</li>
+              <li>Communicate with DSHS, Social Security, the IRS, hospitals, clinics, and pension offices.</li>
+              <li>Obtain financial, medical, tax, and benefit records when needed for paperwork.</li>
+            </ul>
+          </div>
+        </details>
+        <details>
+          <summary>Why durable matters</summary>
+          <div class="detail-body">
+            <p>"Durable" means the authority can continue if the mother's health later declines and she cannot manage things herself. A non-durable POA often stops at the exact moment help is most needed.</p>
+          </div>
+        </details>
+      </article>
+
+      <article class="topic-card">
+        <div>
+          <div class="tag-row"><span class="tag">Narrow help</span></div>
+          <h3>Limited or Special POA</h3>
+          <p class="takeaway">A limited POA gives authority for one specific task or category, then expires or becomes irrelevant when that task is finished.</p>
+        </div>
+        <details>
+          <summary>Example</summary>
+          <div class="detail-body">
+            <p>The mother could sign a limited POA that says, "My daughter may submit and manage my Medicaid application and communicate with DSHS on my behalf."</p>
+            <p>That can be useful if she wants help with one thing but is not ready to authorize broader financial help.</p>
+          </div>
+        </details>
+      </article>
+
+      <article class="topic-card">
+        <div>
+          <div class="tag-row"><span class="tag">Usually not enough</span></div>
+          <h3>General POA, non-durable</h3>
+          <p class="takeaway">A general non-durable POA may give broad authority, but it usually stops working if the principal becomes incapacitated.</p>
+        </div>
+        <details>
+          <summary>Why it may not fit</summary>
+          <div class="detail-body">
+            <p>For aging or health planning, this can be a problem. If the document stops working when the mother cannot manage things herself, it may disappear right when the daughter needs authority to help.</p>
+          </div>
+        </details>
+      </article>
+
+      <article class="topic-card">
+        <div>
+          <div class="tag-row"><span class="tag">Separate document</span><span class="tag">Medical</span></div>
+          <h3>Health Care POA</h3>
+          <p class="takeaway">This is separate from financial POA. It names someone who can make medical decisions only if the mother cannot speak for herself.</p>
+        </div>
+        <details>
+          <summary>When it matters</summary>
+          <div class="detail-body">
+            <p>It can matter during hospitalization, medical emergencies, surgery, serious illness, or any time the mother cannot communicate her wishes.</p>
+            <p>While the mother can still make and communicate medical decisions, she remains in control of her own care.</p>
+          </div>
+        </details>
+      </article>
+
+      <article class="topic-card">
+        <div>
+          <div class="tag-row"><span class="tag">Rights kept</span></div>
+          <h3>What the mother keeps</h3>
+          <p class="takeaway">Signing a POA does not mean giving up control, money, property, or the right to make decisions.</p>
+        </div>
+        <details open>
+          <summary>Rights to remember</summary>
+          <div class="detail-body">
+            <ul>
+              <li>She can keep managing her own finances and signing her own checks.</li>
+              <li>She can set limits on what the daughter is allowed to do.</li>
+              <li>She can ask for an accounting of how money was spent.</li>
+              <li>She can revoke the POA while she has the ability to do so.</li>
+              <li>She can name someone different later if circumstances change.</li>
+            </ul>
+          </div>
+        </details>
+      </article>
+
+      <article class="topic-card">
+        <div>
+          <div class="tag-row"><span class="tag">Daughter's duty</span></div>
+          <h3>What the agent must do</h3>
+          <p class="takeaway">The daughter does not own the mother's money or property. She is allowed to manage things only for the mother's benefit.</p>
+        </div>
+        <details>
+          <summary>Fiduciary duty</summary>
+          <div class="detail-body">
+            <p>The agent has a legal duty to act in the mother's best interest, follow the mother's wishes, keep accurate records, and avoid using the authority for personal gain.</p>
+          </div>
+        </details>
+      </article>
+    </div>
+  </section>
+
+  <section aria-labelledby="comparison-title">
+    <div class="section-head">
+      <h2 id="comparison-title">Quick Comparison</h2>
+      <p>These documents solve different problems. Many families need more than one.</p>
+    </div>
+    <div class="comparison">
+      <div class="compare-card">
+        <h3>Durable Financial POA</h3>
+        <p><b>Covers:</b> Bills, banking, taxes, Medicaid, insurance, agencies, pension, and records.</p>
+        <p><b>When:</b> Usually immediately upon signature, depending on the document.</p>
+      </div>
+      <div class="compare-card">
+        <h3>Limited POA</h3>
+        <p><b>Covers:</b> One specific task, form, agency, or category.</p>
+        <p><b>When:</b> Immediately for that task only, unless the document says otherwise.</p>
+      </div>
+      <div class="compare-card">
+        <h3>Health Care POA</h3>
+        <p><b>Covers:</b> Medical decisions only.</p>
+        <p><b>When:</b> Only when the mother cannot speak for herself or communicate her wishes.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="next-title">
+    <div class="section-head">
+      <h2 id="next-title">Simple Next Steps</h2>
+      <p>Use this as a conversation guide before meeting with an attorney or using a trusted Washington legal resource.</p>
+    </div>
+    <article class="topic-card">
+      <h3>Questions to talk through together</h3>
+      <ul class="plain-list">
+        <li>Which tasks does the mother want help with now?</li>
+        <li>Which tasks should the daughter be able to handle only if the mother becomes too ill to manage them?</li>
+        <li>Are there any powers the mother does not want to grant?</li>
+        <li>Who should receive copies once documents are signed?</li>
+        <li>Does the family also need a Washington health care POA?</li>
+      </ul>
+    </article>
+  </section>
+
+  <footer class="footer">
+    <p>This page is for general informational purposes. It is not legal advice. For questions specific to your situation, consult a Washington state elder law attorney or visit <a href="https://www.washingtonlawhelp.org" target="_blank" rel="noopener">Washington Law Help</a>.</p>
+  </footer>
+</main>
+
+<script>
+const root = document.documentElement;
+const textSizes = ["small", "normal", "large", "xlarge"];
+let textIndex = 1;
+
+function setTheme(theme) {
+  root.dataset.theme = theme;
+  document.querySelectorAll("[data-theme-button]").forEach((button) => {
+    button.setAttribute("aria-pressed", String(button.dataset.themeButton === theme));
+  });
+}
+
+function setTextSize(nextIndex) {
+  textIndex = Math.max(0, Math.min(textSizes.length - 1, nextIndex));
+  root.dataset.textSize = textSizes[textIndex];
+  document.getElementById("textMinus").disabled = textIndex === 0;
+  document.getElementById("textPlus").disabled = textIndex === textSizes.length - 1;
+}
+
+document.querySelectorAll("[data-theme-button]").forEach((button) => {
+  button.addEventListener("click", () => setTheme(button.dataset.themeButton));
+});
+
+document.getElementById("textMinus").addEventListener("click", () => setTextSize(textIndex - 1));
+document.getElementById("textPlus").addEventListener("click", () => setTextSize(textIndex + 1));
+
+setTheme("light");
+setTextSize(textIndex);
+</script>
+</body>
+</html>

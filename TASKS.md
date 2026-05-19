@@ -13,10 +13,11 @@
 ## Upcoming
 - [ ] Confirm Psych Scheduler stale-data badge / data-source polish, including `Live.Sheet1` vs pasted-state display.
 - [ ] Document Apps Script redeployment cadence for Psych Scheduler when Sheet structure or deployment URL changes.
-- [ ] Consider future `non-clinical` organization into `personal/` and `professional/` sections or repos.
+- [ ] Consider future `non-clinical` professional section organization if more professional utilities are added.
 - [ ] Re-test public non-clinical hub links after future dashboard or repo-routing changes.
 
 ## Completed (last 30 days)
+- [x] Created `personal/poa-guide.html` as a mobile-friendly plain-English Power of Attorney guide.
 - [x] Repaired Psych Scheduler feedback submission so the modal has a maintenance-log fallback when email submission fails.
 - [x] Added a My Schedule "Show only PTO feasible" filter button that hides dates where PTO is not feasible for the selected provider.
 - [x] Added Psych Scheduler Excel drag-and-drop ingestion via SheetJS.

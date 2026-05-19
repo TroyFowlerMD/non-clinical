@@ -4,6 +4,12 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 
 ---
 
+### 2026-05-19 - Codex desktop - Personal POA guide page
+- Completed: Added `personal/poa-guide.html`, a self-contained mobile-friendly Power of Attorney guide with topic cards, balanced expandable details, Light/Medium/Dark theme controls, and text-size controls.
+- Completed: Recorded the new `personal/` page organization in TASKS.md and DECISIONS.md.
+- In progress: Existing Psych Scheduler mobile-vs-desktop divergence and live Google Sheet startup tasks remain open.
+- Blockers/notes: Publish verification should confirm the new GitHub Pages URL after push.
+
 ### 2026-05-19 - Codex desktop - Psych Scheduler feedback and PTO-feasible filter
 - Completed: Restored the feedback modal to a dual-path submission model: FormSubmit email plus the maintenance-request Apps Script logger, with the logger sent in a no-CORS-compatible way so FormSubmit failure does not strand the request.
 - Completed: Added a My Schedule "Show only PTO feasible" table-control button that filters the selected provider's schedule to rows where `ptoRisk === 'Feasible'`.

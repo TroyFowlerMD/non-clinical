@@ -39,3 +39,9 @@ Context: The feedback modal was showing a user-facing failure when the current e
 Decision: Keep feedback submission as a dual-path workflow: FormSubmit email plus the maintenance-request Apps Script logger. Send the Apps Script request in a no-CORS-compatible shape from the static GitHub Pages app.
 Rationale: Psych Scheduler has no backend server, so the modal needs at least one browser-safe external path to accept maintenance requests.
 Consequences: Future feedback changes should preserve an independent maintenance-log fallback and should be browser-tested from the static page context before publishing.
+
+### 2026-05-19 - Keep Personal Educational Pages Under personal/
+Context: The repo needed a public plain-English Power of Attorney guide that is non-clinical and family-facing.
+Decision: Place standalone personal educational pages under `personal/`, starting with `personal/poa-guide.html`.
+Rationale: This keeps personal/family utilities separate from the root-level app pages without splitting the single static GitHub Pages repo.
+Consequences: Future personal pages should use the `personal/` path unless a larger reorganization is explicitly chosen.
