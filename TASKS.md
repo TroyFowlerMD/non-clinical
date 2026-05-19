@@ -17,6 +17,7 @@
 - [ ] Re-test public non-clinical hub links after future dashboard or repo-routing changes.
 
 ## Completed (last 30 days)
+- [x] Softened POA logistics language and added device-local checklist persistence plus print/PDF support.
 - [x] Created `personal/poa-logistics-guide.html` as a mobile-friendly Power of Attorney logistics checklist.
 - [x] Created `personal/poa-guide.html` as a mobile-friendly plain-English Power of Attorney guide.
 - [x] Repaired Psych Scheduler feedback submission so the modal has a maintenance-log fallback when email submission fails.

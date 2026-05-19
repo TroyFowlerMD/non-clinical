@@ -4,6 +4,12 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 
 ---
 
+### 2026-05-19 - Codex desktop - POA logistics wording and print persistence
+- Completed: Softened the POA logistics guide language so it does not frame the helper as doing everything or mention mobility limitations directly.
+- Completed: Added device-local checkbox persistence, a Print / PDF button, and print-specific CSS for a cleaner PDF layout.
+- In progress: Existing Psych Scheduler mobile-vs-desktop divergence and live Google Sheet startup tasks remain open.
+- Blockers/notes: Browser-generated PDFs preserve checked items visually and usually preserve hyperlinks; checkbox interactivity in the PDF depends on the PDF viewer.
+
 ### 2026-05-19 - Codex desktop - Personal POA logistics checklist
 - Completed: Added `personal/poa-logistics-guide.html`, a self-contained mobile-friendly checklist for setting up POA documents, with first-priority tasks, in-person versus remote tracks, local offices, official links, and concise scripts.
 - Completed: Cross-linked the existing POA explainer to the new logistics checklist.

@@ -269,6 +269,12 @@ h1 {
 
 .note-strip strong { color: var(--accent-2); }
 
+.save-note {
+  margin: -0.35rem 0 1rem;
+  color: var(--muted);
+  font-size: 0.92em;
+}
+
 .section-head { margin: 1.75rem 0 0.85rem; }
 .section-head h2 { margin: 0; font-size: 1.35em; }
 .section-head p { max-width: 72ch; margin: 0.25rem 0 0; color: var(--muted); }
@@ -409,6 +415,120 @@ details[open] summary::after { content: "-"; }
 
 .footer p { margin: 0.35rem 0; }
 
+@media print {
+  :root {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #ffffff;
+    --surface-3: #ffffff;
+    --text: #111111;
+    --muted: #333333;
+    --faint: #555555;
+    --border: #b8b8b8;
+    --accent: #111111;
+    --accent-2: #111111;
+    --urgent: #111111;
+    --shadow: none;
+    --font-scale: 0.92;
+  }
+
+  @page {
+    margin: 0.55in;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #111111;
+  }
+
+  body {
+    font-size: 11pt;
+    line-height: 1.35;
+  }
+
+  .topbar,
+  .skip-link,
+  .print-control,
+  .nav-strip,
+  .save-note {
+    display: none !important;
+  }
+
+  .wrap {
+    width: 100%;
+    margin: 0;
+  }
+
+  .hero,
+  .grid-2,
+  .grid-3,
+  .source-list {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    padding: 0 0 0.25in;
+  }
+
+  .hero-copy,
+  .priority-box,
+  .card,
+  .step,
+  .contact-card,
+  .script-card,
+  .note-strip,
+  .panel {
+    box-shadow: none !important;
+    border: 1px solid #b8b8b8;
+    background: #ffffff !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  h1 {
+    max-width: none;
+    font-size: 30pt;
+    line-height: 1.05;
+  }
+
+  h2 {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .badge {
+    border: 1px solid #9a9a9a;
+    background: #ffffff !important;
+    color: #111111 !important;
+  }
+
+  details,
+  details[open] {
+    background: #ffffff !important;
+    border: 1px solid #c8c8c8;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  details:not([open]) .detail-body {
+    display: block;
+  }
+
+  summary::after {
+    content: "";
+  }
+
+  input[type="checkbox"] {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  a {
+    color: #111111;
+    text-decoration: underline;
+  }
+}
+
 @media (max-width: 900px) {
   .hero, .grid-2, .grid-3, .source-list { grid-template-columns: 1fr; }
 }
@@ -431,7 +551,7 @@ details[open] summary::after { content: "-"; }
 <header class="topbar" aria-label="Page controls">
   <div class="brand">
     POA Logistics Checklist
-    <span>What daughter needs to do, and when</span>
+    <span>What to do together, and what can wait</span>
   </div>
   <div class="controls">
     <div class="control-group" aria-label="Color theme">
@@ -443,6 +563,9 @@ details[open] summary::after { content: "-"; }
       <button class="control-btn" type="button" id="textMinus" aria-label="Make text smaller">A-</button>
       <button class="control-btn" type="button" id="textPlus" aria-label="Make text larger">A+</button>
     </div>
+    <div class="control-group print-control" aria-label="Print">
+      <button class="control-btn" type="button" id="printPage">Print / PDF</button>
+    </div>
   </div>
 </header>
 
@@ -451,7 +574,7 @@ details[open] summary::after { content: "-"; }
     <div class="panel hero-copy">
       <p class="eyebrow">Lewis County, Washington</p>
       <h1 id="page-title">Get the POA set up in one visit.</h1>
-      <p class="intro">This is a practical checklist for the daughter. Assume mother cannot do the legwork because of limited mobility. Daughter should prepare, print, schedule, drive, call, scan, mail or upload, and follow up.</p>
+      <p class="intro">This is a practical checklist for a family visit. Use it to prepare forms, appointments, calls, signatures, scans, and follow-up without having to remember everything in the moment.</p>
     </div>
     <aside class="panel priority-box" aria-label="Highest priority first steps">
       <h2>Do these first. They take the most time.</h2>
@@ -477,11 +600,12 @@ details[open] summary::after { content: "-"; }
   <div class="note-strip">
     <strong>General information only:</strong> This page is an educational logistics checklist, not legal advice. Confirm forms, addresses, phone numbers, and eligibility rules directly with the office or agency before relying on them.
   </div>
+  <p class="save-note">Checkboxes save automatically on this device. Use Print / PDF to make a clean printable copy with the current checked items shown.</p>
 
   <section aria-labelledby="prep-title">
     <div class="section-head">
       <h2 id="prep-title">Before leaving the house</h2>
-      <p>Daughter should gather these. If something is missing, write down where to get it and keep moving.</p>
+      <p>Gather these before appointments. If something is missing, write down where to get it and keep moving.</p>
     </div>
     <div class="grid-2">
       <article class="card">
@@ -501,7 +625,7 @@ details[open] summary::after { content: "-"; }
         <div class="badge-row"><span class="badge urgent">Bring to appointment</span></div>
         <h3>Information to gather</h3>
         <ul class="checklist">
-          <li><input type="checkbox"><span>Mother's and daughter's government photo IDs.</span></li>
+          <li><input type="checkbox"><span>Government photo IDs for both people signing or appearing in person.</span></li>
           <li><input type="checkbox"><span>Social Security numbers for both.</span></li>
           <li><input type="checkbox"><span>Medicare card or 65th birthday timing; Medicaid/Apple Health card or case number; insurance cards.</span></li>
           <li><input type="checkbox"><span>Bank names, account numbers, routing numbers, recurring bills, and hospital account numbers.</span></li>
@@ -514,8 +638,8 @@ details[open] summary::after { content: "-"; }
 
   <section id="in-person" aria-labelledby="in-person-title">
     <div class="section-head">
-      <h2 id="in-person-title">Must do while daughter is physically with mother</h2>
-      <p>These are the high-value tasks for the one-day visit because they require mother's signature, ID, voice authorization, or physical presence.</p>
+      <h2 id="in-person-title">Best handled while both are together</h2>
+      <p>These are the high-value tasks for the visit because they require signatures, IDs, voice authorization, or in-person verification.</p>
     </div>
     <div class="grid-2">
       <article class="step">
@@ -526,7 +650,7 @@ details[open] summary::after { content: "-"; }
           <li><input type="checkbox"><span>Mother signs Washington Durable Financial POA.</span></li>
           <li><input type="checkbox"><span>Mother signs Washington Health Care POA.</span></li>
           <li><input type="checkbox"><span>Mother signs HIPAA/medical release authorization.</span></li>
-          <li><input type="checkbox"><span>Mother and daughter sign DSHS 14-532.</span></li>
+          <li><input type="checkbox"><span>Both people sign DSHS 14-532.</span></li>
           <li><input type="checkbox"><span>Mother signs IRS 2848 and/or 8821.</span></li>
           <li><input type="checkbox"><span>Mother signs Washington DOR tax authorization if a state tax issue applies.</span></li>
           <li><input type="checkbox"><span>Mother signs bank or pension forms if obtained in advance.</span></li>
@@ -543,7 +667,7 @@ details[open] summary::after { content: "-"; }
       <article class="step">
         <div class="badge-row"><span class="badge urgent">Do not skip</span><span class="badge">Together</span></div>
         <h3>2. Visit the bank</h3>
-        <p>Ask to add daughter as <strong>agent under Power of Attorney</strong>, not joint owner. Joint ownership can create Medicaid, tax, and estate problems.</p>
+        <p>Ask to add the helper as <strong>agent under Power of Attorney</strong>, not joint owner. Joint ownership can create Medicaid, tax, and estate problems.</p>
         <ul class="checklist">
           <li><input type="checkbox"><span>Bring notarized durable financial POA and both IDs.</span></li>
           <li><input type="checkbox"><span>Ask for the bank's internal POA certification or agent form.</span></li>
@@ -556,7 +680,7 @@ details[open] summary::after { content: "-"; }
       <article class="step">
         <div class="badge-row"><span class="badge urgent">High priority</span><span class="badge">Together if possible</span></div>
         <h3>3. DSHS / Apple Health Medicaid</h3>
-        <p>Submit DSHS 14-532 and the POA, or at least call with mother present. Ask daughter to receive notices, renewals, case information, and MCO details.</p>
+        <p>Submit DSHS 14-532 and the POA, or at least call while both are available. Ask that the authorized representative receive notices, renewals, case information, and MCO details.</p>
         <ul class="checklist">
           <li><input type="checkbox"><span>Submit <a href="https://www.dshs.wa.gov/sites/default/files/forms/pdf/14-532.pdf" target="_blank" rel="noopener">DSHS 14-532</a>.</span></li>
           <li><input type="checkbox"><span>Provide a copy of the notarized durable financial POA.</span></li>
@@ -599,7 +723,7 @@ details[open] summary::after { content: "-"; }
       <article class="step">
         <div class="badge-row"><span class="badge">Together preferred</span></div>
         <h3>5. Hospitals and clinics</h3>
-        <p>If visiting in person is possible, sign release and proxy access forms while mother can sign. If not, daughter can call later and ask how to submit forms by fax, portal, or mail.</p>
+        <p>If visiting in person is possible, sign release and proxy access forms during the visit. If not, call later and ask how to submit forms by fax, portal, or mail.</p>
         <ul class="checklist">
           <li><input type="checkbox"><span>Sign HIPAA/release of information forms.</span></li>
           <li><input type="checkbox"><span>Sign patient portal proxy or representative access forms.</span></li>
@@ -612,7 +736,7 @@ details[open] summary::after { content: "-"; }
       <article class="step">
         <div class="badge-row"><span class="badge urgent">Before day ends</span></div>
         <h3>6. Scan everything to PDF</h3>
-        <p>This is a required close-out task. Daughter should leave with digital copies, not just a folder of paper.</p>
+        <p>This is a required close-out task. Leave with digital copies, not just a folder of paper.</p>
         <ul class="checklist">
           <li><input type="checkbox"><span>Scan every signed page, including notary pages.</span></li>
           <li><input type="checkbox"><span>Name files clearly: `2026-05-19 Washington Durable Financial POA.pdf`, etc.</span></li>
@@ -625,7 +749,7 @@ details[open] summary::after { content: "-"; }
 
   <section id="remote" aria-labelledby="remote-title">
     <div class="section-head">
-      <h2 id="remote-title">Can be done remotely after daughter leaves</h2>
+      <h2 id="remote-title">Can be handled later from out of state</h2>
       <p>These still matter, but they can usually be done from out of state once the signed documents are scanned.</p>
     </div>
     <div class="grid-2">
@@ -646,7 +770,7 @@ details[open] summary::after { content: "-"; }
         <h3>Taxes and IRS access</h3>
         <ul class="checklist">
           <li><input type="checkbox"><span>Submit IRS 2848 if a CPA, enrolled agent, or attorney will represent mother.</span></li>
-          <li><input type="checkbox"><span>Submit IRS 8821 if daughter or preparer only needs tax information access.</span></li>
+          <li><input type="checkbox"><span>Submit IRS 8821 if the authorized helper or preparer only needs tax information access.</span></li>
           <li><input type="checkbox"><span>List every missing tax year separately on the forms.</span></li>
           <li><input type="checkbox"><span>Use <a href="https://www.irs.gov/individuals/get-transcript" target="_blank" rel="noopener">IRS Get Transcript</a> with the CPA/preparer.</span></li>
           <li><input type="checkbox"><span>Request missing pension 1099-Rs, then file back-year returns with CPA assistance.</span></li>
@@ -715,13 +839,13 @@ details[open] summary::after { content: "-"; }
 
   <section id="scripts" aria-labelledby="scripts-title">
     <div class="section-head">
-      <h2 id="scripts-title">Short scripts daughter can use</h2>
+      <h2 id="scripts-title">Short scripts to use</h2>
       <p>Keep calls short. The goal is to get the right form, signature rule, submission method, and next step.</p>
     </div>
     <div class="grid-2">
       <article class="script-card">
         <h3>Notary</h3>
-        <div class="script">"I need a notary appointment for my mother to sign several Washington POA and authorization documents. She has limited mobility. Can you come to her, what ID is required, what is the fee, and can we sign multiple documents in one visit?"</div>
+        <div class="script">"I need a notary appointment for several Washington POA and authorization documents. Can you meet at a convenient location, what ID is required, what is the fee, and can we sign multiple documents in one visit?"</div>
       </article>
       <article class="script-card">
         <h3>Bank</h3>
@@ -741,7 +865,7 @@ details[open] summary::after { content: "-"; }
       </article>
       <article class="script-card">
         <h3>Hospital records and billing</h3>
-        <div class="script">"My mother wants me authorized to help with medical records, billing, financial assistance, and portal access. Which release, proxy, and billing authorization forms should she sign, and how can we submit them if she has limited mobility?"</div>
+        <div class="script">"My mother wants me authorized to help with medical records, billing, financial assistance, and portal access. Which release, proxy, and billing authorization forms should she sign, and how can we submit them if an in-person visit is difficult?"</div>
       </article>
       <article class="script-card">
         <h3>Medicare / CMS-1696</h3>
@@ -761,7 +885,7 @@ details[open] summary::after { content: "-"; }
   <section aria-labelledby="contacts-title">
     <div class="section-head">
       <h2 id="contacts-title">Local offices and contacts</h2>
-      <p>Call before going in person, especially because mother has limited mobility and some offices may require appointments or department-specific forms.</p>
+      <p>Call before going in person, especially because offices may require appointments, department-specific forms, or a specific submission method.</p>
     </div>
     <div class="grid-3">
       <article class="contact-card">
@@ -811,7 +935,7 @@ details[open] summary::after { content: "-"; }
         <li><input type="checkbox"><span>Sign Washington Durable Power of Attorney for Health Care; a backup agent is recommended. Resource: <a href="https://endoflifewa.org/tools-for-planning/durable-power-of-attorney/" target="_blank" rel="noopener">End of Life Washington durable POA planning</a>.</span></li>
         <li><input type="checkbox"><span>Consider Washington Advance Directive / Living Will for CPR, ventilator, artificial nutrition, and comfort-focused care preferences. Resource: <a href="https://endoflifewa.org" target="_blank" rel="noopener">End of Life Washington</a>.</span></li>
         <li><input type="checkbox"><span>Use notary or two disinterested witnesses; notarization is preferred for institutional acceptance.</span></li>
-        <li><input type="checkbox"><span>Give copies to primary care, specialists, hospital records, and daughter; ask for upload into the electronic medical record.</span></li>
+        <li><input type="checkbox"><span>Give copies to primary care, specialists, hospital records, and the chosen helper; ask for upload into the electronic medical record.</span></li>
         <li><input type="checkbox"><span>Mother should carry a wallet card noting that a health care POA exists and where it is kept.</span></li>
         <li><input type="checkbox"><span>If moving to NC, execute NC Health Care POA and NC Advance Directive after residency is established. Resources: <a href="https://www.sosnc.gov/forms/by_title/_advance_healthcare_directives" target="_blank" rel="noopener">NC advance directive forms</a> and <a href="https://www.ncdhhs.gov/supporting-choice-self-determination-english-04-08-22/open" target="_blank" rel="noopener">NC DHHS Supporting Choice</a>.</span></li>
       </ul>
@@ -821,7 +945,7 @@ details[open] summary::after { content: "-"; }
   <section aria-labelledby="sources-title">
     <div class="section-head">
       <h2 id="sources-title">Official links used in this checklist</h2>
-      <p>These links are included so daughter can go directly to forms and agency pages.</p>
+      <p>These links go directly to forms and agency pages.</p>
     </div>
     <ul class="source-list">
       <li><a href="https://www.washingtonlawhelp.org/en/durable-power-attorney" target="_blank" rel="noopener">Washington Law Help durable POA</a></li>
@@ -854,6 +978,7 @@ details[open] summary::after { content: "-"; }
 <script>
 const root = document.documentElement;
 const textSizes = ["small", "normal", "large", "xlarge"];
+const checklistStorageKey = "poa-logistics-checklist-v1";
 let textIndex = 1;
 
 function setTheme(theme) {
@@ -874,11 +999,52 @@ document.querySelectorAll("[data-theme-button]").forEach((button) => {
   button.addEventListener("click", () => setTheme(button.dataset.themeButton));
 });
 
+function slugify(text) {
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48);
+}
+
+function loadChecklistState() {
+  try {
+    return JSON.parse(localStorage.getItem(checklistStorageKey) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function saveChecklistState(state) {
+  try {
+    localStorage.setItem(checklistStorageKey, JSON.stringify(state));
+  } catch {
+    // If local storage is unavailable, the checklist still works for the current page view.
+  }
+}
+
+function setupPersistentChecklist() {
+  const savedState = loadChecklistState();
+  document.querySelectorAll('.checklist input[type="checkbox"]').forEach((box, index) => {
+    const labelText = box.closest("li")?.textContent || `item-${index}`;
+    const key = `${index}-${slugify(labelText)}`;
+    box.dataset.checkId = key;
+    box.checked = Boolean(savedState[key]);
+    box.addEventListener("change", () => {
+      const nextState = loadChecklistState();
+      if (box.checked) {
+        nextState[key] = true;
+      } else {
+        delete nextState[key];
+      }
+      saveChecklistState(nextState);
+    });
+  });
+}
+
 document.getElementById("textMinus").addEventListener("click", () => setTextSize(textIndex - 1));
 document.getElementById("textPlus").addEventListener("click", () => setTextSize(textIndex + 1));
+document.getElementById("printPage").addEventListener("click", () => window.print());
 
 setTheme("light");
 setTextSize(textIndex);
+setupPersistentChecklist();
 </script>
 </body>
 </html>

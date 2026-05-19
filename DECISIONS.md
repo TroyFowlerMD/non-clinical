@@ -45,3 +45,9 @@ Context: The repo needed a public plain-English Power of Attorney guide that is 
 Decision: Place standalone personal educational pages under `personal/`, starting with `personal/poa-guide.html`.
 Rationale: This keeps personal/family utilities separate from the root-level app pages without splitting the single static GitHub Pages repo.
 Consequences: Future personal pages should use the `personal/` path unless a larger reorganization is explicitly chosen.
+
+### 2026-05-19 - Allow Local Checklist State For Personal Guides
+Context: The POA logistics guide is a browser-only checklist and should not lose checked items on the same device.
+Decision: Use browser localStorage only for non-sensitive checkbox completion state on personal checklist pages.
+Rationale: This improves usability without sending data anywhere or storing names, account numbers, or form contents.
+Consequences: Future checklist persistence should avoid storing sensitive details and should remain local to the user's device unless explicitly redesigned.
