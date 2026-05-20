@@ -7,7 +7,9 @@
 Personal non-clinical scheduling tool for the psych team at JFK ADATC. Pulls the medical staff schedule from a Google Sheet via Apps Script or falls back to Excel TSV paste. Presents psych-only views: daily staffing, backup call risk, PTO evaluator, provider profile switcher (Patil, German, Anderson, Fowler, Carter, Ondreyka, Smith, Cooley), calendar, and date-range filter. Contained in the `TroyFowlerMD/non-clinical` repo alongside other non-clinical personal tools. This repo/hub is linked from the TroyMD personal dashboard.
 
 ## Current Status
-Current deployed file is `psych-scheduler.html` on `main`. Core v3.1 scheduling features remain intact: live Google Sheets pull, TSV/Excel paste fallback, provider profile switcher, date-range filter, PTO/backup call risk views, mobile nav (hamburger/overlay), XLSX ingestion, theme toggle, and font-size controls. Maintenance layer: sidebar `Send Feedback` modal uses the feedback Apps Script as the primary owned email/log path, with FormSubmit as a confirmed email fallback.
+Current deployed production file is `psych-scheduler.html` on `main`. Core v3.1 scheduling features remain intact: live Google Sheets pull, TSV/Excel paste fallback, provider profile switcher, date-range filter, PTO/backup call risk views, mobile nav (hamburger/overlay), XLSX ingestion, theme toggle, and font-size controls. Maintenance layer: sidebar `Send Feedback` modal uses the feedback Apps Script as the primary owned email/log path, with FormSubmit as a confirmed email fallback.
+
+Experimental command-center clone: `psych-scheduler-experimental.html` is a separate single-file clone that keeps the same live Google Sheet default and fallback ingestion while adding mode-specific table defaults, staffing-risk analytics cards, and a canvas-based risk timeline. This file is intentionally separate from production until Dr. Fowler explicitly chooses to promote any experimental behavior.
 
 **My Schedule column system now covers all six core providers:** Anderson, Fowler, Carter, Ondreyka, Smith, Cooley each have a column-toggle chip rendering via `providerCell()`. Pre-existing Carter/Ondreyka chips were silently broken (referenced an undefined `poolCell()`) and are now functional. **Backup Call page** has its own column-toggle chip group for `Working Providers` and `Total Staff Core+Temp`, default off. **Provider switcher** auto-deselects the active column chip matching the newly selected provider to prevent duplicate data with the My Assignment column.
 
@@ -17,6 +19,13 @@ Current deployed file is `psych-scheduler.html` on `main`. Core v3.1 scheduling 
 The feedback modal no longer shows a green success message just because an unconfirmed no-CORS logger request completed. It first looks for an Apps Script JSON response confirming `emailed: true`, then falls back to confirmed FormSubmit email. If only an unconfirmed backup log request can be sent, the modal keeps the fields in place and shows a warning.
 
 The My Schedule "Show only PTO feasible" filter now switches the visible columns to the PTO review set: selected provider, call, trainees, total staff/core+temp, working providers, and PTO feasible. Turning the filter off restores the user's prior columns.
+
+## 2026-05-20 Experimental Command Center Clone
+Created `psych-scheduler-experimental.html` from the current production app without changing production `psych-scheduler.html`. The experimental clone adds seven mode buttons near table controls: My Schedule, PTO Planner, Critical Coverage, Hospital Coverage, Staffing Trends, Call Burden, and Provider Balance.
+
+Each mode applies a default column set while leaving the column picker available. PTO Planner defaults to selected provider assignment, call, trainees, total staff/core+temp, working providers, and PTO feasible; it does not show the selected provider's own separate name column.
+
+The experimental page adds eight analytics cards and a full-width canvas staffing-risk timeline. Staffing risk uses the current schedule counts only: weekday minimum is 4 usable psych providers, weekends/holidays keep their separate lower threshold, temp reliance is flagged when the threshold is reached only because temp/PRN providers are included, and no fake census values are invented.
 
 ## 2026-05-14 Consolidation Note
 No direct Psych Scheduler code changes were made during the broader repo-consolidation pass. The surrounding repo context **did** change locally:

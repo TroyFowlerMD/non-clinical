@@ -4,6 +4,12 @@ This file records durable architectural, workflow, safety, and publishing decisi
 
 ---
 
+### 2026-05-20 - Keep Staffing Command Center Work In A Separate Experimental Page
+Context: The production Psych Scheduler page is the live staffing tool and needed to remain stable while a more ambitious analytics interface was requested.
+Decision: Clone production into `psych-scheduler-experimental.html` and keep experimental mode defaults, staffing-risk summary cards, and canvas timeline work there instead of redesigning `psych-scheduler.html`.
+Rationale: A separate static page lets the owner test richer operational analytics against the same live Google Sheet and fallback ingestion paths without putting the production scheduler at risk.
+Consequences: Production remains available at `psych-scheduler.html`; future command-center changes should land in the experimental file until explicitly promoted.
+
 ### 2026-05-20 - Feedback Success Requires Confirmed Email Delivery
 Context: The Psych Scheduler feedback modal could show a green success message when only an unconfirmed no-CORS logger request completed, while the owner did not receive email.
 Decision: Treat the feedback Apps Script as the primary owned email/log path and require JSON confirmation with `emailed: true` before showing full success. Keep FormSubmit only as a confirmed email fallback, and reserve the no-CORS Apps Script request for warning-state backup logging.

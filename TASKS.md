@@ -18,6 +18,7 @@
 - [ ] Re-test public non-clinical hub links after future dashboard or repo-routing changes.
 
 ## Completed (last 30 days)
+- [x] Created `psych-scheduler-experimental.html` as a separate experimental Psych Scheduler command-center clone with mode defaults, analytics cards, and a staffing-risk canvas timeline.
 - [x] Tightened Psych Scheduler feedback success handling so unconfirmed logger submissions no longer show a green success message.
 - [x] Updated the My Schedule PTO-only filter to switch into a PTO-focused column set and restore prior columns when turned off.
 - [x] Softened POA logistics language and added device-local checklist persistence plus print/PDF support.

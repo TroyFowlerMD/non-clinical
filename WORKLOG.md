@@ -4,6 +4,13 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 
 ---
 
+### 2026-05-20 - Codex desktop - Psych Scheduler experimental command center
+- Completed: Created `psych-scheduler-experimental.html` as a separate single-file clone of production `psych-scheduler.html`, preserving live Google Sheet startup plus paste/Excel fallback ingestion and leaving production unchanged.
+- Completed: Added seven experimental mode defaults, manual column controls, analytics summary cards, and a canvas-based staffing risk timeline with weekday minimum, below-minimum, and temp-reliance logic.
+- Completed: Added a clearly labeled experimental hub link in `index.html` and documented the separation in `docs/psych-scheduler.md`, `TASKS.md`, and `DECISIONS.md`.
+- In progress: External feedback Apps Script redeployment and the pre-existing mobile-vs-desktop divergence task remain open.
+- Blockers/notes: Direct `file://` browser verification is blocked by the in-app browser URL policy, so local verification used a 127.0.0.1 preview server. No census values were invented; census-adjusted risk remains future-ready placeholder copy.
+
 ### 2026-05-20 - Codex desktop - Psych Scheduler feedback confirmation and PTO columns
 - Completed: Updated `psych-scheduler.html` so feedback shows green success only after confirmed email delivery through the feedback Apps Script response or the FormSubmit fallback; unconfirmed backup logging now shows a warning and keeps the typed fields in place.
 - Completed: Updated the My Schedule "Show only PTO feasible" filter so it switches to the PTO review columns and restores the user's prior columns when turned off.
