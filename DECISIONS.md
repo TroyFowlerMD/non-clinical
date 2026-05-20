@@ -4,6 +4,12 @@ This file records durable architectural, workflow, safety, and publishing decisi
 
 ---
 
+### 2026-05-20 - Feedback Success Requires Confirmed Email Delivery
+Context: The Psych Scheduler feedback modal could show a green success message when only an unconfirmed no-CORS logger request completed, while the owner did not receive email.
+Decision: Treat the feedback Apps Script as the primary owned email/log path and require JSON confirmation with `emailed: true` before showing full success. Keep FormSubmit only as a confirmed email fallback, and reserve the no-CORS Apps Script request for warning-state backup logging.
+Rationale: A static GitHub Pages app cannot prove an opaque no-CORS request sent email, so the UI should not clear the form or claim success from that path alone.
+Consequences: The deployed feedback Apps Script must send the email and return the documented response contract in `docs/psych-scheduler-feedback-apps-script-contract.md`; otherwise users will see a warning or depend on FormSubmit availability.
+
 ### 2026-05-11 - Preserve Psych Scheduler Parser During Surgical Patches
 Context: Several Psych Scheduler fixes touched UI, columns, and ingestion paths, while parser regressions had previously broken paste recognition.
 Decision: Preserve `parseTSVRobust()` and `parseAndLoad()` verbatim during surgical patches unless the task explicitly targets parsing.

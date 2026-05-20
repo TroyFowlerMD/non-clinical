@@ -26,3 +26,8 @@ No separate Asana Build & Dev task was found. Matching unprojected Asana capture
 - Current failure mode: the modal had drifted to an email-only FormSubmit path, so a FormSubmit failure produced the user-facing "couldn't send" message.
 - Repair: restored dual submission with FormSubmit email plus the maintenance-request Apps Script logger. The Apps Script request now avoids a CORS preflight so it can work from the static GitHub Pages app.
 - Verification: local browser test loaded the live schedule, submitted one Codex-labeled feedback test, and showed the modal success message.
+
+## 2026-05-20 Confirmation Repair Note
+- Current failure mode: the modal could show the green success message when only the unconfirmed no-CORS logger path completed, so the user could see "sent" without receiving email.
+- Repair: made the feedback Apps Script the primary owned path and require JSON confirmation with `emailed: true` before showing the full success message. FormSubmit remains a confirmed email fallback. The no-CORS Apps Script path remains only as a last backup and shows a warning instead of clearing the form.
+- Follow-up: the deployed feedback Apps Script must match `docs/psych-scheduler-feedback-apps-script-contract.md` so it both appends the maintenance row and sends the owner email.

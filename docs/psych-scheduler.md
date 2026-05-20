@@ -7,14 +7,16 @@
 Personal non-clinical scheduling tool for the psych team at JFK ADATC. Pulls the medical staff schedule from a Google Sheet via Apps Script or falls back to Excel TSV paste. Presents psych-only views: daily staffing, backup call risk, PTO evaluator, provider profile switcher (Patil, German, Anderson, Fowler, Carter, Ondreyka, Smith, Cooley), calendar, and date-range filter. Contained in the `TroyFowlerMD/non-clinical` repo alongside other non-clinical personal tools. This repo/hub is linked from the TroyMD personal dashboard.
 
 ## Current Status
-Current deployed file is `psych-scheduler.html` on `main` at commit `28f6343`. Core v3.1 scheduling features remain intact: live Google Sheets pull, TSV/Excel paste fallback, provider profile switcher, date-range filter, PTO/backup call risk views, mobile nav (hamburger/overlay), XLSX ingestion, theme toggle, and font-size controls. Maintenance layer: sidebar `Send Feedback` modal dual-submits maintenance requests through FormSubmit email and the Apps Script JSON logger to the maintenance-request Google Sheet.
+Current deployed file is `psych-scheduler.html` on `main`. Core v3.1 scheduling features remain intact: live Google Sheets pull, TSV/Excel paste fallback, provider profile switcher, date-range filter, PTO/backup call risk views, mobile nav (hamburger/overlay), XLSX ingestion, theme toggle, and font-size controls. Maintenance layer: sidebar `Send Feedback` modal uses the feedback Apps Script as the primary owned email/log path, with FormSubmit as a confirmed email fallback.
 
 **My Schedule column system now covers all six core providers:** Anderson, Fowler, Carter, Ondreyka, Smith, Cooley each have a column-toggle chip rendering via `providerCell()`. Pre-existing Carter/Ondreyka chips were silently broken (referenced an undefined `poolCell()`) and are now functional. **Backup Call page** has its own column-toggle chip group for `Working Providers` and `Total Staff Core+Temp`, default off. **Provider switcher** auto-deselects the active column chip matching the newly selected provider to prevent duplicate data with the My Assignment column.
 
 **Known open bug remains:** mobile vs. desktop divergence - desktop correctly ignores non-psych staff; mobile still includes them. Suspected stale cache or render-path divergence.
 
-## 2026-05-19 Local Maintenance Note
-Unreleased local changes repair the feedback modal fallback path and add a My Schedule "Show only PTO feasible" filter. The filter uses the selected provider's recalculated `ptoRisk` and hides caution, not-feasible, and weekend rows.
+## 2026-05-20 Feedback and PTO Column Note
+The feedback modal no longer shows a green success message just because an unconfirmed no-CORS logger request completed. It first looks for an Apps Script JSON response confirming `emailed: true`, then falls back to confirmed FormSubmit email. If only an unconfirmed backup log request can be sent, the modal keeps the fields in place and shows a warning.
+
+The My Schedule "Show only PTO feasible" filter now switches the visible columns to the PTO review set: selected provider, call, trainees, total staff/core+temp, working providers, and PTO feasible. Turning the filter off restores the user's prior columns.
 
 ## 2026-05-14 Consolidation Note
 No direct Psych Scheduler code changes were made during the broader repo-consolidation pass. The surrounding repo context **did** change locally:
@@ -46,6 +48,7 @@ These surrounding repo/hub updates are still local only and have not been commit
 - No localStorage; all state in memory - sandboxed-iframe constraint. Do not introduce localStorage without replacing the access model.
 - Apps Script CORS resolved by deployment access set to "Anyone" - do not change without simultaneously replacing the access model.
 - `DRIVE_EXEC_URL` is hardcoded in the HTML; update it whenever Apps Script is redeployed to a new URL.
+- `FEEDBACK_EXEC_URL` is hardcoded in the HTML; its Apps Script should return JSON with `emailed: true` after the owner email is sent. See `docs/psych-scheduler-feedback-apps-script-contract.md`.
 - Preserve `parseTSVRobust()` and `parseAndLoad()` verbatim during surgical patches - these were fragile historically.
 
 ## Open Questions / Decisions Pending

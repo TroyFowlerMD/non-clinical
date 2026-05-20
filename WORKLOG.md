@@ -4,6 +4,13 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 
 ---
 
+### 2026-05-20 - Codex desktop - Psych Scheduler feedback confirmation and PTO columns
+- Completed: Updated `psych-scheduler.html` so feedback shows green success only after confirmed email delivery through the feedback Apps Script response or the FormSubmit fallback; unconfirmed backup logging now shows a warning and keeps the typed fields in place.
+- Completed: Updated the My Schedule "Show only PTO feasible" filter so it switches to the PTO review columns and restores the user's prior columns when turned off.
+- Completed: Added `docs/psych-scheduler-feedback-apps-script-contract.md` with the required feedback Apps Script `doPost` email/log response contract.
+- In progress: The external feedback Apps Script still needs redeployment to send email and return `emailed: true`.
+- Blockers/notes: Local browser verification was blocked by the in-app browser URL policy for localhost/file URLs. Direct Apps Script POST returned HTTP 200 with `{"status":"ok"}` but did not provide `emailed: true`; direct FormSubmit test returned HTTP 522.
+
 ### 2026-05-19 - Codex desktop - POA logistics wording and print persistence
 - Completed: Softened the POA logistics guide language so it does not frame the helper as doing everything or mention mobility limitations directly.
 - Completed: Added device-local checkbox persistence, a Print / PDF button, and print-specific CSS for a cleaner PDF layout.

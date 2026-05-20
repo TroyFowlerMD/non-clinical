@@ -653,6 +653,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
 .fb-btn-primary:disabled{opacity:0.6;cursor:not-allowed}
 .fb-msg{display:none;padding:9px 11px;border-radius:var(--radius);font-size:12px;line-height:1.4}
 .fb-success{display:block;background:rgba(34,139,87,0.12);color:#2a8a5a;border:1px solid rgba(34,139,87,0.25)}
+.fb-warning{display:block;background:rgba(230,126,34,0.12);color:#d8892f;border:1px solid rgba(230,126,34,0.28)}
 .fb-error{display:block;background:rgba(192,40,40,0.12);color:#c43838;border:1px solid rgba(192,40,40,0.25)}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -978,6 +979,7 @@ const BACKUP_POOL    = ['Fowler','Carter','Ondreyka'];
 // After deploying Code.gs as a Web App, paste the /exec URL here:
 const DRIVE_EXEC_URL = 'https://script.google.com/macros/s/AKfycbyMi0090cG0OpaW8vijCrijox-R1Y_d-4uGBbeg2Jq8KAYmICqctoF3ctZlqheHyEWC/exec'; // e.g. 'https://script.google.com/macros/s/AKfy.../exec'
 const FEEDBACK_EXEC_URL = 'https://script.google.com/macros/s/AKfycbxtM_sCWARu_IWy7MZe9ZD7grBX5WrlSr42ECmxa60Fpg7ZHm2eIUgDnO2Yp1xBCVYf/exec';
+const FEEDBACK_EMAIL = 'troyfowlermd@gmail.com';
 let driveStatus = null;    // { fetchedAt, rowCount, error }
 const NP_STAFF       = ['Anderson','Smith','Cooley'];
 
@@ -1752,9 +1754,12 @@ const SCHED_COLS_ALL = [
   {id:'trainees',    label:'Trainees',         sortable:true,  sortKey:r=>(r.trainees||[]).join(',')},
 ];
 
-let schedActiveCols = ['date','asgn','call','trainees','providers'];
+const SCHED_DEFAULT_COLS = ['date','asgn','call','trainees','providers'];
+const SCHED_PTO_FEASIBLE_COLS = ['date','asgn','call','trainees','staffTotal','providers','ptoFeasible'];
+let schedActiveCols = [...SCHED_DEFAULT_COLS];
 let schedWeekdaysOnly = false;
 let schedPTOFeasibleOnly = false;
+let schedColsBeforePTOFeasible = null;
 let schedSort = {col:'date', dir:1};
 let schedDragId = null;
 const SCHED_COL_WIDTHS = {date:86, asgn:108, call:86, trainees:108, providers:232,
@@ -1991,7 +1996,7 @@ function schedToggleAllProviders() {
 
 
 function resetSchedCols() {
-  schedActiveCols = ['date','asgn','call','trainees','providers'];
+  schedActiveCols = schedPTOFeasibleOnly ? [...SCHED_PTO_FEASIBLE_COLS] : [...SCHED_DEFAULT_COLS];
   renderColPicker();
   renderDashboard();
 }
@@ -2004,7 +2009,17 @@ function toggleSchedWeekdaysOnly() {
 }
 
 function toggleSchedPTOFeasibleOnly() {
-  schedPTOFeasibleOnly = !schedPTOFeasibleOnly;
+  if(!schedPTOFeasibleOnly) {
+    schedColsBeforePTOFeasible = [...schedActiveCols];
+    schedActiveCols = [...SCHED_PTO_FEASIBLE_COLS];
+    schedPTOFeasibleOnly = true;
+  } else {
+    schedPTOFeasibleOnly = false;
+    schedActiveCols = (schedColsBeforePTOFeasible && schedColsBeforePTOFeasible.length)
+      ? [...schedColsBeforePTOFeasible]
+      : [...SCHED_DEFAULT_COLS];
+    schedColsBeforePTOFeasible = null;
+  }
   dashPage = 0;
   renderColPicker();
   renderDashboard();
@@ -3028,6 +3043,64 @@ function closeFeedbackModal(){
   if(!ov) return;
   ov.classList.remove('open');
 }
+function feedbackMessage(kind, text) {
+  const msg = document.getElementById('fb-msg');
+  if(!msg) return;
+  msg.className = 'fb-msg fb-' + kind;
+  msg.textContent = text;
+}
+function buildFeedbackFormData(name, comment, page, timestamp) {
+  const fd = new FormData();
+  fd.append('name', name);
+  fd.append('comment', comment);
+  fd.append('page', page);
+  fd.append('timestamp', timestamp);
+  fd.append('_subject', 'JFK Schedule Analyzer Maintenance Request');
+  fd.append('_template', 'table');
+  fd.append('_captcha', 'false');
+  return fd;
+}
+function sendFeedbackScriptConfirmed(payload) {
+  if(!FEEDBACK_EXEC_URL) return Promise.reject(new Error('feedback Apps Script URL missing'));
+  return fetch(FEEDBACK_EXEC_URL, {
+    method: 'POST',
+    headers: {'Content-Type': 'text/plain;charset=utf-8'},
+    body: JSON.stringify(payload)
+  }).then(function(r){
+    if(!r.ok) throw new Error('feedback Apps Script failed: HTTP ' + r.status);
+    return r.text();
+  }).then(function(text){
+    let json = {};
+    if(text) {
+      try { json = JSON.parse(text); }
+      catch(err) { throw new Error('feedback Apps Script returned non-JSON response'); }
+    }
+    if(json.ok === false) throw new Error(json.error || 'feedback Apps Script reported failure');
+    if(json.emailed !== true) {
+      const err = new Error('feedback Apps Script did not confirm email delivery');
+      err.logged = json.logged === true || json.status === 'ok' || json.ok === true;
+      throw err;
+    }
+    return json;
+  });
+}
+function sendFeedbackEmailFallback(formData) {
+  return fetch('https://formsubmit.co/ajax/' + FEEDBACK_EMAIL, {
+    method: 'POST',
+    body: formData
+  }).then(function(r){
+    if(!r.ok) throw new Error('FormSubmit email failed: HTTP ' + r.status);
+    return r;
+  });
+}
+function sendFeedbackUnconfirmedBackup(payload) {
+  if(!FEEDBACK_EXEC_URL) return Promise.reject(new Error('feedback Apps Script URL missing'));
+  return fetch(FEEDBACK_EXEC_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    body: JSON.stringify(Object.assign({}, payload, {source: payload.source + '-unconfirmed-backup'}))
+  });
+}
 function submitFeedback(event){
   if(event && event.preventDefault) event.preventDefault();
   const nameEl = document.getElementById('fb-name');
@@ -3038,7 +3111,7 @@ function submitFeedback(event){
   const name = (nameEl.value || '').trim();
   const comment = (commentEl.value || '').trim();
   if(!name || !comment){
-    if(msg){ msg.className = 'fb-msg fb-error'; msg.textContent = 'Please fill out both fields.'; }
+    feedbackMessage('error', 'Please fill out both fields.');
     return false;
   }
   const origText = submitBtn.textContent;
@@ -3048,23 +3121,7 @@ function submitFeedback(event){
   const timestamp = new Date().toISOString();
   const page = document.title;
 
-  const fd = new FormData();
-  fd.append('name', name);
-  fd.append('comment', comment);
-  fd.append('page', page);
-  fd.append('timestamp', timestamp);
-  fd.append('_subject', 'JFK Schedule Analyzer Maintenance Request');
-  fd.append('_template', 'table');
-  fd.append('_captcha', 'false');
-
-  const emailReq = fetch('https://formsubmit.co/ajax/troyfowlermd@gmail.com', {
-    method: 'POST',
-    body: fd
-  }).then(function(r){
-    if(!r.ok) throw new Error('email failed: HTTP ' + r.status);
-    return r;
-  });
-
+  const fd = buildFeedbackFormData(name, comment, page, timestamp);
   const feedbackPayload = {
     site: document.title || window.location.pathname,
     name: name,
@@ -3074,29 +3131,40 @@ function submitFeedback(event){
     timestamp: timestamp,
     source: 'psych-scheduler-feedback-modal'
   };
-  const sheetReq = FEEDBACK_EXEC_URL ? fetch(FEEDBACK_EXEC_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    body: JSON.stringify(feedbackPayload)
-  }).then(function(r){ return r; }) : Promise.reject(new Error('feedback sheet URL missing'));
 
-  Promise.allSettled([emailReq, sheetReq]).then(function(results){
-    const anyOk = results.some(function(r){ return r.status === 'fulfilled'; });
+  sendFeedbackScriptConfirmed(feedbackPayload).then(function(){
     submitBtn.disabled = false;
     submitBtn.textContent = origText || 'Send';
-    if(anyOk){
-      if(msg){ msg.className = 'fb-msg fb-success'; msg.textContent = 'Thanks — your feedback was sent.'; }
+    feedbackMessage('success', 'Thanks - your feedback was emailed and logged.');
+    const form = document.getElementById('fb-form');
+    if(form) form.reset();
+  }).catch(function(scriptErr){
+    console.warn('[feedback] Apps Script confirmed path failed:', scriptErr);
+    sendFeedbackEmailFallback(fd).then(function(){
+      submitBtn.disabled = false;
+      submitBtn.textContent = origText || 'Send';
+      feedbackMessage('success', 'Thanks - your feedback email was sent.');
       const form = document.getElementById('fb-form');
       if(form) form.reset();
-    } else {
-      console.warn('[feedback] all submit paths failed', results);
-      if(msg){ msg.className = 'fb-msg fb-error'; msg.textContent = 'Sorry — we couldn’t send your feedback. Please try again later.'; }
-    }
-  }).catch(function(err){
-    submitBtn.disabled = false;
-    submitBtn.textContent = origText || 'Send';
-    console.warn('[feedback] fetch error:', err);
-    if(msg){ msg.className = 'fb-msg fb-error'; msg.textContent = 'Sorry — we couldn’t send your feedback. Please try again later.'; }
+    }).catch(function(emailErr){
+      console.warn('[feedback] email fallback failed:', emailErr);
+      if(scriptErr && scriptErr.logged) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = origText || 'Send';
+        feedbackMessage('warning', 'Your request was logged, but I could not confirm the email. Please email directly if this is urgent.');
+        return;
+      }
+      sendFeedbackUnconfirmedBackup(feedbackPayload).then(function(){
+        submitBtn.disabled = false;
+        submitBtn.textContent = origText || 'Send';
+        feedbackMessage('warning', 'I could not confirm the email. I sent a backup maintenance-log request, but please email directly if this is urgent.');
+      }).catch(function(backupErr){
+        submitBtn.disabled = false;
+        submitBtn.textContent = origText || 'Send';
+        console.warn('[feedback] all submit paths failed:', {scriptErr, emailErr, backupErr});
+        feedbackMessage('error', 'Sorry - I could not send or log this feedback. Please try again later.');
+      });
+    });
   });
   return false;
 }

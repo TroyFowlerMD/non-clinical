@@ -25,6 +25,7 @@
 - docs/excel-ingestion-hotfix-2.md
 - docs/psych-scheduler.md
 - docs/psych-scheduler-column-toggles-backup-call-buttons-auto-deselect.md
+- docs/psych-scheduler-feedback-apps-script-contract.md
 - docs/psych-scheduler-feedback-logging-added.md
 - docs/psych-scheduler-post-call-staffing-bug-fixed.md
 - docs/reverted-post-call-classification-fix.md
