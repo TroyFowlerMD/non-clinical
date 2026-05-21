@@ -8,7 +8,6 @@
 
 ## Active Tasks
 - [!] Redeploy Psych Scheduler feedback Apps Script to send email and return `emailed: true` (external Apps Script source is not in this repo; current endpoint returns `{"status":"ok"}` only, and FormSubmit test returned HTTP 522).
-- [~] Investigate Psych Scheduler mobile vs. desktop divergence: desktop correctly ignores non-psych staff, mobile still includes them. Status is ambiguous in Notion, but it is explicitly called a known open bug.
 - [~] Keep Psych Scheduler default startup tied to the live Google Sheet while preserving paste/Excel fallback behavior.
 
 ## Upcoming
@@ -18,6 +17,7 @@
 - [ ] Re-test public non-clinical hub links after future dashboard or repo-routing changes.
 
 ## Completed (last 30 days)
+- [x] Investigated Psych Scheduler mobile vs. desktop provider-list divergence; current live desktop and 375px mobile rendering both exclude known medical-staff columns, so the stale open bug is no longer reproducible.
 - [x] Created `psych-scheduler-experimental.html` as a separate experimental Psych Scheduler command-center clone with mode defaults, analytics cards, and a staffing-risk canvas timeline.
 - [x] Tightened Psych Scheduler feedback success handling so unconfirmed logger submissions no longer show a green success message.
 - [x] Updated the My Schedule PTO-only filter to switch into a PTO-focused column set and restore prior columns when turned off.

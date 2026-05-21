@@ -13,7 +13,7 @@ Experimental command-center clone: `psych-scheduler-experimental.html` is a sepa
 
 **My Schedule column system now covers all six core providers:** Anderson, Fowler, Carter, Ondreyka, Smith, Cooley each have a column-toggle chip rendering via `providerCell()`. Pre-existing Carter/Ondreyka chips were silently broken (referenced an undefined `poolCell()`) and are now functional. **Backup Call page** has its own column-toggle chip group for `Working Providers` and `Total Staff Core+Temp`, default off. **Provider switcher** auto-deselects the active column chip matching the newly selected provider to prevent duplicate data with the My Assignment column.
 
-**Known open bug remains:** mobile vs. desktop divergence - desktop correctly ignores non-psych staff; mobile still includes them. Suspected stale cache or render-path divergence.
+**Mobile/desktop provider-list divergence investigated 2026-05-21:** current live desktop rendering and 375px mobile rendering both use the same working-provider output and do not include known medical-staff columns such as Griffith, Millonas, Kuetemeyer, Nolan, Moore, King, Edwards, Ramirez, Poetter, Dill, DeBell, McKay, Wolf, or Cruz. The older open bug appears stale rather than currently reproducible.
 
 ## 2026-05-20 Feedback and PTO Column Note
 The feedback modal no longer shows a green success message just because an unconfirmed no-CORS logger request completed. It first looks for an Apps Script JSON response confirming `emailed: true`, then falls back to confirmed FormSubmit email. If only an unconfirmed backup log request can be sent, the modal keeps the fields in place and shows a warning.
@@ -61,7 +61,6 @@ These surrounding repo/hub updates are still local only and have not been commit
 - Preserve `parseTSVRobust()` and `parseAndLoad()` verbatim during surgical patches - these were fragile historically.
 
 ## Open Questions / Decisions Pending
-- **Mobile/desktop divergence** - desktop ignores non-psych staff correctly; mobile still includes them. Root cause not confirmed (stale cache vs. render-path divergence). Needs investigation.
 - **Parser hardening** - ongoing concern for full-sheet variation and stale-data edge cases.
 - **Stale-data badge / data-source polish** - `Live.Sheet1` vs Pasted badge and stale-data timestamp were v3 polish items; confirm current state.
 - **Apps Script redeployment cadence** - no documented policy for when/how to redeploy when Sheet structure changes.

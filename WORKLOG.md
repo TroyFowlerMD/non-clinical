@@ -4,6 +4,12 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 
 ---
 
+### 2026-05-21 - Codex desktop - Psych Scheduler mobile provider divergence check
+- Completed: Verified the current live Psych Scheduler page at default desktop width and at a 375px mobile viewport; both rendered the same working-provider list and neither included known medical-staff columns.
+- Completed: Parsed the live Google Sheet response with the app parser and confirmed the current detected psych boundaries exclude the medical-staff columns.
+- In progress: External feedback Apps Script redeployment and live Google Sheet default-startup preservation remain open.
+- Blockers/notes: No runtime code change was needed because the mobile-vs-desktop divergence was not reproducible in the current deployed page; this appears to have been stale task state.
+
 ### 2026-05-20 - Codex desktop - Psych Scheduler experimental command center
 - Completed: Created `psych-scheduler-experimental.html` as a separate single-file clone of production `psych-scheduler.html`, preserving live Google Sheet startup plus paste/Excel fallback ingestion and leaving production unchanged.
 - Completed: Added seven experimental mode defaults, manual column controls, analytics summary cards, and a canvas-based staffing risk timeline with weekday minimum, below-minimum, and temp-reliance logic.
