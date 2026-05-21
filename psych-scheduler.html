@@ -201,8 +201,8 @@ td,th{white-space:nowrap}
 .dashboard-sticky-header{position:fixed;display:none;overflow:hidden;z-index:30;background:var(--surface);border:1px solid var(--border);border-bottom-color:var(--divider);box-shadow:var(--shadow)}
 .dashboard-sticky-header.visible{display:block}
 .dashboard-sticky-header-inner{will-change:transform}
-.dashboard-sticky-header table{border-collapse:collapse;table-layout:fixed;font-size:12px}
-.dashboard-sticky-header th{position:static!important;top:auto!important;box-sizing:border-box;white-space:normal;overflow-wrap:anywhere;word-break:normal;vertical-align:middle;background:var(--surface2);z-index:auto}
+.dashboard-sticky-header table{border-collapse:collapse;table-layout:fixed;font-size:inherit}
+.dashboard-sticky-header th{position:static!important;top:auto!important;box-sizing:border-box;white-space:normal;overflow-wrap:anywhere;word-break:normal;vertical-align:middle;background:var(--surface2);z-index:auto;font-size:var(--dash-sticky-th-font-size,10px);line-height:var(--dash-sticky-th-line-height,1.15);padding:var(--dash-sticky-th-padding,6px 8px)}
 .dashboard-sticky-header th.sortable{cursor:pointer}
 .dashboard-sticky-header th.th-draggable{cursor:grab}
 .col-day{width:1%;padding-right:4px!important}
@@ -778,7 +778,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
     <button class="theme-btn" id="theme-cycle-btn" onclick="cycleTheme()" title="Cycle theme: Dark → Light → Slate"></button>
     <div class="font-ctrl" title="Adjust text size">
       <button class="font-btn" onclick="changeFontSize(-1)" aria-label="Decrease text size">A−</button>
-      <span class="font-badge" id="font-size-badge">20px</span>
+      <span class="font-badge" id="font-size-badge">17px</span>
       <button class="font-btn font-btn-plus" onclick="changeFontSize(1)" aria-label="Increase text size">A+</button>
     </div>
   </div>
@@ -1778,6 +1778,33 @@ const SCHED_COL_WIDTHS = {date:86, asgn:108, call:86, trainees:108, providers:23
 const SCHED_COL_WIDTHS_MOBILE = {date:76, asgn:86, call:74, trainees:94, providers:154,
   ptoFeasible:88, staffTotal:88, overnight:88, backupPerson:88, ftPhone:88,
   anderson:86, fowler:86, carter:86, ondreyka:86, smith:86, cooley:86, streak:88};
+const SCHED_PROVIDER_COL_IDS = ['anderson','fowler','carter','ondreyka','smith','cooley'];
+const SCHED_PROVIDER_COL_SET = new Set(SCHED_PROVIDER_COL_IDS);
+function normalizeSchedColumnOrder(cols=schedActiveCols) {
+  const active = [];
+  const seen = new Set();
+  cols.forEach(id => {
+    if(!id || seen.has(id)) return;
+    if(!SCHED_COLS_ALL.some(c => c.id === id)) return;
+    seen.add(id);
+    active.push(id);
+  });
+  const ordered = ['date'];
+  if(active.includes('asgn')) ordered.push('asgn');
+  active.forEach(id => {
+    if(SCHED_PROVIDER_COL_SET.has(id)) ordered.push(id);
+  });
+  active.forEach(id => {
+    if(id !== 'date' && id !== 'asgn' && !SCHED_PROVIDER_COL_SET.has(id)) ordered.push(id);
+  });
+  schedActiveCols = ordered;
+  return schedActiveCols;
+}
+function schedInsertCol(id) {
+  if(schedActiveCols.includes(id)) return;
+  schedActiveCols.push(id);
+  normalizeSchedColumnOrder();
+}
 function schedColWidth(id) {
   const mobile = window.matchMedia && window.matchMedia('(max-width:768px)').matches;
   const widths = mobile ? SCHED_COL_WIDTHS_MOBILE : SCHED_COL_WIDTHS;
@@ -1896,11 +1923,8 @@ function schedToggleCol(id) {
   if(id==='date') return; // locked pinned date column
   const idx = schedActiveCols.indexOf(id);
   if(idx>=0) { if(schedActiveCols.filter(c=>c!=='date').length>1) schedActiveCols.splice(idx,1); }
-  else {
-    const asgnIdx = schedActiveCols.indexOf('asgn');
-    const insertAt = asgnIdx >= 0 ? asgnIdx + 1 : schedActiveCols.length;
-    schedActiveCols.splice(insertAt, 0, id);
-  }
+  else schedInsertCol(id);
+  normalizeSchedColumnOrder();
   renderColPicker();
   renderDashboard();
 }
@@ -1917,6 +1941,7 @@ function schedDrop(id) {
   if(to<1) return; // enforce Date stays at front
   schedActiveCols.splice(from,1);
   schedActiveCols.splice(to,0,schedDragId);
+  normalizeSchedColumnOrder();
   schedDragId=null;
   renderColPicker();
   renderDashboard();
@@ -1936,13 +1961,11 @@ function renderColPicker() {
   // Fixed ordered grid — most-used first. Day/date is always pinned (not shown here).
   const PICKER_ORDER = ['asgn','call','trainees','ptoFeasible','staffTotal','providers','overnight',
     'backupPerson','ftPhone','anderson','fowler','carter','ondreyka','smith','cooley'];
-  // Provider-type ids — those rendered by renderAsgnCellFor/providerCell
-  const PROVIDER_IDS = ['anderson','fowler','carter','ondreyka','smith','cooley'];
   // Change 3: hide the chip for whichever provider is currently selected in the dropdown
   const hiddenProv = (selectedProvider||'').toLowerCase();
 
   // Determine visible provider chips (after hiding active provider's chip)
-  const visibleProviderIds = PROVIDER_IDS.filter(id => id !== hiddenProv);
+  const visibleProviderIds = SCHED_PROVIDER_COL_IDS.filter(id => id !== hiddenProv);
 
   // Change 2: compute "All Providers" state — all visible provider chips active?
   const allProvsOn = visibleProviderIds.length > 0 &&
@@ -1958,7 +1981,7 @@ function renderColPicker() {
     const col = SCHED_COLS_ALL.find(c=>c.id===id);
     if(!col) return '';
     // Change 3: skip rendering the chip for the currently selected provider
-    if(PROVIDER_IDS.includes(id) && id === hiddenProv) return '';
+    if(SCHED_PROVIDER_COL_SET.has(id) && id === hiddenProv) return '';
     const on = schedActiveCols.includes(id);
     const label = schedColLabel(id, 'picker');
     return `<label class="col-toggle-chip ${on?'on':''}" title="${stripHtmlLabel(label)}">
@@ -1978,9 +2001,8 @@ function renderColPicker() {
 
 // Change 2: toggle all provider columns on/off
 function schedToggleAllProviders() {
-  const PROVIDER_IDS = ['anderson','fowler','carter','ondreyka','smith','cooley'];
   const hiddenProv = (selectedProvider||'').toLowerCase();
-  const visibleProviderIds = PROVIDER_IDS.filter(id => id !== hiddenProv);
+  const visibleProviderIds = SCHED_PROVIDER_COL_IDS.filter(id => id !== hiddenProv);
   const allProvsOn = visibleProviderIds.length > 0 &&
     visibleProviderIds.every(id => schedActiveCols.includes(id));
   if(allProvsOn) {
@@ -1990,16 +2012,11 @@ function schedToggleAllProviders() {
       if(idx >= 0) schedActiveCols.splice(idx, 1);
     });
   } else {
-    // Activate all visible provider columns not yet in schedActiveCols,
-    // inserting each right after 'asgn' (Change 1 insertion rule)
     visibleProviderIds.forEach(id => {
-      if(!schedActiveCols.includes(id)) {
-        const asgnIdx = schedActiveCols.indexOf('asgn');
-        const insertAt = asgnIdx >= 0 ? asgnIdx + 1 : schedActiveCols.length;
-        schedActiveCols.splice(insertAt, 0, id);
-      }
+      schedInsertCol(id);
     });
   }
+  normalizeSchedColumnOrder();
   renderColPicker();
   renderDashboard();
 }
@@ -2007,6 +2024,7 @@ function schedToggleAllProviders() {
 
 function resetSchedCols() {
   schedActiveCols = schedPTOFeasibleOnly ? [...SCHED_PTO_FEASIBLE_COLS] : [...SCHED_DEFAULT_COLS];
+  normalizeSchedColumnOrder();
   renderColPicker();
   renderDashboard();
 }
@@ -2031,6 +2049,7 @@ function toggleSchedPTOFeasibleOnly() {
     schedColsBeforePTOFeasible = null;
   }
   dashPage = 0;
+  normalizeSchedColumnOrder();
   renderColPicker();
   renderDashboard();
 }
@@ -2082,6 +2101,7 @@ function onProviderChange(prov) {
   const provColId = (prov||'').toLowerCase();
   const idx = schedActiveCols.indexOf(provColId);
   if(idx >= 0) schedActiveCols.splice(idx, 1);
+  normalizeSchedColumnOrder();
   recomputePTORisk();
   // Re-render whichever view is currently active
   const activeId = document.querySelector('.view.active')?.id?.replace('view-','');
@@ -2866,6 +2886,7 @@ function thDrop(e, targetId) {
   if(from<0||to<0||from<1||to<1) { thDragColId=null; return; }
   schedActiveCols.splice(from,1);
   schedActiveCols.splice(to,0,thDragColId);
+  normalizeSchedColumnOrder();
   thDragColId = null;
   renderColPicker();
   renderDashboard();
@@ -2894,6 +2915,33 @@ function getDashboardStickyClone() {
 
 function hideDashboardStickyClone() {
   if(dashStickyClone) dashStickyClone.classList.remove('visible');
+}
+
+function dashboardContentZoom() {
+  const content = document.querySelector('.content');
+  const raw = content ? (content.style.zoom || getComputedStyle(content).zoom || '1') : '1';
+  const zoom = parseFloat(raw);
+  return Number.isFinite(zoom) && zoom > 0 ? zoom : 1;
+}
+
+function scaleCssLength(value, scale) {
+  const num = parseFloat(value);
+  return Number.isFinite(num) ? `${num * scale}px` : value;
+}
+
+function syncDashboardStickyCloneMetrics(clone, firstHeader, contentZoom) {
+  if(!clone || !firstHeader) return;
+  const style = getComputedStyle(firstHeader);
+  const lineHeight = style.lineHeight === 'normal'
+    ? 'normal'
+    : scaleCssLength(style.lineHeight, contentZoom);
+  clone.style.setProperty('--dash-sticky-th-font-size', scaleCssLength(style.fontSize, contentZoom));
+  clone.style.setProperty('--dash-sticky-th-line-height', lineHeight);
+  clone.style.setProperty('--dash-sticky-th-padding',
+    `${scaleCssLength(style.paddingTop, contentZoom)} ${scaleCssLength(style.paddingRight, contentZoom)} ${scaleCssLength(style.paddingBottom, contentZoom)} ${scaleCssLength(style.paddingLeft, contentZoom)}`);
+  clone.style.fontFamily = style.fontFamily;
+  clone.style.fontWeight = style.fontWeight;
+  clone.style.letterSpacing = style.letterSpacing;
 }
 
 function buildDashboardStickyClone(table, thead, colWidths, tableWidth) {
@@ -2945,7 +2993,18 @@ function updateDashboardStickyHeader() {
     return Math.round(width || 0);
   });
   const tableWidth = Math.round(tableRect.width);
-  const sig = [thead.textContent, tableWidth, colWidths.join(',')].join('|');
+  const contentZoom = dashboardContentZoom();
+  const firstHeaderStyle = getComputedStyle(firstHeader);
+  const metricSig = [
+    contentZoom,
+    firstHeaderStyle.fontSize,
+    firstHeaderStyle.lineHeight,
+    firstHeaderStyle.paddingTop,
+    firstHeaderStyle.paddingRight,
+    firstHeaderStyle.paddingBottom,
+    firstHeaderStyle.paddingLeft
+  ].join(',');
+  const sig = [thead.textContent, tableWidth, colWidths.join(','), metricSig].join('|');
   if(sig !== dashStickySig) {
     dashStickySig = sig;
     buildDashboardStickyClone(table, thead, colWidths, tableWidth);
@@ -2953,6 +3012,7 @@ function updateDashboardStickyHeader() {
 
   const clone = getDashboardStickyClone();
   const inner = clone.querySelector('.dashboard-sticky-header-inner');
+  syncDashboardStickyCloneMetrics(clone, firstHeader, contentZoom);
   const scrollScale = table.offsetWidth ? tableRect.width / table.offsetWidth : 1;
   clone.style.top = mainRect.top + 'px';
   clone.style.left = wrapRect.left + 'px';
@@ -3009,7 +3069,7 @@ function installDashboardStickyWatcher() {
 // FONT SIZE
 // ═══════════════════════════════════════════════════════════════════════════
 
-let baseFontPx = 20;
+let baseFontPx = 17;
 const FONT_MIN = 11, FONT_MAX = 32;
 function changeFontSize(delta) {
   baseFontPx = Math.max(FONT_MIN, Math.min(FONT_MAX, baseFontPx + delta));

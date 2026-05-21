@@ -4,6 +4,13 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 
 ---
 
+### 2026-05-21 - Codex desktop - Psych Scheduler text size and provider-column order
+- Completed: Changed the Psych Scheduler default text-size control from 20px to 17px.
+- Completed: Updated My Schedule column ordering so the selected-provider assignment column returns immediately after Day / Date, and individual provider schedule columns stay grouped beside it instead of moving after Working Providers.
+- Completed: Adjusted the cloned sticky dashboard header to copy the real table header's effective zoomed font, padding, and line-height so the locked header no longer visibly shrinks.
+- In progress: External feedback Apps Script redeployment and live Google Sheet default-startup preservation remain open.
+- Blockers/notes: Local preview browser verification loaded the live Google Sheet successfully and confirmed desktop plus 375px mobile sticky-header sizing.
+
 ### 2026-05-21 - Codex desktop - Psych Scheduler dashboard sticky header repair
 - Completed: Replaced the dashboard table's unreliable CSS sticky header with a lightweight cloned header that sits outside the horizontal-scroll wrapper and syncs to the real table widths/scroll position.
 - Completed: Added a dashboard-only lightweight sync loop so the cloned header follows layout changes even when browser scroll events are inconsistent.

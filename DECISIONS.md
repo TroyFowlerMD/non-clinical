@@ -4,6 +4,12 @@ This file records durable architectural, workflow, safety, and publishing decisi
 
 ---
 
+### 2026-05-21 - Keep My Schedule Provider Assignments In A Left-Side Block
+Context: My Schedule users can remove and re-add the selected-provider assignment column and individual provider schedule columns. Re-added columns could move to the far right, away from the day/date and selected-provider context.
+Decision: Normalize My Schedule column order after toggle, all-provider toggle, drag/drop, reset, PTO-only restore, and provider-profile changes so Day / Date stays first, the selected-provider assignment column stays second when enabled, and individual provider schedule columns stay immediately after it.
+Rationale: This keeps the assignment columns visually grouped where providers compare schedules, while leaving Working Providers as a separate summary column.
+Consequences: Future My Schedule column changes should route through the shared ordering helper and verify sticky header alignment after re-render.
+
 ### 2026-05-21 - Use A Cloned Header For Dashboard Sticky Scrolling
 Context: The My Schedule dashboard table needs horizontal table scrolling and a header that appears only when the real table header reaches the top of the `.main` scroll viewport. Native `position: sticky` was unreliable because the horizontal overflow wrapper became the nearest scroll container and the header still scrolled away.
 Decision: Keep the real dashboard table in normal page flow, render its header normally, and show a lightweight fixed cloned header only while the real header has crossed the top of `.main`. Sync the clone to the real table's column widths and horizontal scroll position using dashboard-only scroll/resize listeners plus a lightweight active-dashboard layout sync loop.
