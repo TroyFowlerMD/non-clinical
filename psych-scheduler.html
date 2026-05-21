@@ -1635,6 +1635,7 @@ function showView(id) {
   if(DATA.length===0 && id!=='paste') return;
   if(id==='dashboard') renderDashboard();
   else {
+    dashStickyTracking = false;
     hideDashboardStickyClone();
     if(id==='backup') renderBackup();
     else if(id==='calendar') renderCalendar();
@@ -2879,6 +2880,8 @@ function thDragEnd(e) {
 let dashStickyClone = null;
 let dashStickySig = '';
 let dashStickyRaf = null;
+let dashStickyTracking = false;
+let dashStickyLastTick = 0;
 
 function getDashboardStickyClone() {
   if(dashStickyClone) return dashStickyClone;
@@ -2964,7 +2967,32 @@ function scheduleDashboardStickySync() {
     dashStickyRaf = null;
     dashStickySig = '';
     updateDashboardStickyHeader();
+    startDashboardStickyTracking();
   });
+}
+
+function dashboardStickyShouldTrack() {
+  return document.querySelector('.view.active')?.id === 'view-dashboard'
+    && !!document.querySelector('#dash-table table');
+}
+
+function startDashboardStickyTracking() {
+  if(dashStickyTracking) return;
+  dashStickyTracking = true;
+  const tick = (timestamp) => {
+    if(!dashStickyTracking) return;
+    if(!dashboardStickyShouldTrack()) {
+      dashStickyTracking = false;
+      hideDashboardStickyClone();
+      return;
+    }
+    if(!dashStickyLastTick || timestamp - dashStickyLastTick > 80) {
+      dashStickyLastTick = timestamp;
+      updateDashboardStickyHeader();
+    }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
 }
 
 function installDashboardStickyWatcher() {
