@@ -57,3 +57,9 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 - In progress: Existing stale-data badge/source-display, Apps Script redeployment cadence, repo organization, and public link retest tasks remain open in TASKS.md.
 - Blockers/notes: No app code changed during this maintenance sweep; TASKS.md and DECISIONS.md were not changed.
 
+
+### 2026-05-21 - Codex CLI - Psych Scheduler sticky table header timing fix
+- Completed: Updated `psych-scheduler.html` so the dashboard table header uses native `position: sticky` on `thead th` with `top: 0`, letting the full page scroll normally until the header row reaches the top of the viewport.
+- Completed: Removed the custom sticky watcher/toggle logic that pinned headers based on the table wrapper position, which could make the header lock early and leave unused space above it.
+- In progress: Existing mobile-vs-desktop filtering divergence and live Google Sheet default-startup tasks remain open.
+- Blockers/notes: Live Google Sheet/App Script integration was not re-verified in this UI/CSS-only change.
