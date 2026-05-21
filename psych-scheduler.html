@@ -185,7 +185,7 @@ td,th{white-space:nowrap}
 #dash-table col.sched-col-providers{width:232px}
 #dash-table col.col-hol{width:92px}
 #dash-table th{position:static;top:auto}
-#dash-table.sticky-ready th{position:sticky;top:0}
+#dash-table thead th{position:sticky;top:0;z-index:4;background:var(--surface2)}
 #dash-table th,#dash-table td{box-sizing:border-box;width:104px;min-width:0;max-width:104px;white-space:normal;overflow-wrap:anywhere;word-break:normal;vertical-align:middle}
 #dash-table th{line-height:1.15}
 #dash-table .sched-col-date,#dash-table .col-date{width:86px;max-width:86px}
@@ -2455,7 +2455,6 @@ function renderDashboard(pg) {
     '<div class="empty"><p>No matching dates</p></div>';
 
   document.getElementById('dash-table').innerHTML = tbl + pagBar(t, dashPage, 'renderDashboard');
-  updateDashboardStickyHeader();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2867,23 +2866,6 @@ function thDragEnd(e) {
 }
 
 
-function updateDashboardStickyHeader() {
-  const wrap = document.getElementById('dash-table');
-  const main = document.querySelector('.main');
-  if(!wrap || !main) return;
-  const wrapTop = wrap.getBoundingClientRect().top;
-  const mainTop = main.getBoundingClientRect().top;
-  wrap.classList.toggle('sticky-ready', wrapTop <= mainTop + 1);
-}
-
-function installDashboardStickyWatcher() {
-  const main = document.querySelector('.main');
-  if(main) main.addEventListener('scroll', updateDashboardStickyHeader, {passive:true});
-  window.addEventListener('scroll', updateDashboardStickyHeader, {passive:true});
-  window.addEventListener('resize', updateDashboardStickyHeader);
-  updateDashboardStickyHeader();
-}
-
 // ═══════════════════════════════════════════════════════════════════════════
 // FONT SIZE
 // ═══════════════════════════════════════════════════════════════════════════
@@ -3025,7 +3007,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   const cEl = document.querySelector('.content');
   if(cEl) cEl.style.zoom = (baseFontPx / 16).toFixed(3);
   updateThemeBtn(document.documentElement.getAttribute('data-theme')||'dark');
-  installDashboardStickyWatcher();
   showInitialLoading();
   loadFromDrive({ initialLoad: true });
 });
