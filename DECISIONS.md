@@ -63,3 +63,9 @@ Context: The POA logistics guide is a browser-only checklist and should not lose
 Decision: Use browser localStorage only for non-sensitive checkbox completion state on personal checklist pages.
 Rationale: This improves usability without sending data anywhere or storing names, account numbers, or form contents.
 Consequences: Future checklist persistence should avoid storing sensitive details and should remain local to the user's device unless explicitly redesigned.
+
+### 2026-05-21 - Prefer PR + Squash-Merge For Codex Cloud Activation
+Context: Codex Cloud workspaces can have missing push/remote wiring, which can make direct push-based activation inconsistent and confusing for the owner.
+Decision: Default Codex Cloud publishing to PR-based activation: Codex commits and opens a PR; Dr. Fowler squash-merges on GitHub to activate changes on `main`. Use manual single-file GitHub upload/commit only when PR push is unavailable.
+Rationale: This keeps activation steps consistent, easy to explain, and aligned with GitHub as source of truth while preserving a practical fallback path.
+Consequences: Future shutdown summaries should explicitly state whether activation is pending merge, merged, or manually committed in GitHub.

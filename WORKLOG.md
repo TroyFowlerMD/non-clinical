@@ -57,3 +57,21 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 - In progress: Existing stale-data badge/source-display, Apps Script redeployment cadence, repo organization, and public link retest tasks remain open in TASKS.md.
 - Blockers/notes: No app code changed during this maintenance sweep; TASKS.md and DECISIONS.md were not changed.
 
+
+### 2026-05-21 - Codex CLI - Psych Scheduler sticky table header timing fix
+- Completed: Updated `psych-scheduler.html` so the dashboard table header uses native `position: sticky` on `thead th` with `top: 0`, letting the full page scroll normally until the header row reaches the top of the viewport.
+- Completed: Removed the custom sticky watcher/toggle logic that pinned headers based on the table wrapper position, which could make the header lock early and leave unused space above it.
+- In progress: Existing mobile-vs-desktop filtering divergence and live Google Sheet default-startup tasks remain open.
+- Blockers/notes: Live Google Sheet/App Script integration was not re-verified in this UI/CSS-only change.
+
+### 2026-05-21 - Codex CLI - Clarified Codex Cloud PR activation workflow
+- Completed: Updated `AGENTS.md` with a Codex Cloud publish preference section that defaults to PR creation plus squash-merge on GitHub for activating changes on `main`.
+- Completed: Documented manual single-file upload/commit as fallback only when PR push is unavailable in the current workspace.
+- In progress: Existing Psych Scheduler mobile-vs-desktop divergence and live Google Sheet default-startup tasks remain open.
+- Blockers/notes: This was a workflow-instructions update only; no Psych Scheduler runtime code changed.
+
+### 2026-05-21 - Codex CLI - Sticky header fallback reintroduced with corrected trigger
+- Completed: Updated `psych-scheduler.html` to reintroduce a lightweight sticky watcher that enables header sticky mode only when the dashboard table header row (`thead`) reaches the top edge of the `.main` scroll viewport.
+- Completed: Scoped sticky CSS to `#dash-table.sticky-ready thead th` so the header does not lock early and still preserves normal full-page scrolling behavior until trigger.
+- In progress: Existing mobile-vs-desktop filtering divergence and live Google Sheet default-startup tasks remain open.
+- Blockers/notes: Runtime browser validation could not be executed in this CLI-only session; behavior should be verified in the deployed/static browser context.
