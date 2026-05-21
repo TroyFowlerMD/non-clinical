@@ -4,6 +4,12 @@ This file records durable architectural, workflow, safety, and publishing decisi
 
 ---
 
+### 2026-05-21 - Use A Cloned Header For Dashboard Sticky Scrolling
+Context: The My Schedule dashboard table needs horizontal table scrolling and a header that appears only when the real table header reaches the top of the `.main` scroll viewport. Native `position: sticky` was unreliable because the horizontal overflow wrapper became the nearest scroll container and the header still scrolled away.
+Decision: Keep the real dashboard table in normal page flow, render its header normally, and show a lightweight fixed cloned header only while the real header has crossed the top of `.main`. Sync the clone to the real table's column widths and horizontal scroll position.
+Rationale: This preserves the single-file app and horizontal scrolling while avoiding the browser sticky/overflow conflict that caused repeated failed fixes.
+Consequences: Future My Schedule column/header changes should verify the cloned header remains aligned after table re-render, horizontal scroll, desktop width, and mobile width.
+
 ### 2026-05-20 - Keep Staffing Command Center Work In A Separate Experimental Page
 Context: The production Psych Scheduler page is the live staffing tool and needed to remain stable while a more ambitious analytics interface was requested.
 Decision: Clone production into `psych-scheduler-experimental.html` and keep experimental mode defaults, staffing-risk summary cards, and canvas timeline work there instead of redesigning `psych-scheduler.html`.

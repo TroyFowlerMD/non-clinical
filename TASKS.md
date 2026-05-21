@@ -17,6 +17,7 @@
 - [ ] Re-test public non-clinical hub links after future dashboard or repo-routing changes.
 
 ## Completed (last 30 days)
+- [x] Repaired Psych Scheduler My Schedule scrolling behavior so the dashboard table header sticks at the top of the app viewport after the real header reaches it, while preserving horizontal table scrolling.
 - [x] Investigated Psych Scheduler mobile vs. desktop provider-list divergence; current live desktop and 375px mobile rendering both exclude known medical-staff columns, so the stale open bug is no longer reproducible.
 - [x] Created `psych-scheduler-experimental.html` as a separate experimental Psych Scheduler command-center clone with mode defaults, analytics cards, and a staffing-risk canvas timeline.
 - [x] Tightened Psych Scheduler feedback success handling so unconfirmed logger submissions no longer show a green success message.

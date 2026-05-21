@@ -185,8 +185,6 @@ td,th{white-space:nowrap}
 #dash-table col.sched-col-providers{width:232px}
 #dash-table col.col-hol{width:92px}
 #dash-table th{position:static;top:auto}
-#dash-table.sticky-ready thead th{position:sticky;top:0;z-index:4;background:var(--surface2)}
-#dash-table thead th{position:sticky;top:0;z-index:4;background:var(--surface2)}
 #dash-table th,#dash-table td{box-sizing:border-box;width:104px;min-width:0;max-width:104px;white-space:normal;overflow-wrap:anywhere;word-break:normal;vertical-align:middle}
 #dash-table th{line-height:1.15}
 #dash-table .sched-col-date,#dash-table .col-date{width:86px;max-width:86px}
@@ -200,6 +198,13 @@ td,th{white-space:nowrap}
 #dash-table .call-cell .badge:last-child,#dash-table .trainees-cell .badge:last-child{margin-bottom:0}
 #dash-table .trainees-cell{width:108px;max-width:108px;white-space:normal;font-size:11px;line-height:1.15}
 #dash-table .working-providers-cell{white-space:normal;overflow-wrap:anywhere;line-height:1.22}
+.dashboard-sticky-header{position:fixed;display:none;overflow:hidden;z-index:30;background:var(--surface);border:1px solid var(--border);border-bottom-color:var(--divider);box-shadow:var(--shadow)}
+.dashboard-sticky-header.visible{display:block}
+.dashboard-sticky-header-inner{will-change:transform}
+.dashboard-sticky-header table{border-collapse:collapse;table-layout:fixed;font-size:12px}
+.dashboard-sticky-header th{position:static!important;top:auto!important;box-sizing:border-box;white-space:normal;overflow-wrap:anywhere;word-break:normal;vertical-align:middle;background:var(--surface2);z-index:auto}
+.dashboard-sticky-header th.sortable{cursor:pointer}
+.dashboard-sticky-header th.th-draggable{cursor:grab}
 .col-day{width:1%;padding-right:4px!important}
 .col-date{width:1%;min-width:78px;max-width:86px;white-space:normal!important;line-height:1.15}
 .date-stack{display:flex;align-items:center;gap:4px}
@@ -1629,8 +1634,11 @@ function showView(id) {
   closeSidebar();
   if(DATA.length===0 && id!=='paste') return;
   if(id==='dashboard') renderDashboard();
-  else if(id==='backup') renderBackup();
-  else if(id==='calendar') renderCalendar();
+  else {
+    hideDashboardStickyClone();
+    if(id==='backup') renderBackup();
+    else if(id==='calendar') renderCalendar();
+  }
 }
 
 function toggleSidebar() {
@@ -2456,6 +2464,7 @@ function renderDashboard(pg) {
     '<div class="empty"><p>No matching dates</p></div>';
 
   document.getElementById('dash-table').innerHTML = tbl + pagBar(t, dashPage, 'renderDashboard');
+  scheduleDashboardStickySync();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2867,23 +2876,102 @@ function thDragEnd(e) {
 }
 
 
+let dashStickyClone = null;
+let dashStickySig = '';
+let dashStickyRaf = null;
+
+function getDashboardStickyClone() {
+  if(dashStickyClone) return dashStickyClone;
+  dashStickyClone = document.createElement('div');
+  dashStickyClone.className = 'dashboard-sticky-header';
+  dashStickyClone.innerHTML = '<div class="dashboard-sticky-header-inner"></div>';
+  document.body.appendChild(dashStickyClone);
+  return dashStickyClone;
+}
+
+function hideDashboardStickyClone() {
+  if(dashStickyClone) dashStickyClone.classList.remove('visible');
+}
+
+function buildDashboardStickyClone(table, thead, colWidths, tableWidth) {
+  const clone = getDashboardStickyClone();
+  const inner = clone.querySelector('.dashboard-sticky-header-inner');
+  if(!inner) return;
+
+  const colHtml = colWidths.map(w => `<col style="width:${w}px">`).join('');
+  const theadClone = thead.cloneNode(true);
+  theadClone.querySelectorAll('th').forEach((th, idx) => {
+    if(colWidths[idx]) {
+      th.style.width = colWidths[idx] + 'px';
+      th.style.maxWidth = colWidths[idx] + 'px';
+    }
+  });
+
+  inner.innerHTML = `<table style="width:${tableWidth}px"><colgroup>${colHtml}</colgroup>${theadClone.outerHTML}</table>`;
+}
+
 function updateDashboardStickyHeader() {
   const wrap = document.getElementById('dash-table');
   const main = document.querySelector('.main');
-  if(!wrap || !main) return;
+  if(!wrap || !main) { hideDashboardStickyClone(); return; }
+  const active = document.querySelector('.view.active')?.id === 'view-dashboard';
+  if(!active) { hideDashboardStickyClone(); return; }
+  const table = wrap.querySelector('table');
   const thead = wrap.querySelector('thead');
-  if(!thead) {
+  if(!table || !thead) {
     wrap.classList.remove('sticky-ready');
+    hideDashboardStickyClone();
     return;
   }
+  const firstHeader = thead.querySelector('th');
+  if(!firstHeader) { hideDashboardStickyClone(); return; }
+
+  const mainRect = main.getBoundingClientRect();
+  const wrapRect = wrap.getBoundingClientRect();
+  const tableRect = table.getBoundingClientRect();
   const headerTop = thead.getBoundingClientRect().top;
-  const mainTop = main.getBoundingClientRect().top;
-  wrap.classList.toggle('sticky-ready', headerTop <= mainTop + 1);
+  const headerHeight = thead.getBoundingClientRect().height || firstHeader.getBoundingClientRect().height || 0;
+  const shouldStick = headerTop <= mainRect.top + 1 && tableRect.bottom > mainRect.top + headerHeight;
+
+  wrap.classList.toggle('sticky-ready', shouldStick);
+  if(!shouldStick) { hideDashboardStickyClone(); return; }
+
+  const colWidths = Array.from(table.querySelectorAll('col')).map((col, idx) => {
+    const cell = thead.querySelectorAll('th')[idx];
+    const width = cell ? cell.getBoundingClientRect().width : col.getBoundingClientRect().width;
+    return Math.round(width || 0);
+  });
+  const tableWidth = Math.round(tableRect.width);
+  const sig = [thead.textContent, tableWidth, colWidths.join(',')].join('|');
+  if(sig !== dashStickySig) {
+    dashStickySig = sig;
+    buildDashboardStickyClone(table, thead, colWidths, tableWidth);
+  }
+
+  const clone = getDashboardStickyClone();
+  const inner = clone.querySelector('.dashboard-sticky-header-inner');
+  clone.style.top = mainRect.top + 'px';
+  clone.style.left = wrapRect.left + 'px';
+  clone.style.width = wrapRect.width + 'px';
+  clone.style.height = headerHeight + 'px';
+  if(inner) inner.style.transform = `translateX(${-wrap.scrollLeft}px)`;
+  clone.classList.add('visible');
+}
+
+function scheduleDashboardStickySync() {
+  if(dashStickyRaf) cancelAnimationFrame(dashStickyRaf);
+  dashStickyRaf = requestAnimationFrame(() => {
+    dashStickyRaf = null;
+    dashStickySig = '';
+    updateDashboardStickyHeader();
+  });
 }
 
 function installDashboardStickyWatcher() {
   const main = document.querySelector('.main');
   if(main) main.addEventListener('scroll', updateDashboardStickyHeader, {passive:true});
+  const wrap = document.getElementById('dash-table');
+  if(wrap) wrap.addEventListener('scroll', updateDashboardStickyHeader, {passive:true});
   window.addEventListener('resize', updateDashboardStickyHeader);
   updateDashboardStickyHeader();
 }
