@@ -7,6 +7,7 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 ### 2026-05-21 - Codex desktop - Psych Scheduler dashboard sticky header repair
 - Completed: Replaced the dashboard table's unreliable CSS sticky header with a lightweight cloned header that sits outside the horizontal-scroll wrapper and syncs to the real table widths/scroll position.
 - Completed: Added a dashboard-only lightweight sync loop so the cloned header follows layout changes even when browser scroll events are inconsistent.
+- Completed: Accounted for the app's CSS zoom when syncing horizontal scroll so the cloned header stays aligned on mobile.
 - Completed: Kept the My Schedule table in the normal `.main` page scroll and limited the sticky behavior to the dashboard table.
 - In progress: External feedback Apps Script redeployment and live Google Sheet default-startup preservation remain open.
 - Blockers/notes: Local browser loading of the modified file was blocked by the browser security policy for local/data URLs; verification used static checks before publish and live GitHub Pages checks after push.

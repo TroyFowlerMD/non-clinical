@@ -2953,11 +2953,12 @@ function updateDashboardStickyHeader() {
 
   const clone = getDashboardStickyClone();
   const inner = clone.querySelector('.dashboard-sticky-header-inner');
+  const scrollScale = table.offsetWidth ? tableRect.width / table.offsetWidth : 1;
   clone.style.top = mainRect.top + 'px';
   clone.style.left = wrapRect.left + 'px';
   clone.style.width = wrapRect.width + 'px';
   clone.style.height = headerHeight + 'px';
-  if(inner) inner.style.transform = `translateX(${-wrap.scrollLeft}px)`;
+  if(inner) inner.style.transform = `translateX(${-wrap.scrollLeft * scrollScale}px)`;
   clone.classList.add('visible');
 }
 
