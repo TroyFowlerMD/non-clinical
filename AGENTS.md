@@ -89,6 +89,13 @@ Append entries to WORKLOG.md using this shape:
 
 The repo owner is not a programmer. Explain GitHub, Git, commits, pushes, deployment, file paths, and Codex workspace behavior in plain outcome language. Recommend the simplest safe option first and avoid implying the live website changed unless changes were actually pushed and deployed.
 
+
+## Codex Cloud Publish Preference
+
+- When working in Codex Cloud, default to PR-based activation: commit changes, open a pull request, and have Dr. Fowler squash-merge on GitHub to activate the change on `main`.
+- Use manual single-file GitHub upload/commit only as a fallback when PR push is unavailable in the current Codex workspace.
+- During shutdown summaries, state clearly whether activation is pending PR merge, already merged, or manually committed on GitHub.
+
 ## Psych Scheduler Guardrails
 
 Before editing psych-scheduler.html, inspect the existing parser, loading path, dashboard rendering, and theme variables. Keep changes narrow and preserve the single-file architecture unless the user explicitly asks for a split.
