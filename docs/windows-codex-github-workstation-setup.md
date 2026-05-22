@@ -8,6 +8,8 @@ Purpose: make another Windows computer mirror the working setup from this comput
 - GitHub is the source of truth.
 - GitHub Desktop and Codex Desktop use the same local folders.
 - Command-line Git is authenticated so Codex can commit and push when repo instructions call for it.
+- Node.js LTS, Google clasp, and Google Apps Script login are configured so Codex can edit/deploy the Psych Scheduler Apps Script bridge.
+- The Psych Scheduler feedback admin token is stored locally, outside Git, so Codex can mark IT request rows done/triaged from that workstation.
 
 Use this folder:
 
@@ -48,6 +50,69 @@ The script will:
 - clone missing active repos
 - pull clean existing repos with `git pull --ff-only`
 - skip any repo that has local changes so work is not overwritten
+- offer to set up Psych Scheduler Apps Script access, including Node.js LTS, Google clasp, `clasp login`, and the local feedback admin token
+
+## Psych Scheduler Apps Script Access
+
+This is the part that gives Codex on the other computer the same Apps Script editing/deploy ability and the ability to mark scheduler feedback rows done.
+
+The setup script may ask you to:
+
+1. Approve a Node.js LTS install through Windows.
+2. Sign into Google through `clasp login` using `troyfowlermd@gmail.com`.
+3. Enable the Apps Script API at:
+
+```text
+https://script.google.com/home/usersettings
+```
+
+4. Paste or import the Psych Scheduler feedback admin token.
+
+The token is not stored in Git. It should live only at:
+
+```text
+C:\Users\<you>\Documents\Codex\Projects\non-clinical\.codex-local\psych-scheduler-feedback-admin-token.txt
+```
+
+Simplest token transfer path:
+
+1. On the already-configured computer, copy this file:
+
+```text
+C:\Users\troyf\Documents\Codex\Projects\non-clinical\.codex-local\psych-scheduler-feedback-admin-token.txt
+```
+
+2. On the other computer, paste that token when `setup-psych-scheduler-appscript-access.ps1` prompts for it, or save it to the same `.codex-local` path.
+
+Separate-token path:
+
+On the already-configured computer, run:
+
+```powershell
+cd "$HOME\Documents\Codex\Projects\non-clinical"
+powershell -ExecutionPolicy Bypass -File .\scripts\provision-psych-scheduler-feedback-token.ps1 -Label "other-computer"
+```
+
+Copy the generated output file to the other computer as:
+
+```text
+.codex-local\psych-scheduler-feedback-admin-token.txt
+```
+
+Do not paste the token into GitHub, docs, commits, screenshots, or chat unless you intentionally want to share status-update access.
+
+To rerun only the Apps Script/access setup later:
+
+```powershell
+cd "$HOME\Documents\Codex\Projects\non-clinical"
+powershell -ExecutionPolicy Bypass -File .\scripts\setup-psych-scheduler-appscript-access.ps1
+```
+
+To verify only, without installing or logging in:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\setup-psych-scheduler-appscript-access.ps1 -VerifyOnly
+```
 
 ## Active Repos The Script Manages
 

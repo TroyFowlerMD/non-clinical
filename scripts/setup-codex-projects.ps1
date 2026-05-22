@@ -1,5 +1,6 @@
 param(
   [string]$ProjectsRoot = (Join-Path $HOME 'Documents\Codex\Projects'),
+  [switch]$SkipAppsScriptAccess,
   [switch]$DryRun
 )
 
@@ -144,3 +145,31 @@ Write-Host "3. Add the folders under $ProjectsRoot, not OneDrive."
 Write-Host ""
 Write-Host "Next in Codex Desktop:" -ForegroundColor Cyan
 Write-Host "Open/start chats from the same local repo folders under $ProjectsRoot."
+
+$nonClinicalRoot = Join-Path $ProjectsRoot 'non-clinical'
+$appsScriptSetup = Join-Path $nonClinicalRoot 'scripts\setup-psych-scheduler-appscript-access.ps1'
+
+Write-Host ""
+Write-Host "Psych Scheduler Apps Script access:" -ForegroundColor Cyan
+if ($SkipAppsScriptAccess) {
+  Write-Host "Skipped by -SkipAppsScriptAccess."
+  Write-Host "To run later:"
+  Write-Host "cd `"$nonClinicalRoot`""
+  Write-Host "powershell -ExecutionPolicy Bypass -File .\scripts\setup-psych-scheduler-appscript-access.ps1"
+} elseif ($DryRun) {
+  Write-Host "DRY RUN: would offer to run $appsScriptSetup"
+} elseif (Test-Path -LiteralPath $appsScriptSetup) {
+  $answer = Read-Host "Set up Psych Scheduler Apps Script editing/status-update access now? (Y/n)"
+  if ($answer -notmatch '^(n|no)$') {
+    & powershell -ExecutionPolicy Bypass -File $appsScriptSetup
+    if ($LASTEXITCODE -ne 0) {
+      throw "Psych Scheduler Apps Script access setup failed with exit code $LASTEXITCODE"
+    }
+  } else {
+    Write-Host "Skipped. To run later:"
+    Write-Host "cd `"$nonClinicalRoot`""
+    Write-Host "powershell -ExecutionPolicy Bypass -File .\scripts\setup-psych-scheduler-appscript-access.ps1"
+  }
+} else {
+  Write-Host "Setup helper not found yet. Pull latest non-clinical and rerun this script."
+}

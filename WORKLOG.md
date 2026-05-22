@@ -10,6 +10,7 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 - Completed: Pointed `FEEDBACK_EXEC_URL` at the existing `DRIVE_EXEC_URL`, documented the future Codex IT request workflow, and added `scripts/clasp.cmd` / `scripts/clasp.ps1` wrappers for future Apps Script pushes.
 - Completed: Pushed the Apps Script source and redeployed the existing live web app deployment to version 10 without changing the public URL.
 - Completed: Added a token-protected `updateFeedbackStatus` Apps Script operation for future Codex triage/completion updates, generated the local ignored admin token, and marked the two Codex verification rows as `test`.
+- Completed: Added other-computer setup helpers for Node.js/clasp/login/token verification, request status updates, and separate feedback-admin token provisioning; redeployed the Apps Script bridge to version 13 and generated an `other-computer` transfer token file under `.codex-local`.
 - In progress: The live Google Sheet default-startup preservation task remains open as an ongoing guardrail.
 - Blockers/notes: Live verification returned `Sheet1` with 947 rows, and a post-authorization feedback test returned `logged: true` and `emailed: true` with request ID `PS-20260522-161216-818010fb`.
 

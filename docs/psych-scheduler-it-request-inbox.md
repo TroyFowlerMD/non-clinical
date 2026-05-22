@@ -30,6 +30,12 @@ Use `scripts/clasp.cmd push` and redeploy the existing web app deployment so the
 
 Future Codex sessions on this workstation can update request status by POSTing to `DRIVE_EXEC_URL` with `op: "updateFeedbackStatus"` and the local admin token stored at `.codex-local/psych-scheduler-feedback-admin-token.txt`. This file is intentionally ignored by Git.
 
+New workstation setup should run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\setup-psych-scheduler-appscript-access.ps1
+```
+
 Payload fields:
 
 `op`, `token`, `requestId`, `status`, `codexNotes`, `resolutionNotes`
@@ -39,3 +45,15 @@ Supported statuses:
 `open`, `needs_clarification`, `in_progress`, `done`, `wont_do`, `duplicate`, `test`
 
 Terminal statuses automatically fill `Resolved_At` when it is not provided.
+
+For routine updates from Codex, prefer the helper script:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\update-psych-scheduler-feedback-status.ps1 -RequestId "PS-..." -Status done -CodexNotes "Fixed in commit ..." -ResolutionNotes "Implemented and verified."
+```
+
+To provision a separate token for another workstation from an already-configured workstation:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\provision-psych-scheduler-feedback-token.ps1 -Label "other-computer"
+```

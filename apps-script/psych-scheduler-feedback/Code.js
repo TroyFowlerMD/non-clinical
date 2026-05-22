@@ -7,6 +7,7 @@ var SHEET_NAME_DEFAULT = 'Sheet1';
 var FEEDBACK_SHEET_NAME = 'Feedback';
 var FEEDBACK_RECIPIENT = 'troyfowlermd@gmail.com';
 var FEEDBACK_ADMIN_TOKEN_PROPERTY = 'PS_FEEDBACK_ADMIN_TOKEN';
+var FEEDBACK_ADMIN_TOKENS_PROPERTY = 'PS_FEEDBACK_ADMIN_TOKENS_JSON';
 var FEEDBACK_HEADERS = [
   'Request_ID',
   'Timestamp',
@@ -84,6 +85,14 @@ function doGet(e) {
 function doPost(e) {
   try {
     var data = parsePostData_(e);
+
+    if (data && data.op === 'checkFeedbackAdminToken') {
+      return handleFeedbackTokenCheck_(data);
+    }
+
+    if (data && data.op === 'registerFeedbackAdminToken') {
+      return handleFeedbackTokenRegister_(data);
+    }
 
     if (data && data.op === 'updateFeedbackStatus') {
       return handleFeedbackStatusUpdate_(data);
@@ -253,12 +262,54 @@ function handleFeedbackStatusUpdate_(data) {
   });
 }
 
+function handleFeedbackTokenCheck_(data) {
+  requireFeedbackAdminToken_(data);
+  return jsonResponse_({ ok: true, authorized: true });
+}
+
+function handleFeedbackTokenRegister_(data) {
+  requireFeedbackAdminToken_(data);
+
+  var label = String(data.label || '').trim();
+  var newToken = String(data.newToken || '').trim();
+
+  if (!label) throw new Error('Missing token label');
+  if (newToken.length < 32) throw new Error('New token must be at least 32 characters');
+
+  var tokens = getAdditionalFeedbackAdminTokens_();
+  tokens[label] = newToken;
+  PropertiesService.getScriptProperties().setProperty(FEEDBACK_ADMIN_TOKENS_PROPERTY, JSON.stringify(tokens));
+
+  return jsonResponse_({ ok: true, registered: true, label: label });
+}
+
 function requireFeedbackAdminToken_(data) {
-  var expected = PropertiesService.getScriptProperties().getProperty(FEEDBACK_ADMIN_TOKEN_PROPERTY);
   var actual = String((data && data.token) || '').trim();
 
-  if (!expected) throw new Error('Feedback admin token is not configured');
-  if (!actual || actual !== expected) throw new Error('Invalid feedback admin token');
+  if (!isFeedbackAdminTokenValid_(actual)) throw new Error('Invalid feedback admin token');
+}
+
+function isFeedbackAdminTokenValid_(actual) {
+  if (!actual) return false;
+
+  var props = PropertiesService.getScriptProperties();
+  var primary = props.getProperty(FEEDBACK_ADMIN_TOKEN_PROPERTY);
+  if (primary && actual === primary) return true;
+
+  var tokens = getAdditionalFeedbackAdminTokens_();
+  return Object.keys(tokens).some(function(label) {
+    return tokens[label] && actual === tokens[label];
+  });
+}
+
+function getAdditionalFeedbackAdminTokens_() {
+  var raw = PropertiesService.getScriptProperties().getProperty(FEEDBACK_ADMIN_TOKENS_PROPERTY) || '{}';
+  try {
+    var parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch (err) {
+    return {};
+  }
 }
 
 function isTerminalFeedbackStatus_(status) {

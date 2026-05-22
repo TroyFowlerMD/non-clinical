@@ -15,6 +15,7 @@
 - [ ] Re-test public non-clinical hub links after future dashboard or repo-routing changes.
 
 ## Completed (last 30 days)
+- [x] Added other-computer bootstrap support for Psych Scheduler Apps Script editing, clasp login, feedback admin token verification, and request status updates.
 - [x] Cloned the Psych Scheduler Apps Script bridge into the repo with clasp tooling, redeployed the existing web app to version 10, and verified Feedback tab logging plus email confirmation.
 - [x] Reduced Psych Scheduler's default text size to 17px and kept My Schedule individual-provider columns grouped immediately after the selected-provider assignment column.
 - [x] Repaired Psych Scheduler My Schedule scrolling behavior so the dashboard table header sticks at the top of the app viewport after the real header reaches it, while preserving horizontal table scrolling.
