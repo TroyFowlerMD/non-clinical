@@ -16,6 +16,7 @@
 ## Project Structure
 - psych-scheduler.html - main single-file static app
 - docs/ - Psych Scheduler and non-clinical project documentation
+- scripts/setup-codex-projects.ps1 - Windows helper for setting up Codex/GitHub project folders on another computer
 - Google Apps Script and Google Sheets - external live data/maintenance request dependencies
 
 ## Documentation Map
@@ -29,6 +30,7 @@
 - docs/psych-scheduler-feedback-logging-added.md
 - docs/psych-scheduler-post-call-staffing-bug-fixed.md
 - docs/reverted-post-call-classification-fix.md
+- docs/windows-codex-github-workstation-setup.md
 
 ## Required Startup Routine
 1. Run git status --short --branch in the repo root and confirm the branch sync state with origin.

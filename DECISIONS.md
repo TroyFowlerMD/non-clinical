@@ -93,3 +93,9 @@ Context: Dr. Fowler wants Codex to notice chances to make his coding, GitHub, Gi
 Decision: When Codex sees a practical workflow improvement, it should present the opportunity proactively with the expected benefit, any risk or cost, and the smallest safe next step.
 Rationale: Small workflow improvements compound, especially while Dr. Fowler is learning Git and using Codex across multiple machines.
 Consequences: Future sessions should separate optional workflow suggestions from required task work so recommendations help without derailing the current task.
+
+### 2026-05-22 - Keep Cross-Computer Setup Guide In non-clinical
+Context: Dr. Fowler uses Codex Desktop and GitHub Desktop across multiple Windows computers and wants a repeatable way to mirror local project setup without OneDrive.
+Decision: Keep the workstation setup checklist and helper script in `TroyFowlerMD/non-clinical` under `docs/windows-codex-github-workstation-setup.md` and `scripts/setup-codex-projects.ps1`.
+Rationale: `non-clinical` is a familiar durable repo that is already part of the shared active-project set and can bootstrap the rest of the repos on a new machine.
+Consequences: On a new computer, clone `non-clinical` first, then use its setup guide/script to clone or update the other active repos under `Documents\Codex\Projects`.

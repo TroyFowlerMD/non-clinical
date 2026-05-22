@@ -107,3 +107,10 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 - Completed: Updated repo instructions so future Codex sessions proactively surface opportunities to streamline Dr. Fowler's workflow, including expected benefit, risk/cost, and smallest safe next step.
 - In progress: Existing Psych Scheduler product tasks remain unchanged.
 - Blockers/notes: Instruction-only change; no app runtime code changed.
+
+### 2026-05-22 - Codex desktop - Cross-computer workstation setup guide
+- Completed: Added `docs/windows-codex-github-workstation-setup.md` with step-by-step instructions for mirroring this computer's Codex Desktop and GitHub Desktop setup on another Windows computer.
+- Completed: Added `scripts/setup-codex-projects.ps1`, a conservative helper that configures Git Credential Manager, clones missing active repos into `Documents\Codex\Projects`, pulls clean existing repos, and skips dirty repos instead of overwriting work.
+- Completed: Verified the script with `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\setup-codex-projects.ps1 -DryRun`.
+- In progress: Existing Psych Scheduler product tasks remain unchanged.
+- Blockers/notes: This was a workflow setup/documentation change only; no app runtime code changed.
