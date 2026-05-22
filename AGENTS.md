@@ -93,6 +93,7 @@ Append entries to WORKLOG.md using this shape:
 - Distinguish clearly between local files, local commits, pushed GitHub commits, pull requests, and live deployed website changes.
 - Give step-by-step instructions with exact paths, button names, branch names, and GitHub URLs when the user is operating tools manually.
 - Recommend the simplest safe option first, and name when an action is optional versus required.
+- When a task reveals an opportunity to streamline Dr. Fowler's workflow, present it proactively with the expected benefit, any risk or cost, and the smallest safe next step. Keep workflow suggestions clearly separate from required task work.
 - Avoid implying the live website changed unless changes were actually pushed and deployed.
 
 
