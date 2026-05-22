@@ -96,3 +96,9 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 - Completed: Scoped sticky CSS to `#dash-table.sticky-ready thead th` so the header does not lock early and still preserves normal full-page scrolling behavior until trigger.
 - In progress: Existing mobile-vs-desktop filtering divergence and live Google Sheet default-startup tasks remain open.
 - Blockers/notes: Runtime browser validation could not be executed in this CLI-only session; behavior should be verified in the deployed/static browser context.
+
+### 2026-05-22 - Codex desktop - Beginner-friendly repo communication preference
+- Completed: Expanded `AGENTS.md` Owner Communication guidance so future Codex sessions explain Git, GitHub, GitHub Desktop, Codex workspace behavior, local-vs-remote state, commits, pushes, pulls, branches, and deployments with extra beginner-friendly context.
+- Completed: Documented that explanations should define concepts, distinguish local files from pushed/deployed changes, and use exact paths/button names when Dr. Fowler is operating tools manually.
+- In progress: Existing Psych Scheduler product tasks remain unchanged.
+- Blockers/notes: Instruction-only change; no app runtime code changed.

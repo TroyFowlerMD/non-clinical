@@ -87,7 +87,13 @@ Append entries to WORKLOG.md using this shape:
 
 ## Owner Communication
 
-The repo owner is not a programmer. Explain GitHub, Git, commits, pushes, deployment, file paths, and Codex workspace behavior in plain outcome language. Recommend the simplest safe option first and avoid implying the live website changed unless changes were actually pushed and deployed.
+- The repo owner is new to Git, GitHub, GitHub Desktop, Codex, local-vs-remote repository concepts, commits, branches, remotes, pushes, pulls, and deployment workflows.
+- When explaining repo work, include a little extra context by default: define the concept, explain why it matters, then give the specific instruction or recommendation.
+- Use plain outcome language before technical terms. For example, say "this saves the change in local history" before or alongside "commit."
+- Distinguish clearly between local files, local commits, pushed GitHub commits, pull requests, and live deployed website changes.
+- Give step-by-step instructions with exact paths, button names, branch names, and GitHub URLs when the user is operating tools manually.
+- Recommend the simplest safe option first, and name when an action is optional versus required.
+- Avoid implying the live website changed unless changes were actually pushed and deployed.
 
 
 ## Codex Cloud Publish Preference

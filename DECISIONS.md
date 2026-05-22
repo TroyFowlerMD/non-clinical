@@ -81,3 +81,9 @@ Context: Codex Cloud workspaces can have missing push/remote wiring, which can m
 Decision: Default Codex Cloud publishing to PR-based activation: Codex commits and opens a PR; Dr. Fowler squash-merges on GitHub to activate changes on `main`. Use manual single-file GitHub upload/commit only when PR push is unavailable.
 Rationale: This keeps activation steps consistent, easy to explain, and aligned with GitHub as source of truth while preserving a practical fallback path.
 Consequences: Future shutdown summaries should explicitly state whether activation is pending merge, merged, or manually committed in GitHub.
+
+### 2026-05-22 - Explain Repo Work With Beginner Context
+Context: Dr. Fowler is new to Git, GitHub, GitHub Desktop, Codex, and local-vs-remote repository workflows.
+Decision: Codex should explain repo work with extra beginner-friendly context by default, including definitions, why each step matters, exact local paths/button names when useful, and a clear distinction between local files, local commits, pushed GitHub commits, pull requests, and deployed site changes.
+Rationale: Better context reduces accidental duplicate clones, OneDrive/Git confusion, and uncertainty about whether work is local, synced, or live.
+Consequences: Future repo instructions and shutdown summaries should favor plain outcome language and step-by-step guidance over unexplained Git shorthand.
