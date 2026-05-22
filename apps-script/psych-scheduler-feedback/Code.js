@@ -6,6 +6,7 @@
 var SHEET_NAME_DEFAULT = 'Sheet1';
 var FEEDBACK_SHEET_NAME = 'Feedback';
 var FEEDBACK_RECIPIENT = 'troyfowlermd@gmail.com';
+var FEEDBACK_ADMIN_TOKEN_PROPERTY = 'PS_FEEDBACK_ADMIN_TOKEN';
 var FEEDBACK_HEADERS = [
   'Request_ID',
   'Timestamp',
@@ -83,6 +84,10 @@ function doGet(e) {
 function doPost(e) {
   try {
     var data = parsePostData_(e);
+
+    if (data && data.op === 'updateFeedbackStatus') {
+      return handleFeedbackStatusUpdate_(data);
+    }
 
     if (isFeedbackPayload_(data)) {
       return handleFeedbackPost_(data);
@@ -181,6 +186,88 @@ function handleFeedbackPost_(data) {
     requestId: requestId,
     error: emailError
   });
+}
+
+function handleFeedbackStatusUpdate_(data) {
+  requireFeedbackAdminToken_(data);
+
+  var requestId = String(data.requestId || data.Request_ID || '').trim();
+  var status = String(data.status || '').trim().toLowerCase();
+  var allowedStatuses = {
+    open: true,
+    needs_clarification: true,
+    in_progress: true,
+    done: true,
+    wont_do: true,
+    duplicate: true,
+    test: true
+  };
+
+  if (!requestId) throw new Error('Missing requestId');
+  if (!allowedStatuses[status]) throw new Error('Unsupported status: ' + status);
+
+  var sheet = ensureFeedbackSheet_();
+  var values = sheet.getDataRange().getValues();
+  if (!values || values.length < 2) throw new Error('No feedback rows found');
+
+  var headers = values[0].map(function(value) { return String(value || ''); });
+  var cols = {};
+  headers.forEach(function(header, idx) { cols[header] = idx + 1; });
+
+  var idCol = cols.Request_ID;
+  if (!idCol) throw new Error('Feedback sheet is missing Request_ID column');
+
+  var targetRow = 0;
+  for (var i = 1; i < values.length; i++) {
+    if (String(values[i][idCol - 1] || '').trim() === requestId) {
+      targetRow = i + 1;
+      break;
+    }
+  }
+
+  if (!targetRow) throw new Error('Request not found: ' + requestId);
+
+  var now = new Date().toISOString();
+  var resolvedAt = data.resolvedAt || data.Resolved_At || '';
+  if (!resolvedAt && isTerminalFeedbackStatus_(status)) {
+    resolvedAt = now;
+  }
+
+  setFeedbackCell_(sheet, targetRow, cols.Status, status);
+  if (data.codexNotes !== undefined || data.Codex_Notes !== undefined) {
+    setFeedbackCell_(sheet, targetRow, cols.Codex_Notes, data.codexNotes || data.Codex_Notes || '');
+  }
+  if (data.resolutionNotes !== undefined || data.Resolution_Notes !== undefined) {
+    setFeedbackCell_(sheet, targetRow, cols.Resolution_Notes, data.resolutionNotes || data.Resolution_Notes || '');
+  }
+  if (resolvedAt) {
+    setFeedbackCell_(sheet, targetRow, cols.Resolved_At, resolvedAt);
+  }
+
+  return jsonResponse_({
+    ok: true,
+    updated: true,
+    requestId: requestId,
+    status: status,
+    row: targetRow
+  });
+}
+
+function requireFeedbackAdminToken_(data) {
+  var expected = PropertiesService.getScriptProperties().getProperty(FEEDBACK_ADMIN_TOKEN_PROPERTY);
+  var actual = String((data && data.token) || '').trim();
+
+  if (!expected) throw new Error('Feedback admin token is not configured');
+  if (!actual || actual !== expected) throw new Error('Invalid feedback admin token');
+}
+
+function isTerminalFeedbackStatus_(status) {
+  return status === 'done' || status === 'wont_do' || status === 'duplicate' || status === 'test';
+}
+
+function setFeedbackCell_(sheet, row, col, value) {
+  if (!col) return;
+  sheet.getRange(row, col).setValue(value);
 }
 
 function handleScheduleWritePost_(rows) {

@@ -94,6 +94,7 @@ Append entries to WORKLOG.md using this shape:
 - If changing visible UI, check mobile-friendly behavior.
 - If live Google Sheet or Apps Script access cannot be verified, state that clearly in WORKLOG.md and the shutdown summary.
 - If Dr. Fowler asks to check Psych Scheduler feedback, IT requests, website requests, or active scheduler requests, read `docs/psych-scheduler-it-request-inbox.md` first and use the `Feedback` tab in `Medical Staff Schedule ANALYSIS SHEET` as the request inbox.
+- When a scheduler feedback request is completed or triaged, use the token-protected `updateFeedbackStatus` Apps Script operation documented in `docs/psych-scheduler-it-request-inbox.md`; do not leave completed work active in the sheet.
 - For Psych Scheduler Apps Script work, use `scripts/clasp.cmd` from the repo root so Codex does not depend on Windows PATH finding the global `clasp` shim.
 
 ## Owner Communication

@@ -14,7 +14,7 @@ When Dr. Fowler asks to check scheduler feedback, IT requests, website requests,
 3. Ignore verification rows where `Source` starts with `codex-live-verification` or `Submitter` starts with `Codex test`.
 4. Report active requests first with `Request_ID`, `Timestamp`, `Submitter`, and `Description`.
 5. Suggest likely fixes and identify which requests need clarification before editing.
-6. After approved implementation, update `Status`, `Codex_Notes`, `Resolution_Notes`, and `Resolved_At` when sheet-write access is available.
+6. After approved implementation, update `Status`, `Codex_Notes`, `Resolution_Notes`, and `Resolved_At` using the admin status update operation.
 
 ## Sheet Columns
 
@@ -25,3 +25,17 @@ When Dr. Fowler asks to check scheduler feedback, IT requests, website requests,
 The Apps Script source is cloned into `apps-script/psych-scheduler-feedback/` and linked by the root `.clasp.json`. The same deployed web app serves `Sheet1` schedule reads and handles feedback POSTs.
 
 Use `scripts/clasp.cmd push` and redeploy the existing web app deployment so the public `DRIVE_EXEC_URL` does not change. The current live deployment ID is the one matching the `DRIVE_EXEC_URL` in `psych-scheduler.html`.
+
+## Updating Request Status
+
+Future Codex sessions on this workstation can update request status by POSTing to `DRIVE_EXEC_URL` with `op: "updateFeedbackStatus"` and the local admin token stored at `.codex-local/psych-scheduler-feedback-admin-token.txt`. This file is intentionally ignored by Git.
+
+Payload fields:
+
+`op`, `token`, `requestId`, `status`, `codexNotes`, `resolutionNotes`
+
+Supported statuses:
+
+`open`, `needs_clarification`, `in_progress`, `done`, `wont_do`, `duplicate`, `test`
+
+Terminal statuses automatically fill `Resolved_At` when it is not provided.
