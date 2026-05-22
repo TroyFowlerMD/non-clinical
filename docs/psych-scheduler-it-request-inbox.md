@@ -11,9 +11,10 @@ When Dr. Fowler asks to check scheduler feedback, IT requests, website requests,
 
 1. Open/read the `Feedback` tab from `Medical Staff Schedule ANALYSIS SHEET`.
 2. Treat rows as active when `Status` is blank, `open`, `needs_clarification`, or `in_progress`.
-3. Report active requests first with `Request_ID`, `Timestamp`, `Submitter`, and `Description`.
-4. Suggest likely fixes and identify which requests need clarification before editing.
-5. After approved implementation, update `Status`, `Codex_Notes`, `Resolution_Notes`, and `Resolved_At` when sheet-write access is available.
+3. Ignore verification rows where `Source` starts with `codex-live-verification` or `Submitter` starts with `Codex test`.
+4. Report active requests first with `Request_ID`, `Timestamp`, `Submitter`, and `Description`.
+5. Suggest likely fixes and identify which requests need clarification before editing.
+6. After approved implementation, update `Status`, `Codex_Notes`, `Resolution_Notes`, and `Resolved_At` when sheet-write access is available.
 
 ## Sheet Columns
 
