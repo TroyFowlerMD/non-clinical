@@ -63,6 +63,12 @@ Append entries to WORKLOG.md using this shape:
     - In progress: ...
     - Blockers/notes: ...
 
+## Command Aliases
+- If Dr. Fowler says `start`, `#start`, `start <repo>`, or `#start <repo>` while working in this repo, immediately run the Required Startup Routine. Do not simply acknowledge or repeat the command.
+- If Dr. Fowler says `done`, `#done`, `finish`, `shutdown`, `done <repo>`, or `#done <repo>` while working in this repo, immediately run the Required Shutdown Routine. Do not simply acknowledge or repeat the command.
+- In a general or multi-repo chat, if the command names this repo, switch context to this repo before running the routine. If the target repo is ambiguous, ask one concise clarifying question.
+- Treat `#start` and `#done` as stronger visual command markers, but keep plain `start` and `done` supported.
+
 ## Cross-Machine Rules
 - Never assume prior chat context is available. Reconstruct state from Git, TASKS.md, WORKLOG.md, DECISIONS.md, and docs/.
 - Use git pull --ff-only only when the working tree is clean.
