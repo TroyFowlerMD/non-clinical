@@ -4,6 +4,13 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 
 ---
 
+### 2026-05-22 - Codex desktop - Psych Scheduler data-source badge polish
+- Completed: Updated production `psych-scheduler.html` so the data bar reports the active in-memory source as `Live.Sheet1`, `Pasted data`, or `Excel upload`.
+- Completed: Added a 7-day stale warning for live Google Sheet timestamps while preserving paste, Excel, and Google Sheet fallback loading behavior.
+- Completed: Kept `psych-scheduler-experimental.html` unchanged per production-only scope and left parser internals unchanged.
+- In progress: The live Google Sheet default-startup preservation task remains open as an ongoing guardrail.
+- Blockers/notes: The in-app browser blocked local localhost/file verification, so source-state behavior was verified with a Node harness plus a live Apps Script read; no Apps Script redeploy was required.
+
 ### 2026-05-22 - Codex desktop - Psych Scheduler IT request inbox and clasp setup
 - Completed: Installed Node.js LTS and Google clasp, authenticated clasp as `troyfowlermd@gmail.com`, and cloned the Psych Scheduler Apps Script bridge into `apps-script/psych-scheduler-feedback/`.
 - Completed: Updated the Apps Script bridge so it still serves `Sheet1` schedule reads and also logs feedback POSTs to a separate `Feedback` tab with email confirmation.

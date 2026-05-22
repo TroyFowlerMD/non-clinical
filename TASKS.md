@@ -10,11 +10,11 @@
 - [~] Keep Psych Scheduler default startup tied to the live Google Sheet while preserving paste/Excel fallback behavior.
 
 ## Upcoming
-- [ ] Confirm Psych Scheduler stale-data badge / data-source polish, including `Live.Sheet1` vs pasted-state display.
 - [ ] Consider future `non-clinical` professional section organization if more professional utilities are added.
 - [ ] Re-test public non-clinical hub links after future dashboard or repo-routing changes.
 
 ## Completed (last 30 days)
+- [x] Confirmed and polished Psych Scheduler production data-source display so live Sheet, pasted data, and Excel uploads show distinct source states with a 7-day stale Sheet warning.
 - [x] Added other-computer bootstrap support for Psych Scheduler Apps Script editing, clasp login, feedback admin token verification, and request status updates.
 - [x] Cloned the Psych Scheduler Apps Script bridge into the repo with clasp tooling, redeployed the existing web app to version 10, and verified Feedback tab logging plus email confirmation.
 - [x] Reduced Psych Scheduler's default text size to 17px and kept My Schedule individual-provider columns grouped immediately after the selected-provider assignment column.

@@ -89,8 +89,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh
    (updateThemeBtn, status updates, today-badge) keeps working without modification. */
 .topbar{display:none !important}
 .data-update-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:8px 16px;border-bottom:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--muted);flex-shrink:0}
+.data-update-bar.warn{background:var(--amber-bg);color:var(--amber-text);border-bottom-color:rgba(245,158,11,.35)}
+.data-update-bar.err{background:rgba(239,68,68,.10);color:var(--red);border-bottom-color:rgba(239,68,68,.32)}
 .data-update-text{font-weight:600;color:var(--text)}
+.data-update-bar.warn .data-update-text,.data-update-bar.err .data-update-text{color:inherit}
 .data-update-note{font-size:11px;color:var(--muted);margin-left:6px}
+.data-update-bar.warn .data-update-note,.data-update-bar.err .data-update-note{color:inherit}
 .data-upload-btn{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--primary);font-size:12px;font-weight:600;cursor:pointer;transition:all 140ms}
 .data-upload-btn:hover{background:var(--primary-bg);border-color:var(--primary);color:var(--primary-h)}
 .page-controls-bar{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;padding:8px 16px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
@@ -987,6 +991,9 @@ const DRIVE_EXEC_URL = 'https://script.google.com/macros/s/AKfycbyMi0090cG0OpaW8
 const FEEDBACK_EXEC_URL = DRIVE_EXEC_URL;
 const FEEDBACK_EMAIL = 'troyfowlermd@gmail.com';
 let driveStatus = null;    // { fetchedAt, rowCount, error }
+const DATA_STALE_DAYS = 7;
+const DATA_STALE_MS = DATA_STALE_DAYS * 24 * 60 * 60 * 1000;
+let currentDataSource = { type: 'none', label: 'No data loaded', loadedAt: null };
 const NP_STAFF       = ['Anderson','Smith','Cooley'];
 
 // NC State Government Holidays 2026 (official OSHR schedule)
@@ -1551,7 +1558,7 @@ function initGlobalRange() {
   if (barEl) barEl.classList.remove('hidden');
 }
 
-function parseAndLoad() {
+function parseAndLoad(opts = {}) {
   const text = document.getElementById('paste-area').value.trim();
   const res  = document.getElementById('parse-result');
   if (!text) { showResult(res,'error','Please paste schedule data first.'); return; }
@@ -1567,6 +1574,18 @@ function parseAndLoad() {
     const now = new Date();
     if (DATA.some(r => r.date >= TODAY)) { calYear = now.getFullYear(); calMonth = now.getMonth(); }
     onDataLoaded();
+    if (opts.source !== 'drive') {
+      const isExcel = opts.source === 'excel';
+      const noteParts = [];
+      if (isExcel && opts.sheetName) noteParts.push('First sheet: "' + opts.sheetName + '"');
+      setCurrentDataSource({
+        type: isExcel ? 'excel' : 'pasted',
+        label: isExcel ? 'Excel upload' : 'Pasted data',
+        loadedAt: opts.loadedAt || new Date().toISOString(),
+        rowCount: parsed.length,
+        note: noteParts.join(' · ')
+      });
+    }
     const tempNote = TEMP_STAFF.length ? ` + ${TEMP_STAFF.length} temp staff auto-detected` : '';
     showResult(res,'ok',`✓ Parsed ${parsed.length} dates · ${CORE_PROVIDERS.length} core providers${tempNote}. Schedule ready.`);
   } catch(e) {
@@ -1617,6 +1636,7 @@ function clearData() {
   globalRange = { start:null, end:null, autoStart:null, autoEnd:null };
   const gbar = document.getElementById('global-filter-bar');
   if(gbar) gbar.classList.add('hidden');
+  setCurrentDataSource({ type:'none', label:'No data loaded', loadedAt:null });
   showView('paste');
 }
 
@@ -2197,7 +2217,7 @@ function handleExcelFile(file) {
       // to global DATA, calls onDataLoaded(), and reports success via
       // showResult(). After it runs, augment the message to indicate the
       // Excel source.
-      parseAndLoad();
+      parseAndLoad({ source: 'excel', sheetName });
       if (typeof DATA !== 'undefined' && DATA && DATA.length > 0) {
         __excelReport(true,
           '✓ Loaded from Excel · First sheet: "' + sheetName + '" · ' +
@@ -2232,11 +2252,22 @@ async function pushToDrive(rows) {
       statusEl.textContent = 'Synced to Drive ✓ (' + json.rowCount + ' rows)';
       statusEl.className = 'drive-status ok';
     }
-    await fetchDriveMeta();
+    if (currentDataSource && currentDataSource.type === 'excel') {
+      setCurrentDataSource(Object.assign({}, currentDataSource, {
+        syncedToDrive: true,
+        note: (currentDataSource.note ? currentDataSource.note + ' · ' : '') + 'Synced to Google Sheet'
+      }));
+    }
+    await fetchDriveMeta({ updateBar: false });
   } catch(err) {
     if (statusEl) {
       statusEl.textContent = 'Drive sync failed: ' + err.message;
       statusEl.className = 'drive-status err';
+    }
+    if (currentDataSource && currentDataSource.type === 'excel') {
+      setCurrentDataSource(Object.assign({}, currentDataSource, {
+        note: (currentDataSource.note ? currentDataSource.note + ' · ' : '') + 'Google Sheet sync failed: ' + err.message
+      }));
     }
   }
 }
@@ -2388,19 +2419,26 @@ async function loadFromDrive(opts = {}) {
     const json     = await res.json();
     if (json.error) throw new Error(json.error);
 
-    driveStatus = { fetchedAt: json.fetchedAt, rowCount: json.rowCount, error: null };
+    const sheetName = json.sheetName || 'Sheet1';
+    const liveLabel = 'Live.' + sheetName;
+    driveStatus = { fetchedAt: json.fetchedAt, rowCount: json.rowCount, error: null, sheetName };
 
     // Convert JSON → TSV and feed through the existing paste pipeline
     const tsv = jsonToTSV(json);
     document.getElementById('paste-area').value = tsv;
-    parseAndLoad();
+    parseAndLoad({ source: 'drive' });
 
     if (status) {
       status.textContent = '\u2713 Loaded ' + json.rowCount + ' rows · ' +
         (json.fetchedAt ? new Date(json.fetchedAt).toLocaleString() : 'timestamp unavailable');
       status.className   = 'drive-status ok';
     }
-    updateDataUpdatedBar('ok', json.fetchedAt, json.fetchedAt ? '' : '(Google Sheet loaded; timestamp unavailable)');
+    updateDataUpdatedBar('ok', json.fetchedAt, json.fetchedAt ? '' : '(Google Sheet loaded; timestamp unavailable)', {
+      timestampKey: 'fetchedAt',
+      rowCount: json.rowCount,
+      sheetName,
+      label: liveLabel
+    });
     await fetchDriveMeta();
   } catch(err) {
     if (initialLoad) showView('paste');
@@ -3128,26 +3166,98 @@ function formatDataTimestamp(value) {
   });
 }
 
-function updateDataUpdatedBar(state, value, note) {
+function getValidDate(value) {
+  if (!value) return null;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function getCurrentDataTimestamp(source) {
+  if (!source) return null;
+  return getValidDate(source.lastModified) || getValidDate(source.fetchedAt) || getValidDate(source.loadedAt);
+}
+
+function setCurrentDataSource(next) {
+  currentDataSource = Object.assign({ type:'none', label:'No data loaded', loadedAt:null }, next || {});
+  renderCurrentDataSourceBar();
+}
+
+function renderCurrentDataSourceBar() {
+  const barEl  = document.getElementById('data-update-bar');
   const textEl = document.getElementById('data-updated-text');
   const noteEl = document.getElementById('data-updated-note');
   if (!textEl) return;
+  if (barEl) barEl.classList.remove('warn','err');
+
+  const source = currentDataSource || { type:'none', label:'No data loaded' };
+  if (source.type === 'none') {
+    textEl.textContent = 'Source: no schedule loaded';
+    if (noteEl) noteEl.textContent = 'Load Live.Sheet1, paste data, or upload Excel to begin.';
+    return;
+  }
+  if (source.type === 'loading') {
+    textEl.textContent = 'Source: ' + (source.label || 'Live.Sheet1') + ' · loading...';
+    if (noteEl) noteEl.textContent = source.note || '';
+    return;
+  }
+  if (source.type === 'error') {
+    if (barEl) barEl.classList.add('err');
+    textEl.textContent = 'Source: Google Sheet unavailable';
+    if (noteEl) noteEl.textContent = source.error ? '(' + source.error + ')' : '(automatic Google Sheet load failed)';
+    return;
+  }
+
+  const timestamp = getCurrentDataTimestamp(source);
+  const formatted = timestamp ? formatDataTimestamp(timestamp) : '';
+  const label = source.label || 'Unknown source';
+  const timestampWord = source.lastModified ? 'updated' : 'loaded';
+  textEl.textContent = 'Source: ' + label + (formatted ? ' · ' + timestampWord + ' ' + formatted : ' · timestamp unavailable');
+
+  const noteParts = [];
+  if (source.rowCount) noteParts.push(source.rowCount + (source.type === 'live' ? ' rows' : ' dates'));
+  if (source.note) noteParts.push(source.note.replace(/^\(|\)$/g, ''));
+  if (source.type === 'live' && timestamp) {
+    const ageMs = Date.now() - timestamp.getTime();
+    if (ageMs > DATA_STALE_MS) {
+      if (barEl) barEl.classList.add('warn');
+      noteParts.push('warning: Sheet timestamp is ' + formatTimeAgo(timestamp) + '; stale threshold is ' + DATA_STALE_DAYS + ' days');
+    }
+  }
+  if (noteEl) noteEl.textContent = noteParts.length ? '(' + noteParts.join(' · ') + ')' : '';
+}
+
+function updateDataUpdatedBar(state, value, note, options = {}) {
   if (state === 'loading') {
-    textEl.textContent = 'Data last updated loading…';
-    if (noteEl) noteEl.textContent = note || '';
+    setCurrentDataSource({
+      type:'loading',
+      label: options.label || 'Live.Sheet1',
+      note: note || ''
+    });
     return;
   }
   if (state === 'error') {
-    textEl.textContent = 'Data last updated —';
-    if (noteEl) noteEl.textContent = note ? `(${note})` : '(automatic Google Sheet load failed)';
+    setCurrentDataSource({
+      type:'error',
+      label: options.label || 'Google Sheet',
+      error: note || 'automatic Google Sheet load failed'
+    });
     return;
   }
-  const formatted = formatDataTimestamp(value);
-  textEl.textContent = formatted ? `Data last updated ${formatted}` : 'Data last updated —';
-  if (noteEl) noteEl.textContent = note || '';
+  const previousLive = currentDataSource && currentDataSource.type === 'live' ? currentDataSource : {};
+  const timestampKey = options.timestampKey || 'lastModified';
+  const rowCount = Object.prototype.hasOwnProperty.call(options, 'rowCount') ? options.rowCount : previousLive.rowCount;
+  const next = Object.assign({}, previousLive, {
+    type:'live',
+    label: options.label || previousLive.label || 'Live.Sheet1',
+    sheetName: options.sheetName || previousLive.sheetName || 'Sheet1',
+    rowCount,
+    note: note || ''
+  });
+  if (value) next[timestampKey] = value;
+  setCurrentDataSource(next);
 }
 
-async function fetchDriveMeta() {
+async function fetchDriveMeta(opts = {}) {
   if (!DRIVE_EXEC_URL) return;
   try {
     const res  = await fetch(DRIVE_EXEC_URL + '?meta=1');
@@ -3158,13 +3268,13 @@ async function fetchDriveMeta() {
       if (label) label.textContent = 'Sheet last updated: ' + formatTimeAgo(d) +
         ' (' + d.toLocaleDateString(undefined, {month:'short',day:'numeric',year:'numeric'}) +
         ' at ' + d.toLocaleTimeString(undefined, {hour:'numeric',minute:'2-digit'}) + ')';
-      updateDataUpdatedBar('ok', json.lastModified, '');
+      if (opts.updateBar !== false) updateDataUpdatedBar('ok', json.lastModified, '', { timestampKey:'lastModified' });
     } else if (!driveStatus || !driveStatus.fetchedAt) {
-      updateDataUpdatedBar('ok', null, '(timestamp unavailable)');
+      if (opts.updateBar !== false) updateDataUpdatedBar('ok', null, '(timestamp unavailable)');
     }
   } catch(err) {
     if (!driveStatus || !driveStatus.fetchedAt) {
-      updateDataUpdatedBar('error', null, 'could not read Google Sheet timestamp');
+      if (opts.updateBar !== false) updateDataUpdatedBar('error', null, 'could not read Google Sheet timestamp');
     }
   }
 }

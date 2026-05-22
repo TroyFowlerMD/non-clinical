@@ -4,6 +4,12 @@ This file records durable architectural, workflow, safety, and publishing decisi
 
 ---
 
+### 2026-05-22 - Distinguish Psych Scheduler Data Sources In The Production Badge
+Context: The production scheduler can load from the live Google Sheet, pasted TSV, or Excel upload, but the existing top data bar could continue showing Google Sheet freshness after manual data replacement.
+Decision: Track the active in-memory data source separately from Drive sync status and show `Live.Sheet1`, `Pasted data`, or `Excel upload` in the production data bar. Treat live Sheet metadata older than 7 days as stale. Leave `psych-scheduler-experimental.html` unchanged until experimental parity is explicitly requested.
+Rationale: Users need to know what data they are actually viewing, especially when paste or Excel fallback data replaces the live Sheet data in memory.
+Consequences: Future production source-display changes should update the shared in-memory source state rather than deriving the label only from `driveStatus`. Excel upload may sync back to Drive, but the current page source should still identify the upload unless the page reloads from `Live.Sheet1`.
+
 ### 2026-05-22 - Track Psych Scheduler IT Requests In The Schedule Sheet
 Context: Dr. Fowler wants future Codex sessions to check active scheduler feedback/IT requests, report them, suggest fixes, and ask clarifying questions when needed.
 Decision: Use the existing `Medical Staff Schedule ANALYSIS SHEET` as the request inbox by adding a separate `Feedback` tab, while leaving schedule reads on `Sheet1`. Keep the Apps Script source in this repo under `apps-script/psych-scheduler-feedback/` and use clasp for future edits/deploys.
