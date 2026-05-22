@@ -11,6 +11,7 @@ Non-clinical TroyMD tools and personal/professional utility pages. The primary a
 - `docs/psych-scheduler.md`: Canonical migrated Psych Scheduler project page.
 - `docs/psych-scheduler-feedback-logging-added.md`: Feedback modal and maintenance logging deployment note.
 - `docs/psych-scheduler-feedback-apps-script-contract.md`: Required feedback Apps Script email/log response contract.
+- `docs/psych-scheduler-it-request-inbox.md`: Google Sheet request inbox workflow for future Codex scheduler fixes.
 - `docs/psych-scheduler-column-toggles-backup-call-buttons-auto-deselect.md`: Provider-column and Backup Call column-toggle change log.
 - `docs/excel-drag-and-drop-ingestion-added-to-psych-scheduler.md`: Initial Excel ingestion implementation note.
 - `docs/excel-ingestion-filelist-file-hotfix.md`: First Excel ingestion hotfix note.

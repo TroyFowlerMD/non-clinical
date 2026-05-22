@@ -4,6 +4,14 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 
 ---
 
+### 2026-05-22 - Codex desktop - Psych Scheduler IT request inbox and clasp setup
+- Completed: Installed Node.js LTS and Google clasp, authenticated clasp as `troyfowlermd@gmail.com`, and cloned the Psych Scheduler Apps Script bridge into `apps-script/psych-scheduler-feedback/`.
+- Completed: Updated the Apps Script bridge so it still serves `Sheet1` schedule reads and also logs feedback POSTs to a separate `Feedback` tab with email confirmation.
+- Completed: Pointed `FEEDBACK_EXEC_URL` at the existing `DRIVE_EXEC_URL`, documented the future Codex IT request workflow, and added `scripts/clasp.cmd` / `scripts/clasp.ps1` wrappers for future Apps Script pushes.
+- Completed: Pushed the Apps Script source and redeployed the existing live web app deployment to version 10 without changing the public URL.
+- In progress: The live Google Sheet default-startup preservation task remains open as an ongoing guardrail.
+- Blockers/notes: Live verification returned `Sheet1` with 947 rows, and a post-authorization feedback test returned `logged: true` and `emailed: true` with request ID `PS-20260522-161216-818010fb`.
+
 ### 2026-05-21 - Codex desktop - Psych Scheduler text size and provider-column order
 - Completed: Changed the Psych Scheduler default text-size control from 20px to 17px.
 - Completed: Updated My Schedule column ordering so the selected-provider assignment column returns immediately after Day / Date, and individual provider schedule columns stay grouped beside it instead of moving after Working Providers.

@@ -4,6 +4,12 @@ This file records durable architectural, workflow, safety, and publishing decisi
 
 ---
 
+### 2026-05-22 - Track Psych Scheduler IT Requests In The Schedule Sheet
+Context: Dr. Fowler wants future Codex sessions to check active scheduler feedback/IT requests, report them, suggest fixes, and ask clarifying questions when needed.
+Decision: Use the existing `Medical Staff Schedule ANALYSIS SHEET` as the request inbox by adding a separate `Feedback` tab, while leaving schedule reads on `Sheet1`. Keep the Apps Script source in this repo under `apps-script/psych-scheduler-feedback/` and use clasp for future edits/deploys.
+Rationale: This keeps the request workflow tied to the scheduler's existing Google infrastructure without adding a separate backend or changing the schedule-loading path.
+Consequences: Future scheduler request triage should read `docs/psych-scheduler-it-request-inbox.md` and the `Feedback` tab first. Apps Script deployments should update the existing web app deployment so `DRIVE_EXEC_URL` remains stable.
+
 ### 2026-05-21 - Keep My Schedule Provider Assignments In A Left-Side Block
 Context: My Schedule users can remove and re-add the selected-provider assignment column and individual provider schedule columns. Re-added columns could move to the far right, away from the day/date and selected-provider context.
 Decision: Normalize My Schedule column order after toggle, all-provider toggle, drag/drop, reset, PTO-only restore, and provider-profile changes so Day / Date stays first, the selected-provider assignment column stays second when enabled, and individual provider schedule columns stay immediately after it.

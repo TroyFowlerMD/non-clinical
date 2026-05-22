@@ -3,6 +3,8 @@
 
 # Psych Scheduler Feedback Apps Script Contract
 
+Current implementation note: the live feedback handler now lives in the clasp-managed shared Apps Script bridge at `apps-script/psych-scheduler-feedback/Code.js`. It logs requests to the `Feedback` tab in `Medical Staff Schedule ANALYSIS SHEET` and still serves `Sheet1` schedule reads. Use this document as the response-contract reference, not as the full source of truth for the deployed script.
+
 Psych Scheduler feedback should use the feedback Apps Script as the owned primary path. The browser sends one JSON payload as `text/plain` to avoid a CORS preflight from GitHub Pages. The script should log the request, send the owner email, and return JSON confirming email delivery.
 
 Expected browser payload fields:

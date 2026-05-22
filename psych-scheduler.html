@@ -984,7 +984,7 @@ const BACKUP_POOL    = ['Fowler','Carter','Ondreyka'];
 // ── Google Drive / Apps Script integration ────────────────────────────────
 // After deploying Code.gs as a Web App, paste the /exec URL here:
 const DRIVE_EXEC_URL = 'https://script.google.com/macros/s/AKfycbyMi0090cG0OpaW8vijCrijox-R1Y_d-4uGBbeg2Jq8KAYmICqctoF3ctZlqheHyEWC/exec'; // e.g. 'https://script.google.com/macros/s/AKfy.../exec'
-const FEEDBACK_EXEC_URL = 'https://script.google.com/macros/s/AKfycbxtM_sCWARu_IWy7MZe9ZD7grBX5WrlSr42ECmxa60Fpg7ZHm2eIUgDnO2Yp1xBCVYf/exec';
+const FEEDBACK_EXEC_URL = DRIVE_EXEC_URL;
 const FEEDBACK_EMAIL = 'troyfowlermd@gmail.com';
 let driveStatus = null;    // { fetchedAt, rowCount, error }
 const NP_STAFF       = ['Anderson','Smith','Cooley'];
@@ -3255,7 +3255,11 @@ function sendFeedbackScriptConfirmed(payload) {
       try { json = JSON.parse(text); }
       catch(err) { throw new Error('feedback Apps Script returned non-JSON response'); }
     }
-    if(json.ok === false) throw new Error(json.error || 'feedback Apps Script reported failure');
+    if(json.ok === false) {
+      const err = new Error(json.error || 'feedback Apps Script reported failure');
+      err.logged = json.logged === true;
+      throw err;
+    }
     if(json.emailed !== true) {
       const err = new Error('feedback Apps Script did not confirm email delivery');
       err.logged = json.logged === true || json.status === 'ok' || json.ok === true;

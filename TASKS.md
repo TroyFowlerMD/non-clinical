@@ -7,16 +7,15 @@
 - [!] Blocked - include reason in parentheses
 
 ## Active Tasks
-- [!] Redeploy Psych Scheduler feedback Apps Script to send email and return `emailed: true` (external Apps Script source is not in this repo; current endpoint returns `{"status":"ok"}` only, and FormSubmit test returned HTTP 522).
 - [~] Keep Psych Scheduler default startup tied to the live Google Sheet while preserving paste/Excel fallback behavior.
 
 ## Upcoming
 - [ ] Confirm Psych Scheduler stale-data badge / data-source polish, including `Live.Sheet1` vs pasted-state display.
-- [ ] Document Apps Script redeployment cadence for Psych Scheduler when Sheet structure or deployment URL changes.
 - [ ] Consider future `non-clinical` professional section organization if more professional utilities are added.
 - [ ] Re-test public non-clinical hub links after future dashboard or repo-routing changes.
 
 ## Completed (last 30 days)
+- [x] Cloned the Psych Scheduler Apps Script bridge into the repo with clasp tooling, redeployed the existing web app to version 10, and verified Feedback tab logging plus email confirmation.
 - [x] Reduced Psych Scheduler's default text size to 17px and kept My Schedule individual-provider columns grouped immediately after the selected-provider assignment column.
 - [x] Repaired Psych Scheduler My Schedule scrolling behavior so the dashboard table header sticks at the top of the app viewport after the real header reaches it, while preserving horizontal table scrolling.
 - [x] Investigated Psych Scheduler mobile vs. desktop provider-list divergence; current live desktop and 375px mobile rendering both exclude known medical-staff columns, so the stale open bug is no longer reproducible.

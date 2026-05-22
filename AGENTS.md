@@ -28,6 +28,7 @@
 - docs/psych-scheduler-column-toggles-backup-call-buttons-auto-deselect.md
 - docs/psych-scheduler-feedback-apps-script-contract.md
 - docs/psych-scheduler-feedback-logging-added.md
+- docs/psych-scheduler-it-request-inbox.md
 - docs/psych-scheduler-post-call-staffing-bug-fixed.md
 - docs/reverted-post-call-classification-fix.md
 - docs/windows-codex-github-workstation-setup.md
@@ -92,6 +93,8 @@ Append entries to WORKLOG.md using this shape:
 - For Psych Scheduler code changes, inspect psych-scheduler.html first and verify the specific affected workflow.
 - If changing visible UI, check mobile-friendly behavior.
 - If live Google Sheet or Apps Script access cannot be verified, state that clearly in WORKLOG.md and the shutdown summary.
+- If Dr. Fowler asks to check Psych Scheduler feedback, IT requests, website requests, or active scheduler requests, read `docs/psych-scheduler-it-request-inbox.md` first and use the `Feedback` tab in `Medical Staff Schedule ANALYSIS SHEET` as the request inbox.
+- For Psych Scheduler Apps Script work, use `scripts/clasp.cmd` from the repo root so Codex does not depend on Windows PATH finding the global `clasp` shim.
 
 ## Owner Communication
 

@@ -1,0 +1,16 @@
+{
+  "scriptId": "1BJtpuGXULxsNTQgOJ9cXxTmxuK0jmTrP7ZQlovB0vu_y_qv8y6hgZb_B",
+  "rootDir": "apps-script\\psych-scheduler-feedback",
+  "scriptExtensions": [
+    ".js",
+    ".gs"
+  ],
+  "htmlExtensions": [
+    ".html"
+  ],
+  "jsonExtensions": [
+    ".json"
+  ],
+  "filePushOrder": [],
+  "skipSubdirectories": false
+}

@@ -7,7 +7,7 @@
 Personal non-clinical scheduling tool for the psych team at JFK ADATC. Pulls the medical staff schedule from a Google Sheet via Apps Script or falls back to Excel TSV paste. Presents psych-only views: daily staffing, backup call risk, PTO evaluator, provider profile switcher (Patil, German, Anderson, Fowler, Carter, Ondreyka, Smith, Cooley), calendar, and date-range filter. Contained in the `TroyFowlerMD/non-clinical` repo alongside other non-clinical personal tools. This repo/hub is linked from the TroyMD personal dashboard.
 
 ## Current Status
-Current deployed production file is `psych-scheduler.html` on `main`. Core v3.1 scheduling features remain intact: live Google Sheets pull, TSV/Excel paste fallback, provider profile switcher, date-range filter, PTO/backup call risk views, mobile nav (hamburger/overlay), XLSX ingestion, theme toggle, and font-size controls. Maintenance layer: sidebar `Send Feedback` modal uses the feedback Apps Script as the primary owned email/log path, with FormSubmit as a confirmed email fallback.
+Current deployed production file is `psych-scheduler.html` on `main`. Core v3.1 scheduling features remain intact: live Google Sheets pull, TSV/Excel paste fallback, provider profile switcher, date-range filter, PTO/backup call risk views, mobile nav (hamburger/overlay), XLSX ingestion, theme toggle, and font-size controls. Maintenance layer: sidebar `Send Feedback` modal uses the scheduler Apps Script bridge as the primary owned email/log path, with FormSubmit as a confirmed email fallback.
 
 Experimental command-center clone: `psych-scheduler-experimental.html` is a separate single-file clone that keeps the same live Google Sheet default and fallback ingestion while adding mode-specific table defaults, staffing-risk analytics cards, and a canvas-based risk timeline. This file is intentionally separate from production until Dr. Fowler explicitly chooses to promote any experimental behavior.
 
@@ -38,8 +38,8 @@ These surrounding repo/hub updates are still local only and have not been commit
 ## Architecture Map
 **Layer structure:**
 - **UI:** Single self-contained HTML file. No server, no build tools, no framework, no localStorage (sandboxed-iframe constraint). All state in memory. External dependency: Google Fonts (Inter + JetBrains Mono).
-- **Apps Script bridge:** Deployed Google Apps Script Web App at URL hardcoded as `DRIVE_EXEC_URL` in the HTML. Returns JSON `{headers, rows, sheetName, fetchedAt, rowCount}`. Deployment access set to "Anyone" to resolve CORS on `fetch()`.
-- **Google Sheets backend:** Source spreadsheet `Medical Staff Schedule ANALYSIS SHEET`, tab `Sheet1`, columns A-AD. Stable Sheet ID enables auto-update on re-upload.
+- **Apps Script bridge:** Deployed Google Apps Script Web App at URL hardcoded as `DRIVE_EXEC_URL` in the HTML. Returns JSON `{headers, rows, sheetName, fetchedAt, rowCount}` for `Sheet1` and handles feedback POST logging to the `Feedback` tab. Deployment access set to "Anyone" to resolve CORS on `fetch()`.
+- **Google Sheets backend:** Source spreadsheet `Medical Staff Schedule ANALYSIS SHEET`, tab `Sheet1`, columns A-AD. Feedback/IT requests live in a separate `Feedback` tab. Stable Sheet ID enables auto-update on re-upload.
 - **Fallback ingestion:** Excel TSV paste via `parseTSVRobust()` (quoted-field, multiline Excel cells).
 
 **Parser:**
@@ -57,7 +57,7 @@ These surrounding repo/hub updates are still local only and have not been commit
 - No localStorage; all state in memory - sandboxed-iframe constraint. Do not introduce localStorage without replacing the access model.
 - Apps Script CORS resolved by deployment access set to "Anyone" - do not change without simultaneously replacing the access model.
 - `DRIVE_EXEC_URL` is hardcoded in the HTML; update it whenever Apps Script is redeployed to a new URL.
-- `FEEDBACK_EXEC_URL` is hardcoded in the HTML; its Apps Script should return JSON with `emailed: true` after the owner email is sent. See `docs/psych-scheduler-feedback-apps-script-contract.md`.
+- `FEEDBACK_EXEC_URL` points to `DRIVE_EXEC_URL`; the same Apps Script bridge should return JSON with `emailed: true` after the owner email is sent. See `docs/psych-scheduler-it-request-inbox.md`.
 - Preserve `parseTSVRobust()` and `parseAndLoad()` verbatim during surgical patches - these were fragile historically.
 
 ## Open Questions / Decisions Pending
