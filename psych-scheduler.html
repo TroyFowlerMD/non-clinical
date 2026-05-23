@@ -202,6 +202,8 @@ td,th{white-space:nowrap}
 #dash-table .call-cell .badge:last-child,#dash-table .trainees-cell .badge:last-child{margin-bottom:0}
 #dash-table .trainees-cell{width:108px;max-width:108px;white-space:normal;font-size:11px;line-height:1.15}
 #dash-table .working-providers-cell{white-space:normal;overflow-wrap:anywhere;line-height:1.22}
+#dash-table .ft-phone-cell{white-space:normal;line-height:1.25}
+#dash-table .ft-phone-provider.current{display:inline-block;font-weight:800;color:var(--primary);background:var(--primary-bg);border:1px solid color-mix(in srgb,var(--primary) 34%,var(--border));border-radius:3px;padding:1px 4px}
 .dashboard-sticky-header{position:fixed;display:none;overflow:hidden;z-index:30;background:var(--surface);border:1px solid var(--border);border-bottom-color:var(--divider);box-shadow:var(--shadow)}
 .dashboard-sticky-header.visible{display:block}
 .dashboard-sticky-header-inner{will-change:transform}
@@ -589,6 +591,11 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
   #dash-table col.col-hol{width:86px}
   #dash-table th,#dash-table td{width:88px;max-width:88px;padding:4px 6px}
   #dash-table .sched-col-date,#dash-table .col-date{width:76px;max-width:76px;padding-left:6px;padding-right:4px}
+  #dash-table th.sched-col-date,#dash-table td.col-date{position:sticky;left:0;z-index:3;box-shadow:1px 0 0 var(--border),4px 0 10px rgba(15,23,42,.12)}
+  #dash-table th.sched-col-date{z-index:5;background:var(--surface2)}
+  #dash-table td.col-date{background:var(--surface)}
+  #dash-table tr.wknd-row td.col-date{background:var(--wknd-bg)}
+  #dash-table tr.holiday-row td.col-date{background:var(--amber-bg)!important}
   #dash-table .sched-col-asgn,#dash-table .assignment-cell{width:86px;max-width:86px}
   #dash-table .sched-col-call,#dash-table .call-cell{width:74px;max-width:74px}
   #dash-table .trainees-cell{width:94px;max-width:94px}
@@ -1105,6 +1112,9 @@ function extractPsychBackup(raw) {
 }
 
 function fowlerInFT(raw) { return textMentionsProvider(raw||'','Fowler'); }
+function providersInText(raw, names=CORE_PROVIDERS) {
+  return names.filter(name => textMentionsProvider(raw || '', name));
+}
 
 // Extract trainees from a Residents/Fellowships cell.
 // Format: tokens are name-R (resident) or name-F (fellow), split by /, comma, or
@@ -1347,7 +1357,8 @@ function parseRawData(text) {
     const traineeRaw = (C.residents !== undefined ? (r[C.residents]||'') : '').trim();
 
     const bkp       = extractPsychBackup(backupRaw);
-    const ftFowler  = fowlerInFT(ftRaw);
+    const ftProviders = providersInText(ftRaw);
+    const ftFowler  = ftProviders.includes('Fowler');
     const trainees  = extractTrainees(traineeRaw);
 
     // Core provider assignments — skip names routed to TEMP_PSYCH_FORCED so
@@ -1390,7 +1401,7 @@ function parseRawData(text) {
     data.push({
       date:dateStr, day, overnight, backupRaw, clarRaw, ftRaw, traineeRaw, trainees,
       bkpPerson:bkp.person, fowlerBackup:bkp.fowler, carterBackup:bkp.carter, ondreykaBackup:bkp.ondreyka,
-      fowlerFT:ftFowler,
+      fowlerFT:ftFowler, ftPhoneProviders:ftProviders,
       fowlerAsgn, fowlerClass:fowlerCls, fowlerWorking, fowlerPC,
       carterPC:false, ondreykaPC:false,
       providerAsgns, tempAsgns, workingCore, workingTemp, allWorking, count, coreCount,
@@ -1887,6 +1898,17 @@ function renderTextAllButton(names) {
   if(phones.length < 2) return '';
   return `<a href="sms:${phones.join(',')}" class="sms-all-btn" title="Text all working providers" aria-label="Text all working providers">💬</a>`;
 }
+function renderFTPhoneCell(r) {
+  const names = (r.ftPhoneProviders && r.ftPhoneProviders.length)
+    ? r.ftPhoneProviders
+    : (r.fowlerFT ? ['Fowler'] : []);
+  if(!names.length) return '<td class="ft-phone-cell"><span style="color:var(--faint)">—</span></td>';
+  const items = names.map(name => {
+    const current = name === selectedProvider;
+    return `<span class="ft-phone-provider${current ? ' current' : ''}">${escapeHtml(name)}</span>`;
+  }).join(', ');
+  return `<td class="ft-phone-cell">${items}</td>`;
+}
 function schedCell(id, r) {
   const dayChip = dayChipHtml(r.day, r.isWeekend);
   switch(id) {
@@ -1911,7 +1933,7 @@ function schedCell(id, r) {
   return `<td class="working-providers-cell">${all.join(', ')||'—'}${textAll}</td>`;
 }
     case 'streak':      return `<td>${r.streak>=3?`<span class="badge br">Day ${r.streak}</span>`:r.atMin&&!r.isWeekend?'<span class="badge ba">At min</span>':'<span style="color:var(--faint)">—</span>'}</td>`;
-    case 'ftPhone':     return `<td>${r.fowlerFT?'<span class="badge bb">Yes</span>':'<span style="color:var(--faint)">—</span>'}</td>`;
+    case 'ftPhone':     return renderFTPhoneCell(r);
     case 'anderson':    return renderAsgnCellFor(r, 'Anderson');
     case 'fowler':      return renderAsgnCellFor(r, 'Fowler');
     case 'carter':      return renderAsgnCellFor(r, 'Carter');
@@ -3109,12 +3131,22 @@ function installDashboardStickyWatcher() {
 
 let baseFontPx = 17;
 const FONT_MIN = 11, FONT_MAX = 32;
-function changeFontSize(delta) {
-  baseFontPx = Math.max(FONT_MIN, Math.min(FONT_MAX, baseFontPx + delta));
+function isMobileViewport() {
+  return window.matchMedia && window.matchMedia('(max-width:768px)').matches;
+}
+function defaultFontPxForViewport() {
+  return isMobileViewport() ? 16 : 17;
+}
+function applyFontSize() {
   const contentEl = document.querySelector('.content');
   if(contentEl) contentEl.style.zoom = (baseFontPx / 16).toFixed(3);
   const badge = document.getElementById('font-size-badge');
   if(badge) badge.textContent = baseFontPx + 'px';
+  scheduleDashboardStickySync();
+}
+function changeFontSize(delta) {
+  baseFontPx = Math.max(FONT_MIN, Math.min(FONT_MAX, baseFontPx + delta));
+  applyFontSize();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -3313,8 +3345,8 @@ document.addEventListener('DOMContentLoaded',()=>{
       else if(id==='backup') renderBackup();
     }
   });
-  const cEl = document.querySelector('.content');
-  if(cEl) cEl.style.zoom = (baseFontPx / 16).toFixed(3);
+  baseFontPx = defaultFontPxForViewport();
+  applyFontSize();
   updateThemeBtn(document.documentElement.getAttribute('data-theme')||'dark');
   showInitialLoading();
   loadFromDrive({ initialLoad: true });

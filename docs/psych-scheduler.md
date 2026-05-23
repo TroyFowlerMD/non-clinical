@@ -15,6 +15,9 @@ Experimental command-center clone: `psych-scheduler-experimental.html` is a sepa
 
 **Mobile/desktop provider-list divergence investigated 2026-05-21:** current live desktop rendering and 375px mobile rendering both use the same working-provider output and do not include known medical-staff columns such as Griffith, Millonas, Kuetemeyer, Nolan, Moore, King, Edwards, Ramirez, Poetter, Dill, DeBell, McKay, Wolf, or Cruz. The older open bug appears stale rather than currently reproducible.
 
+## 2026-05-22 Mobile My Schedule and FT Phone Request Note
+The production My Schedule view now pins the `Day / Date` column during mobile horizontal scrolling, starts mobile browsers at 16px text while preserving the 17px desktop default, and renders the `FT Phone` column as matched provider names instead of a Fowler-only Yes/blank flag. The selected provider is highlighted in that column when they are the FT Phone assignee; other assignees remain normal text.
+
 ## 2026-05-20 Feedback and PTO Column Note
 The feedback modal no longer shows a green success message just because an unconfirmed no-CORS logger request completed. It first looks for an Apps Script JSON response confirming `emailed: true`, then falls back to confirmed FormSubmit email. If only an unconfirmed backup log request can be sent, the modal keeps the fields in place and shows a warning.
 

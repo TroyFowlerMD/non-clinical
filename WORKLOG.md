@@ -4,6 +4,14 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 
 ---
 
+### 2026-05-22 - Codex desktop - Psych Scheduler mobile and FT Phone requests
+- Completed: Updated production `psych-scheduler.html` so the My Schedule `Day / Date` column stays pinned during horizontal scrolling on mobile.
+- Completed: Set the initial mobile default text size to 16px while keeping the desktop default at 17px.
+- Completed: Updated the My Schedule `FT Phone` column to list all matched provider names and visually emphasize the currently selected provider when assigned.
+- Completed: Kept `psych-scheduler-experimental.html` unchanged per production-only scope.
+- In progress: The live Google Sheet default-startup preservation task remains open as an ongoing guardrail.
+- Blockers/notes: No Apps Script redeploy was required; feedback request rows `PS-20260522-162705-6887e786` and `PS-20260522-163141-c8438d70` were the source requests for this work.
+
 ### 2026-05-22 - Codex desktop - Psych Scheduler data-source badge polish
 - Completed: Updated production `psych-scheduler.html` so the data bar reports the active in-memory source as `Live.Sheet1`, `Pasted data`, or `Excel upload`.
 - Completed: Added a 7-day stale warning for live Google Sheet timestamps while preserving paste, Excel, and Google Sheet fallback loading behavior.
