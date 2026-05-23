@@ -7,14 +7,26 @@ Psych Scheduler feedback requests are tracked in the existing `Medical Staff Sch
 
 ## Future Codex Workflow
 
-When Dr. Fowler asks to check scheduler feedback, IT requests, website requests, or active scheduler requests:
+When Dr. Fowler says `#IT`, `IT`, `#it`, `check IT`, `scheduler IT`, or asks to check scheduler feedback, website requests, or active scheduler requests:
 
 1. Open/read the `Feedback` tab from `Medical Staff Schedule ANALYSIS SHEET`.
 2. Treat rows as active when `Status` is blank, `open`, `needs_clarification`, or `in_progress`.
 3. Ignore verification rows where `Source` starts with `codex-live-verification` or `Submitter` starts with `Codex test`.
 4. Report active requests first with `Request_ID`, `Timestamp`, `Submitter`, and `Description`.
-5. Suggest likely fixes and identify which requests need clarification before editing.
-6. After approved implementation, update `Status`, `Codex_Notes`, `Resolution_Notes`, and `Resolved_At` using the admin status update operation.
+5. Propose a concrete action for each active request: likely affected file/system, whether it is a direct fix or needs clarification, suggested priority, and the next command/action Codex should take.
+6. Do not edit files, deploy, or update request statuses until Dr. Fowler approves the proposed action plan or explicitly asks for implementation.
+7. After approved implementation, update `Status`, `Codex_Notes`, `Resolution_Notes`, and `Resolved_At` using the admin status update operation.
+
+## Expected `#IT` Response Shape
+
+Start with a short count of active non-test requests. Then list each active request in this shape:
+
+- `Request_ID` - `Timestamp` - `Submitter`
+  - Request: concise description
+  - Proposed action: direct fix / needs clarification / defer / already handled
+  - Likely target: file, app area, or external system
+
+End with a short "Recommended next action" section. If no active requests exist, say that directly and mention the last checked range.
 
 ## Sheet Columns
 

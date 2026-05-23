@@ -69,8 +69,9 @@ Append entries to WORKLOG.md using this shape:
 ## Command Aliases
 - If Dr. Fowler says `start`, `#start`, `start <repo>`, or `#start <repo>` while working in this repo, immediately run the Required Startup Routine. Do not simply acknowledge or repeat the command.
 - If Dr. Fowler says `done`, `#done`, `finish`, `shutdown`, `done <repo>`, or `#done <repo>` while working in this repo, immediately run the Required Shutdown Routine. Do not simply acknowledge or repeat the command.
+- If Dr. Fowler says `#IT`, `IT`, `#it`, `check IT`, `scheduler IT`, or asks to check scheduler feedback/requests, immediately read `docs/psych-scheduler-it-request-inbox.md`, open the `Feedback` tab in `Medical Staff Schedule ANALYSIS SHEET`, report active non-test requests, and propose likely actions before asking for implementation approval. Do not ask which sheet to use.
 - In a general or multi-repo chat, if the command names this repo, switch context to this repo before running the routine. If the target repo is ambiguous, ask one concise clarifying question.
-- Treat `#start` and `#done` as stronger visual command markers, but keep plain `start` and `done` supported.
+- Treat `#start`, `#done`, and `#IT` as stronger visual command markers, but keep the plain-language variants supported.
 
 ## Cross-Machine Rules
 - Never assume prior chat context is available. Reconstruct state from Git, TASKS.md, WORKLOG.md, DECISIONS.md, and docs/.
@@ -93,7 +94,7 @@ Append entries to WORKLOG.md using this shape:
 - For Psych Scheduler code changes, inspect psych-scheduler.html first and verify the specific affected workflow.
 - If changing visible UI, check mobile-friendly behavior.
 - If live Google Sheet or Apps Script access cannot be verified, state that clearly in WORKLOG.md and the shutdown summary.
-- If Dr. Fowler asks to check Psych Scheduler feedback, IT requests, website requests, or active scheduler requests, read `docs/psych-scheduler-it-request-inbox.md` first and use the `Feedback` tab in `Medical Staff Schedule ANALYSIS SHEET` as the request inbox.
+- If Dr. Fowler asks to check Psych Scheduler feedback, IT requests, website requests, or active scheduler requests, or uses the `#IT` command, read `docs/psych-scheduler-it-request-inbox.md` first and use the `Feedback` tab in `Medical Staff Schedule ANALYSIS SHEET` as the request inbox.
 - When a scheduler feedback request is completed or triaged, use the token-protected `updateFeedbackStatus` Apps Script operation documented in `docs/psych-scheduler-it-request-inbox.md`; do not leave completed work active in the sheet.
 - If `.codex-local/psych-scheduler-feedback-admin-token.txt` is missing on a workstation, run `scripts/setup-psych-scheduler-appscript-access.ps1` and ask Dr. Fowler to provide/import the local token; never commit or print the token.
 - For Psych Scheduler Apps Script work, use `scripts/clasp.cmd` from the repo root so Codex does not depend on Windows PATH finding the global `clasp` shim.

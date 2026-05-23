@@ -4,6 +4,12 @@ This file records durable architectural, workflow, safety, and publishing decisi
 
 ---
 
+### 2026-05-22 - Add `#IT` As The Scheduler Request Triage Command
+Context: Dr. Fowler wants a short command that makes Codex go straight to the Psych Scheduler feedback inbox and propose actions without rediscovering the sheet workflow.
+Decision: Treat `#IT` and plain-language IT variants as command aliases for reading `Medical Staff Schedule ANALYSIS SHEET` > `Feedback`, reporting active non-test rows, and proposing concrete actions before implementation.
+Rationale: A command alias reduces setup friction and keeps scheduler request triage consistent across Codex sessions and workstations.
+Consequences: Future Codex sessions should not ask which sheet to use for `#IT`; they should read `docs/psych-scheduler-it-request-inbox.md`, inspect the Feedback tab, and wait for approval before editing files or closing rows.
+
 ### 2026-05-22 - Distinguish Psych Scheduler Data Sources In The Production Badge
 Context: The production scheduler can load from the live Google Sheet, pasted TSV, or Excel upload, but the existing top data bar could continue showing Google Sheet freshness after manual data replacement.
 Decision: Track the active in-memory data source separately from Drive sync status and show `Live.Sheet1`, `Pasted data`, or `Excel upload` in the production data bar. Treat live Sheet metadata older than 7 days as stale. Leave `psych-scheduler-experimental.html` unchanged until experimental parity is explicitly requested.

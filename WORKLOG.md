@@ -4,6 +4,13 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 
 ---
 
+### 2026-05-22 - Codex desktop - Added `#IT` scheduler request command
+- Completed: Added `#IT` and plain-language IT variants to `AGENTS.md` as aliases for opening the Psych Scheduler Feedback tab and proposing actions.
+- Completed: Updated `docs/psych-scheduler-it-request-inbox.md` with the expected active-request triage response shape.
+- Completed: Recorded the command alias workflow decision in `DECISIONS.md`.
+- In progress: The live Google Sheet default-startup preservation task remains open as an ongoing guardrail.
+- Blockers/notes: This was documentation/instruction work only; no runtime app code or Apps Script deployment changed.
+
 ### 2026-05-22 - Codex desktop - Psych Scheduler mobile and FT Phone requests
 - Completed: Updated production `psych-scheduler.html` so the My Schedule `Day / Date` column stays pinned during horizontal scrolling on mobile.
 - Completed: Set the initial mobile default text size to 16px while keeping the desktop default at 17px.
