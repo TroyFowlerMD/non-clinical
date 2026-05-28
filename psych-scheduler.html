@@ -2452,6 +2452,46 @@ function updateCacheStatusDisplay(ts) {
   el.textContent = 'Last updated: ' + formatCacheTimestamp(ts);
 }
 
+function getWidgetBridge() {
+  try {
+    const plugins = window.Capacitor && window.Capacitor.Plugins;
+    return plugins && plugins.WidgetDataBridge ? plugins.WidgetDataBridge : null;
+  } catch (err) {
+    return null;
+  }
+}
+
+async function pushWidgetCacheToNative() {
+  const bridge = getWidgetBridge();
+  if (!bridge || typeof bridge.updateWidgetCache !== 'function') return false;
+  try {
+    await bridge.updateWidgetCache({
+      psychScheduleCache: localStorage.getItem('psychScheduleCache') || '',
+      psychScheduleCache_backup: localStorage.getItem('psychScheduleCache_backup') || '',
+      psychScheduleCache_calendar: localStorage.getItem('psychScheduleCache_calendar') || '',
+      psychScheduleCacheTime: localStorage.getItem('psychScheduleCacheTime') || '',
+      psychScheduleCacheTime_backup: localStorage.getItem('psychScheduleCacheTime_backup') || '',
+      psychScheduleCacheTime_calendar: localStorage.getItem('psychScheduleCacheTime_calendar') || ''
+    });
+    return true;
+  } catch (err) {
+    console.warn('Widget bridge update failed:', err);
+    return false;
+  }
+}
+
+async function consumeWidgetRefreshRequest() {
+  const bridge = getWidgetBridge();
+  if (!bridge || typeof bridge.consumeWidgetRefreshRequest !== 'function') return false;
+  try {
+    const res = await bridge.consumeWidgetRefreshRequest();
+    return !!(res && res.refreshRequested);
+  } catch (err) {
+    console.warn('Widget refresh check failed:', err);
+    return false;
+  }
+}
+
 function saveScheduleCacheForAllViews(tsvText, isoTs) {
   ['dashboard','backup','calendar'].forEach(v => {
     const keys = getCacheKeysForView(v);
@@ -2459,6 +2499,7 @@ function saveScheduleCacheForAllViews(tsvText, isoTs) {
     localStorage.setItem(keys.timeKey, isoTs);
   });
   updateCacheStatusDisplay(isoTs);
+  pushWidgetCacheToNative();
 }
 
 function normalizeTSVForCompare(tsvText) {
@@ -2471,6 +2512,7 @@ function loadCachedScheduleForView(viewId) {
   const cached = localStorage.getItem(keys.dataKey);
   const cachedTs = localStorage.getItem(keys.timeKey);
   if (!cached) return false;
+  pushWidgetCacheToNative();
   document.getElementById('paste-area').value = cached;
   parseAndLoad({ source: 'cache', loadedAt: cachedTs || new Date().toISOString() });
   updateCacheStatusDisplay(cachedTs);
@@ -3429,7 +3471,7 @@ async function fetchDriveMeta(opts = {}) {
   }
 }
 
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded', async ()=>{
   const todayFmt = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
   document.getElementById('today-badge').textContent = todayFmt;
   // populate provider dropdown on initial load
@@ -3466,10 +3508,13 @@ document.addEventListener('DOMContentLoaded',()=>{
   baseFontPx = defaultFontPxForViewport();
   applyFontSize();
   updateThemeBtn(document.documentElement.getAttribute('data-theme')||'dark');
+  const widgetForcedRefresh = await consumeWidgetRefreshRequest();
   const loadedFromCache = loadCachedScheduleForView('dashboard');
   if (loadedFromCache) {
     hideInitialLoading();
-    if (typeof navigator !== 'undefined' && navigator.onLine) {
+    if (widgetForcedRefresh && typeof navigator !== 'undefined' && navigator.onLine) {
+      await loadFromDrive({ manualRefresh: true });
+    } else if (typeof navigator !== 'undefined' && navigator.onLine) {
       loadFromDrive({ silentRefresh: true, preserveActiveView: true }).catch(() => {});
     }
   } else {
