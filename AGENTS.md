@@ -120,3 +120,10 @@ Append entries to WORKLOG.md using this shape:
 ## Psych Scheduler Guardrails
 
 Before editing psych-scheduler.html, inspect the existing parser, loading path, dashboard rendering, and theme variables. Keep changes narrow and preserve the single-file architecture unless the user explicitly asks for a split.
+
+
+## Prompt Templates (Cross-Repo Library)
+Reusable Codex prompt templates live in the portfolio hub, not in this repo:
+- Android widget prompt: https://github.com/TroyFowlerMD/my-dashboard/blob/master/templates/codex/android-widget-prompt.md
+- Codex session opener: https://github.com/TroyFowlerMD/my-dashboard/blob/master/templates/codex/codex-session-openers.md
+- Cache refinement prompt: https://github.com/TroyFowlerMD/my-dashboard/blob/master/templates/codex/cache-refinement-prompt.md
