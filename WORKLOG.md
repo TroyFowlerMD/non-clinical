@@ -152,9 +152,3 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 - Completed: Added `.github/workflows/build-psych-apk.yml` to build a Capacitor Android debug APK from `psych-scheduler.html` with Psych Scheduler app ID/name and `INTERNET` permission enforcement in the manifest.
 - In progress: Existing Psych Scheduler product tasks remain unchanged.
 - Blockers/notes: `git pull --ff-only` could not run because local branch `work` has no upstream tracking configured in this Codex environment.
-
-### 2026-05-28 - Codex CLI - Offline-first cache with manual refresh
-- Completed: Added offline-first loading in `psych-scheduler.html` using localStorage cache keys and timestamp keys, with first-load cache render and manual refresh control.
-- Completed: Added visible `Last updated` status and `🔄 Refresh` button near the top schedule controls.
-- In progress: Existing Psych Scheduler product tasks remain unchanged.
-- Blockers/notes: Could not locate `perplexity-config/templates/codex-session-openers.md` in this workspace; used a standard opener text inline per user follow-up.
