@@ -4,6 +4,12 @@ This file records durable architectural, workflow, safety, and publishing decisi
 
 ---
 
+### 2026-05-28 - Mirror Widget State From App Snapshot Instead Of Re-Parsing TSV
+Context: The initial Android widget rendered from cache TSV with independent filtering and did not reliably match what the user was actively viewing in Psych Scheduler.
+Decision: Publish an app-driven widget snapshot from `psych-scheduler.html` (active view, provider, filter context, and preformatted lines) through the Capacitor bridge, and render the widget from that snapshot as the primary source, with legacy TSV parsing retained only as fallback.
+Rationale: A single source of truth from the app UI state keeps widget output aligned with user intent and avoids drift from duplicated native filtering logic.
+Consequences: Future widget behavior changes should be implemented in the app snapshot builder first; native widget logic should stay focused on size-based truncation, display formatting, and interactions.
+
 ### 2026-05-28 - Track Capacitor Android Platform For Psych Scheduler Widget Work
 Context: Psych Scheduler Android widget v1 needs native Kotlin, manifest, and resource files that cannot be represented in root-only web assets.
 Decision: Track `android-build/android/` in git for Psych Scheduler so widget provider, Capacitor bridge, and native resource files are first-class source files instead of CI-only generated artifacts.

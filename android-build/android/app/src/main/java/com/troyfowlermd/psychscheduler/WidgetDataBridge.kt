@@ -18,6 +18,7 @@ class WidgetDataBridge : Plugin() {
         val scheduleTime = call.getString("psychScheduleCacheTime")
         val backupTime = call.getString("psychScheduleCacheTime_backup")
         val calendarTime = call.getString("psychScheduleCacheTime_calendar")
+        val widgetSnapshotJson = call.getString("widgetSnapshotJson")
 
         val prefs = context.getSharedPreferences(PsychSchedulerWidget.PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit().apply {
@@ -27,6 +28,7 @@ class WidgetDataBridge : Plugin() {
             if (scheduleTime != null) putString("psychScheduleCacheTime", scheduleTime)
             if (backupTime != null) putString("psychScheduleCacheTime_backup", backupTime)
             if (calendarTime != null) putString("psychScheduleCacheTime_calendar", calendarTime)
+            if (widgetSnapshotJson != null) putString(PsychSchedulerWidget.PREF_WIDGET_SNAPSHOT_JSON, widgetSnapshotJson)
         }.apply()
 
         PsychSchedulerWidget.requestWidgetUpdate(context)

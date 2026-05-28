@@ -1678,7 +1678,10 @@ function showView(id) {
   if(view) view.classList.add('active');
   if(nav)  nav.classList.add('active');
   closeSidebar();
-  if(DATA.length===0 && id!=='paste') return;
+  if(DATA.length===0 && id!=='paste') {
+    scheduleWidgetSnapshotPublish();
+    return;
+  }
   const keys = getCacheKeysForView(id);
   updateCacheStatusDisplay(localStorage.getItem(keys.timeKey));
   if(id==='dashboard') renderDashboard();
@@ -1688,6 +1691,7 @@ function showView(id) {
     if(id==='backup') renderBackup();
     else if(id==='calendar') renderCalendar();
   }
+  scheduleWidgetSnapshotPublish();
 }
 
 function toggleSidebar() {
@@ -2461,23 +2465,165 @@ function getWidgetBridge() {
   }
 }
 
+let widgetSnapshotPublishTimer = null;
+
+function summarizeCallTagsForWidget(row) {
+  const tags = [];
+  if (provBackup(row)) tags.push('Backup');
+  if (provPC(row)) tags.push('Post-Call');
+  if (isProvOvernight(row)) tags.push('Overnight');
+  return tags.join(', ') || 'No call flags';
+}
+
+function getCalendarToggleState() {
+  const toggle = id => !!document.getElementById(id)?.checked;
+  return {
+    showShifts: toggle('cb-shifts'),
+    showBackup: toggle('cb-backup'),
+    showPC: toggle('cb-postcall'),
+    showMyOvernight: toggle('cb-my-overnight'),
+    showAllOvernight: toggle('cb-all-overnight'),
+    showStaffTotal: toggle('cb-staff-total'),
+    showPTOFeasible: toggle('cb-pto-feasible'),
+    showTrainees: toggle('cb-trainees'),
+    showProviders: toggle('cb-providers'),
+    showFTPhone: toggle('cb-ftphone')
+  };
+}
+
+function buildCalendarWidgetLines(limit = 40) {
+  const toggles = getCalendarToggleState();
+  const filteredData = applyGlobalRange(DATA).filter(r => r.date >= TODAY);
+  const lines = [];
+  for (const row of filteredData) {
+    const parts = [];
+    if (toggles.showShifts && provWorking(row) && !provPC(row)) parts.push('Shift: ' + (provAsgn(row) || 'Clinical'));
+    if (toggles.showBackup && provBackup(row)) parts.push('Backup');
+    if (toggles.showPC && provPC(row)) parts.push('Post-Call');
+    if (toggles.showMyOvernight && isProvOvernight(row)) parts.push('My overnight');
+    if (toggles.showAllOvernight && row.overnight) parts.push('All overnight: ' + row.overnight);
+    if (toggles.showStaffTotal) {
+      const tempCount = (row.workingTemp || []).length;
+      parts.push(`Staff ${row.count} (${row.coreCount}c${tempCount ? `+${tempCount}t` : ''})`);
+    }
+    if (toggles.showPTOFeasible) parts.push('PTO: ' + row.ptoRisk);
+    if (toggles.showTrainees && (row.trainees || []).length) parts.push('Trainees: ' + (row.trainees || []).join(', '));
+    if (toggles.showProviders) {
+      const providerText = [...(row.workingCore || []), ...(row.workingTemp || [])].join(', ');
+      if (providerText) parts.push('Providers: ' + providerText);
+    }
+    if (toggles.showFTPhone && row.fowlerFT) {
+      const names = (row.ftPhoneProviders && row.ftPhoneProviders.length) ? row.ftPhoneProviders.join(', ') : 'Fowler';
+      parts.push('FT Phone: ' + names);
+    }
+    if (!parts.length) continue;
+    lines.push(`${fmtDate(row.date)} ${dayShort(row.day)} | ${parts.join(' | ')}`);
+    if (lines.length >= limit) break;
+  }
+  if (!lines.length) lines.push('No upcoming calendar items for current toggles');
+  return lines;
+}
+
+function buildWidgetSnapshotPayload() {
+  const activeView = getActiveDataViewId();
+  const dashboardState = getDashboardRowsForCurrentState();
+  const backupState = getBackupRowsForCurrentState();
+  const calendarToggles = getCalendarToggleState();
+  const nowIso = new Date().toISOString();
+  const sourceTs = getCurrentDataTimestamp(currentDataSource);
+  const staleMs = sourceTs ? (Date.now() - sourceTs.getTime()) : null;
+  const staleThresholdMs = 24 * 60 * 60 * 1000;
+  const isStale = staleMs != null ? staleMs > staleThresholdMs : false;
+
+  const dashboardLines = dashboardState.rows.slice(0, 40).map(r => {
+    const asgn = provAsgn(r) || '—';
+    return `${fmtDate(r.date)} ${dayShort(r.day)} | ${selectedProvider}: ${asgn} | ${summarizeCallTagsForWidget(r)} | PTO: ${r.ptoRisk}`;
+  });
+  if (!dashboardLines.length) dashboardLines.push('No matching schedule rows');
+
+  const backupLines = backupState.rows.slice(0, 40).map(r => {
+    const names = [r.fowlerBackup ? 'Fowler' : '', r.carterBackup ? 'Carter' : '', r.ondreykaBackup ? 'Ondreyka' : ''].filter(Boolean).join(', ') || 'None';
+    const postCall = [r.fowlerPC ? 'Fowler' : '', r.carterPC ? 'Carter' : '', r.ondreykaPC ? 'Ondreyka' : ''].filter(Boolean).join(', ');
+    const pcPart = postCall ? ` | PC: ${postCall}` : '';
+    return `${fmtDate(r.date)} ${dayShort(r.day)} | Backup: ${names}${pcPart}`;
+  });
+  if (!backupLines.length) backupLines.push('No matching backup rows');
+
+  const calendarLines = buildCalendarWidgetLines(40);
+
+  return {
+    schemaVersion: 2,
+    updatedAt: nowIso,
+    activeView,
+    selectedProvider,
+    stale: {
+      isStale,
+      staleMs: staleMs == null ? null : staleMs,
+      sourceTimestamp: sourceTs ? sourceTs.toISOString() : null
+    },
+    filters: {
+      globalRange: { start: globalRange.start, end: globalRange.end },
+      dashboard: {
+        classFilter: document.getElementById('f-class')?.value || 'all',
+        periodFilter: document.getElementById('f-period')?.value || 'future',
+        weekdaysOnly: !!schedWeekdaysOnly,
+        ptoOnly: !!schedPTOFeasibleOnly,
+        sort: { col: schedSort.col, dir: schedSort.dir }
+      },
+      backup: {
+        periodFilter: bkpFilter,
+        showProviders: !!bkpShowProviders,
+        showStaffTotal: !!bkpShowStaffTotal
+      },
+      calendar: calendarToggles
+    },
+    views: {
+      dashboard: {
+        title: 'My Schedule',
+        context: `${selectedProvider} · ${dashboardState.rows.length} rows`,
+        lines: dashboardLines
+      },
+      backup: {
+        title: 'Backup Call',
+        context: `${backupState.rows.length} rows`,
+        lines: backupLines
+      },
+      calendar: {
+        title: 'Calendar',
+        context: `${selectedProvider} · toggles mirrored`,
+        lines: calendarLines
+      }
+    }
+  };
+}
+
 async function pushWidgetCacheToNative() {
   const bridge = getWidgetBridge();
   if (!bridge || typeof bridge.updateWidgetCache !== 'function') return false;
   try {
+    const snapshot = buildWidgetSnapshotPayload();
     await bridge.updateWidgetCache({
       psychScheduleCache: localStorage.getItem('psychScheduleCache') || '',
       psychScheduleCache_backup: localStorage.getItem('psychScheduleCache_backup') || '',
       psychScheduleCache_calendar: localStorage.getItem('psychScheduleCache_calendar') || '',
       psychScheduleCacheTime: localStorage.getItem('psychScheduleCacheTime') || '',
       psychScheduleCacheTime_backup: localStorage.getItem('psychScheduleCacheTime_backup') || '',
-      psychScheduleCacheTime_calendar: localStorage.getItem('psychScheduleCacheTime_calendar') || ''
+      psychScheduleCacheTime_calendar: localStorage.getItem('psychScheduleCacheTime_calendar') || '',
+      widgetSnapshotJson: JSON.stringify(snapshot)
     });
     return true;
   } catch (err) {
     console.warn('Widget bridge update failed:', err);
     return false;
   }
+}
+
+function scheduleWidgetSnapshotPublish() {
+  if (widgetSnapshotPublishTimer) clearTimeout(widgetSnapshotPublishTimer);
+  widgetSnapshotPublishTimer = setTimeout(() => {
+    widgetSnapshotPublishTimer = null;
+    pushWidgetCacheToNative();
+  }, 120);
 }
 
 async function consumeWidgetRefreshRequest() {
@@ -2499,7 +2645,7 @@ function saveScheduleCacheForAllViews(tsvText, isoTs) {
     localStorage.setItem(keys.timeKey, isoTs);
   });
   updateCacheStatusDisplay(isoTs);
-  pushWidgetCacheToNative();
+  scheduleWidgetSnapshotPublish();
 }
 
 function normalizeTSVForCompare(tsvText) {
@@ -2512,7 +2658,7 @@ function loadCachedScheduleForView(viewId) {
   const cached = localStorage.getItem(keys.dataKey);
   const cachedTs = localStorage.getItem(keys.timeKey);
   if (!cached) return false;
-  pushWidgetCacheToNative();
+  scheduleWidgetSnapshotPublish();
   document.getElementById('paste-area').value = cached;
   parseAndLoad({ source: 'cache', loadedAt: cachedTs || new Date().toISOString() });
   updateCacheStatusDisplay(cachedTs);
@@ -2640,6 +2786,32 @@ async function loadFromDrive(opts = {}) {
 // RENDER: DASHBOARD (My Schedule)
 // ═══════════════════════════════════════════════════════════════════════════
 
+function getDashboardRowsForCurrentState() {
+  const fClass = document.getElementById('f-class')?.value || 'all';
+  const fPeriod = document.getElementById('f-period')?.value || 'future';
+  const useGlobal = !!(globalRange.start || globalRange.end);
+  let rows = applyGlobalRange([...DATA]);
+  if(!useGlobal){
+    if(fPeriod==='future') rows = rows.filter(r=>isFuture(r.date));
+    else if(fPeriod==='past') rows = rows.filter(r=>isPast(r.date));
+  }
+  if(fClass==='weekdays' || schedWeekdaysOnly) rows = rows.filter(r=>!r.isWeekend);
+  else if(fClass==='Clinical') rows = rows.filter(r=>provClass(r)==='Clinical');
+  else if(fClass==='Admin') rows = rows.filter(r=>provClass(r)==='Admin/Remote');
+  else if(fClass==='Off') rows = rows.filter(r=>provClass(r)==='Off/Unavailable');
+  else if(fClass==='Training') rows = rows.filter(r=>provClass(r)==='Training/Non-clinical');
+  if(schedPTOFeasibleOnly) rows = rows.filter(r=>r.ptoRisk === 'Feasible');
+  const sortDef = SCHED_COLS_ALL.find(c=>c.id===schedSort.col);
+  if(sortDef?.sortKey) {
+    rows.sort((a,b)=>{
+      const ka=sortDef.sortKey(a), kb=sortDef.sortKey(b);
+      return ka<kb ? -schedSort.dir : ka>kb ? schedSort.dir : 0;
+    });
+  }
+  const scopeLabel = useGlobal ? 'in selected range' : (fPeriod==='future' ? 'upcoming' : fPeriod==='past' ? 'past' : 'all dates');
+  return { rows, scopeLabel, useGlobal, fClass, fPeriod };
+}
+
 function renderDashboard(pg) {
   if(pg !== undefined) dashPage = pg;
   renderColPicker();
@@ -2706,6 +2878,7 @@ function renderDashboard(pg) {
 
   document.getElementById('dash-table').innerHTML = tbl + pagBar(t, dashPage, 'renderDashboard');
   scheduleDashboardStickySync();
+  scheduleWidgetSnapshotPublish();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2760,8 +2933,7 @@ function renderBkpColPicker() {
   if(host) host.innerHTML = `<div class="col-toggle-grid">${grid}</div>`;
 }
 
-function renderBackup() {
-  renderBkpColPicker();
+function getBackupRowsForCurrentState() {
   let rows = applyGlobalRange(DATA).filter(r=>{
     const fa=r.providerAsgns?r.providerAsgns.Fowler:'';
     const ca=r.providerAsgns?r.providerAsgns.Carter:'';
@@ -2773,6 +2945,13 @@ function renderBackup() {
   const useGlobal = !!(globalRange.start || globalRange.end);
   if(!useGlobal && bkpFilter==='upcoming') rows = rows.filter(r=>isFuture(r.date));
   const bkpRangeLabel = useGlobal ? 'in selected range' : (bkpFilter==='upcoming' ? 'upcoming' : 'all dates');
+  return { rows, useGlobal, bkpRangeLabel };
+}
+function renderBackup() {
+  renderBkpColPicker();
+  const backupState = getBackupRowsForCurrentState();
+  const rows = backupState.rows;
+  const bkpRangeLabel = backupState.bkpRangeLabel;
   document.getElementById('bkp-rc').textContent = `${rows.length} dates · ${bkpRangeLabel}`;
 
   const cols = ['Day','Date','Fowler','Carter','Ondreyka'];
@@ -2809,6 +2988,7 @@ function renderBackup() {
   }).map(r=>`<tr${r}`);
 
   document.getElementById('bkp-table').innerHTML = buildTable(cols, trows, 'No backup call dates found');
+  scheduleWidgetSnapshotPublish();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2967,6 +3147,7 @@ function renderCalendar() {
   }).join('');
 
   document.getElementById('cal-grid-container').innerHTML=`<div class="cal-dow-row">${dowRow}</div><div class="cal-grid">${weeksHtml}</div>`;
+  scheduleWidgetSnapshotPublish();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -3674,3 +3855,4 @@ document.addEventListener('keydown', function(e){
 </script>
 </body>
 </html>
+

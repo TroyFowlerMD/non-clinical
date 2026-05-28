@@ -14,6 +14,7 @@
 - [ ] Re-test public non-clinical hub links after future dashboard or repo-routing changes.
 
 ## Completed (last 30 days)
+- [x] Switched Psych Scheduler Android widget to app-driven snapshot mirroring so widget state follows in-app view/provider/filter context.
 - [x] Built Android home screen widget v1 for Psych Scheduler with native view switcher, cache bridge, and resizable size modes.
 - [x] Added `#IT` as the Psych Scheduler Feedback-tab triage command so Codex reports active requests and proposes actions.
 - [x] Resolved active Psych Scheduler feedback requests for mobile My Schedule date-column pinning, 16px mobile default text, and all-provider FT Phone display.

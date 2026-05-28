@@ -11,6 +11,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.RemoteViews
+import org.json.JSONObject
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -23,13 +24,16 @@ class PsychSchedulerWidget : AppWidgetProvider() {
         const val PREFS_NAME = "psych_scheduler_widget"
         const val PREF_FORCE_REFRESH = "force_refresh_requested"
 
+        const val PREF_WIDGET_SNAPSHOT_JSON = "widget_snapshot_json"
+
         private const val ACTION_UPDATE_ALL = "com.troyfowlermd.psychscheduler.widget.UPDATE_ALL"
         private const val ACTION_SWITCH_VIEW = "com.troyfowlermd.psychscheduler.widget.SWITCH_VIEW"
         private const val ACTION_REFRESH = "com.troyfowlermd.psychscheduler.widget.REFRESH"
 
         private const val EXTRA_VIEW = "extra_view"
 
-        private const val KEY_VIEW_PREFIX = "widget_view_"
+        private const val KEY_OVERRIDE_VIEW_PREFIX = "widget_override_view_"
+        private const val KEY_LAST_SNAPSHOT_PREFIX = "widget_last_snapshot_"
 
         private const val CACHE_SCHEDULE = "psychScheduleCache"
         private const val CACHE_BACKUP = "psychScheduleCache_backup"
@@ -72,7 +76,7 @@ class PsychSchedulerWidget : AppWidgetProvider() {
                 val viewName = intent.getStringExtra(EXTRA_VIEW)
                 if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID && viewName != null) {
                     val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                    prefs.edit().putString(KEY_VIEW_PREFIX + widgetId, viewName).apply()
+                    prefs.edit().putString(KEY_OVERRIDE_VIEW_PREFIX + widgetId, viewName).apply()
                     updateWidget(context, manager, widgetId)
                 }
             }
@@ -96,16 +100,16 @@ class PsychSchedulerWidget : AppWidgetProvider() {
         val options = manager.getAppWidgetOptions(widgetId)
         val sizeClass = resolveSizeClass(options)
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val selectedView = if (sizeClass == WidgetSize.SMALL) {
-            WidgetView.SCHEDULE
-        } else {
-            WidgetView.fromValue(prefs.getString(KEY_VIEW_PREFIX + widgetId, WidgetView.SCHEDULE.value))
-        }
 
-        val rows = loadRowsForView(context, selectedView)
-        val lines = linesForSize(rows, selectedView, sizeClass)
-        val updatedAt = loadUpdatedAtMillis(context, selectedView)
-        val stale = updatedAt != null && (System.currentTimeMillis() - updatedAt) > 24L * 60L * 60L * 1000L
+        val snapshot = loadWidgetSnapshot(context)
+        val selectedView = resolveWidgetView(prefs, widgetId, snapshot, sizeClass)
+
+        val viewData = snapshot?.views?.get(selectedView)
+        val baseLines = viewData?.lines ?: loadLegacyLines(context, selectedView)
+        val lines = linesForSize(baseLines, sizeClass)
+
+        val updatedAt = snapshot?.updatedAtEpochMillis ?: loadUpdatedAtMillisLegacy(context, selectedView)
+        val stale = snapshot?.isStale ?: (updatedAt != null && (System.currentTimeMillis() - updatedAt) > 24L * 60L * 60L * 1000L)
 
         val rv = RemoteViews(context.packageName, R.layout.widget_schedule)
 
@@ -115,10 +119,19 @@ class PsychSchedulerWidget : AppWidgetProvider() {
         val activeChip = if (isNightMode(context)) Color.parseColor("#1D4ED8") else Color.parseColor("#2563EB")
         val inactiveChip = if (isNightMode(context)) Color.parseColor("#374151") else Color.parseColor("#E5E7EB")
 
-        rv.setTextViewText(R.id.widget_title, titleForView(selectedView))
+        rv.setTextViewText(R.id.widget_title, viewData?.title?.takeIf { it.isNotBlank() } ?: titleForView(selectedView))
         rv.setTextColor(R.id.widget_title, textColor)
+        rv.setTextColor(R.id.widget_context, mutedColor)
         rv.setTextColor(R.id.widget_last_updated, mutedColor)
         rv.setTextColor(R.id.widget_stale, staleColor)
+
+        val contextText = viewData?.context.orEmpty()
+        if (contextText.isNotBlank()) {
+            rv.setViewVisibility(R.id.widget_context, View.VISIBLE)
+            rv.setTextViewText(R.id.widget_context, contextText)
+        } else {
+            rv.setViewVisibility(R.id.widget_context, View.GONE)
+        }
 
         bindButtonStyle(rv, R.id.widget_button_schedule, selectedView == WidgetView.SCHEDULE, activeChip, inactiveChip, textColor)
         bindButtonStyle(rv, R.id.widget_button_backup, selectedView == WidgetView.BACKUP, activeChip, inactiveChip, textColor)
@@ -139,6 +152,30 @@ class PsychSchedulerWidget : AppWidgetProvider() {
         rv.setOnClickPendingIntent(R.id.widget_button_calendar, buildSwitchPendingIntent(context, widgetId, WidgetView.CALENDAR))
 
         manager.updateAppWidget(widgetId, rv)
+    }
+
+    private fun resolveWidgetView(
+        prefs: android.content.SharedPreferences,
+        widgetId: Int,
+        snapshot: WidgetSnapshot?,
+        sizeClass: WidgetSize
+    ): WidgetView {
+        if (sizeClass == WidgetSize.SMALL) return WidgetView.SCHEDULE
+
+        if (snapshot != null) {
+            val lastKey = KEY_LAST_SNAPSHOT_PREFIX + widgetId
+            val overrideKey = KEY_OVERRIDE_VIEW_PREFIX + widgetId
+            val currentVersion = snapshot.updatedAtEpochMillis ?: Long.MIN_VALUE
+            val previousVersion = prefs.getLong(lastKey, Long.MIN_VALUE)
+            if (currentVersion != previousVersion) {
+                prefs.edit().putLong(lastKey, currentVersion).remove(overrideKey).apply()
+            }
+            val overrideView = WidgetView.fromValue(prefs.getString(overrideKey, null))
+            return overrideView ?: snapshot.activeView
+        }
+
+        return WidgetView.fromValue(prefs.getString(KEY_OVERRIDE_VIEW_PREFIX + widgetId, WidgetView.SCHEDULE.value))
+            ?: WidgetView.SCHEDULE
     }
 
     private fun bindButtonStyle(
@@ -251,22 +288,82 @@ class PsychSchedulerWidget : AppWidgetProvider() {
         }
     }
 
-    private fun linesForSize(rows: List<WidgetRow>, view: WidgetView, size: WidgetSize): List<String> {
-        if (rows.isEmpty()) return listOf("No cached schedule data yet")
-
-        val today = LocalDate.now()
-        val todayRows = rows.filter { it.date != null && !it.date.isBefore(today) }
-        val source = if (todayRows.isNotEmpty()) todayRows else rows
-
+    private fun linesForSize(lines: List<String>, size: WidgetSize): List<String> {
+        val safeLines = if (lines.isEmpty()) listOf("No widget snapshot data yet") else lines
         return when (size) {
-            WidgetSize.SMALL -> source.take(1).map { formatLine(it, view) }
-            WidgetSize.MEDIUM -> source.take(2).map { formatLine(it, view) }
-            WidgetSize.LARGE -> source.take(7).map { formatLine(it, view) }
-            WidgetSize.FULL -> source.take(7).map { formatLine(it, view) }
+            WidgetSize.SMALL -> safeLines.take(1)
+            WidgetSize.MEDIUM -> safeLines.take(2)
+            WidgetSize.LARGE -> safeLines.take(7)
+            WidgetSize.FULL -> safeLines.take(8)
         }
     }
 
-    private fun formatLine(row: WidgetRow, view: WidgetView): String {
+    private fun loadWidgetSnapshot(context: Context): WidgetSnapshot? {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val raw = prefs.getString(PREF_WIDGET_SNAPSHOT_JSON, null) ?: return null
+        return try {
+            val root = JSONObject(raw)
+            val activeView = WidgetView.fromValue(normalizeJsonString(root.optString("activeView", WidgetView.SCHEDULE.value)))
+                ?: WidgetView.SCHEDULE
+            val selectedProvider = normalizeJsonString(root.optString("selectedProvider", "")) ?: ""
+            val updatedAtEpoch = parseIsoMillis(normalizeJsonString(root.optString("updatedAt", null)))
+            val staleObj = root.optJSONObject("stale")
+            val isStale = staleObj?.optBoolean("isStale", false) ?: false
+
+            val views = mutableMapOf<WidgetView, SnapshotView>()
+            val viewsObj = root.optJSONObject("views")
+            WidgetView.entries.forEach { view ->
+                val node = viewsObj?.optJSONObject(view.value)
+                val title = normalizeJsonString(node?.optString("title", "")) ?: ""
+                val contextText = normalizeJsonString(node?.optString("context", "")) ?: ""
+                val lines = mutableListOf<String>()
+                val linesArr = node?.optJSONArray("lines")
+                if (linesArr != null) {
+                    for (i in 0 until linesArr.length()) {
+                        val line = normalizeJsonString(linesArr.optString(i, ""))
+                        if (!line.isNullOrBlank()) lines.add(line)
+                    }
+                }
+                views[view] = SnapshotView(title = title, context = contextText, lines = lines)
+            }
+
+            WidgetSnapshot(
+                updatedAtEpochMillis = updatedAtEpoch,
+                activeView = activeView,
+                selectedProvider = selectedProvider,
+                isStale = isStale,
+                views = views
+            )
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun normalizeJsonString(value: String?): String? {
+        if (value == null) return null
+        val trimmed = value.trim()
+        return if (trimmed.equals("null", ignoreCase = true)) null else trimmed
+    }
+
+    private fun parseIsoMillis(value: String?): Long? {
+        if (value.isNullOrBlank()) return null
+        return try {
+            Instant.parse(value).toEpochMilli()
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun loadLegacyLines(context: Context, view: WidgetView): List<String> {
+        val rows = loadLegacyRowsForView(context, view)
+        if (rows.isEmpty()) return listOf("No cached schedule data yet")
+        val today = LocalDate.now()
+        val todayRows = rows.filter { it.date != null && !it.date.isBefore(today) }
+        val source = if (todayRows.isNotEmpty()) todayRows else rows
+        return source.take(8).map { formatLegacyLine(it, view) }
+    }
+
+    private fun formatLegacyLine(row: WidgetRow, view: WidgetView): String {
         val dateLabel = row.dateLabel.ifBlank { "Unknown date" }
         return when (view) {
             WidgetView.SCHEDULE -> "$dateLabel - On-call: ${row.onCall.ifBlank { "-" }}"
@@ -275,20 +372,16 @@ class PsychSchedulerWidget : AppWidgetProvider() {
         }
     }
 
-    private fun loadRowsForView(context: Context, view: WidgetView): List<WidgetRow> {
+    private fun loadLegacyRowsForView(context: Context, view: WidgetView): List<WidgetRow> {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val cache = prefs.getString(cacheKeyForView(view), null) ?: return emptyList()
         return parseRowsFromTsv(cache)
     }
 
-    private fun loadUpdatedAtMillis(context: Context, view: WidgetView): Long? {
+    private fun loadUpdatedAtMillisLegacy(context: Context, view: WidgetView): Long? {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val raw = prefs.getString(timeKeyForView(view), null) ?: return null
-        return try {
-            Instant.parse(raw).toEpochMilli()
-        } catch (_: Exception) {
-            null
-        }
+        return parseIsoMillis(raw)
     }
 
     private fun cacheKeyForView(view: WidgetView): String {
@@ -312,7 +405,11 @@ class PsychSchedulerWidget : AppWidgetProvider() {
         if (rows.size < 2) return emptyList()
 
         val headers = rows.first().map { it.trim() }
-        val dateIdx = headers.indexOfFirst { it.equals("Day/Date", ignoreCase = true) || it.equals("Date", ignoreCase = true) || it.contains("day", ignoreCase = true) && it.contains("date", ignoreCase = true) }
+        val dateIdx = headers.indexOfFirst {
+            it.equals("Day/Date", ignoreCase = true) ||
+                it.equals("Date", ignoreCase = true) ||
+                (it.contains("day", ignoreCase = true) && it.contains("date", ignoreCase = true))
+        }
         val overnightIdx = headers.indexOfFirst { it.contains("overnight", ignoreCase = true) }
         val backupIdx = headers.indexOfFirst { it.contains("backup", ignoreCase = true) }
 
@@ -399,13 +496,19 @@ class PsychSchedulerWidget : AppWidgetProvider() {
 }
 
 private enum class WidgetView(val value: String) {
-    SCHEDULE("schedule"),
+    SCHEDULE("dashboard"),
     BACKUP("backup"),
     CALENDAR("calendar");
 
     companion object {
-        fun fromValue(value: String?): WidgetView {
-            return entries.firstOrNull { it.value == value } ?: SCHEDULE
+        fun fromValue(value: String?): WidgetView? {
+            val v = value?.trim()?.lowercase(Locale.US) ?: return null
+            return when (v) {
+                "schedule", "dashboard" -> SCHEDULE
+                "backup" -> BACKUP
+                "calendar" -> CALENDAR
+                else -> null
+            }
         }
     }
 }
@@ -422,4 +525,18 @@ private data class WidgetRow(
     val date: LocalDate?,
     val onCall: String,
     val backup: String
+)
+
+private data class SnapshotView(
+    val title: String,
+    val context: String,
+    val lines: List<String>
+)
+
+private data class WidgetSnapshot(
+    val updatedAtEpochMillis: Long?,
+    val activeView: WidgetView,
+    val selectedProvider: String,
+    val isStale: Boolean,
+    val views: Map<WidgetView, SnapshotView>
 )
