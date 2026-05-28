@@ -385,6 +385,11 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
   .sidebar, .font-ctrl, .filter-bar, .col-panel, .col-toggle-btn, .page-controls-bar,
   .pag, .parse-btn, .cal-export-btn, .cal-nav-btn, .parse-result,
   #clear-btn, .footer-btn, .cal-filter-group, .sec-hd + .table-wrap + .sec-hd,
+  .gf-cache{display:flex;align-items:center;gap:8px;margin-left:auto;flex-wrap:wrap}
+  .gf-cache-text{font-size:12px;color:var(--muted)}
+  .gf-refresh{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:10px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer}
+  .gf-refresh:disabled{opacity:.65;cursor:wait}
+
   .topbar-right, .mob-menu-btn, .global-filter-bar { display: none !important; }
 
   /* Topbar: minimal header (CHANGE 1 — re-enabled only for print) */
@@ -810,6 +815,10 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
       <span class="gf-hint" id="gf-end-hint" title="Auto-detected from where the schedule appears populated"></span>
     </div>
     <button class="gf-reset" onclick="resetGlobalRange()" title="Reset to auto-detected defaults">Reset</button>
+    <div class="gf-cache" id="cache-status-wrap">
+      <span class="gf-cache-text" id="cache-last-updated">Last updated: —</span>
+      <button class="gf-refresh" id="cache-refresh-btn" onclick="refreshActiveViewData()" title="Fetch latest schedule from Google Sheets">🔄 Refresh</button>
+    </div>
   </div>
 
   <div class="content">
@@ -1434,6 +1443,8 @@ function parseRawData(text) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 let DATA = [];
+const VIEW_CACHE_KEYS = { dashboard:'psychScheduleCache', backup:'psychScheduleCache_backup', calendar:'psychScheduleCache_calendar' };
+const VIEW_CACHE_TIME_KEYS = { dashboard:'psychScheduleCacheTime', backup:'psychScheduleCacheTime_backup', calendar:'psychScheduleCacheTime_calendar' };
 let selectedProvider = 'Fowler';
 let TODAY = new Date().toISOString().slice(0,10);
 let bkpFilter = 'upcoming';
@@ -1585,7 +1596,7 @@ function parseAndLoad(opts = {}) {
     const now = new Date();
     if (DATA.some(r => r.date >= TODAY)) { calYear = now.getFullYear(); calMonth = now.getMonth(); }
     onDataLoaded();
-    if (opts.source !== 'drive') {
+    if (opts.source !== 'drive' && opts.source !== 'cache') {
       const isExcel = opts.source === 'excel';
       const noteParts = [];
       if (isExcel && opts.sheetName) noteParts.push('First sheet: "' + opts.sheetName + '"');
@@ -1598,7 +1609,8 @@ function parseAndLoad(opts = {}) {
       });
     }
     const tempNote = TEMP_STAFF.length ? ` + ${TEMP_STAFF.length} temp staff auto-detected` : '';
-    showResult(res,'ok',`✓ Parsed ${parsed.length} dates · ${CORE_PROVIDERS.length} core providers${tempNote}. Schedule ready.`);
+    const okPrefix = opts.source === 'cache' ? '✓ Loaded cached schedule' : `✓ Parsed ${parsed.length} dates`;
+    showResult(res,'ok',`${okPrefix} · ${CORE_PROVIDERS.length} core providers${tempNote}. Schedule ready.`);
   } catch(e) {
     showResult(res,'error','Parse error: '+e.message);
   }
@@ -1664,6 +1676,8 @@ function showView(id) {
   if(nav)  nav.classList.add('active');
   closeSidebar();
   if(DATA.length===0 && id!=='paste') return;
+  const keys = getCacheKeysForView(id);
+  updateCacheStatusDisplay(localStorage.getItem(keys.timeKey));
   if(id==='dashboard') renderDashboard();
   else {
     dashStickyTracking = false;
@@ -2409,6 +2423,69 @@ function hideInitialLoading() {
   stopLoadingCanvas();
 }
 
+
+function getActiveDataViewId() {
+  const id = document.querySelector('.view.active')?.id?.replace('view-','');
+  return (id === 'backup' || id === 'calendar') ? id : 'dashboard';
+}
+
+function getCacheKeysForView(viewId) {
+  const v = (viewId === 'backup' || viewId === 'calendar') ? viewId : 'dashboard';
+  return { dataKey: VIEW_CACHE_KEYS[v], timeKey: VIEW_CACHE_TIME_KEYS[v] };
+}
+
+function formatCacheTimestamp(ts) {
+  if (!ts) return '—';
+  const dt = new Date(ts);
+  if (Number.isNaN(dt.getTime())) return '—';
+  const datePart = dt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const timePart = dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  return datePart + ' at ' + timePart;
+}
+
+function updateCacheStatusDisplay(ts) {
+  const el = document.getElementById('cache-last-updated');
+  if (!el) return;
+  el.textContent = 'Last updated: ' + formatCacheTimestamp(ts);
+}
+
+function saveScheduleCacheForAllViews(tsvText, isoTs) {
+  ['dashboard','backup','calendar'].forEach(v => {
+    const keys = getCacheKeysForView(v);
+    localStorage.setItem(keys.dataKey, tsvText);
+    localStorage.setItem(keys.timeKey, isoTs);
+  });
+  updateCacheStatusDisplay(isoTs);
+}
+
+function loadCachedScheduleForView(viewId) {
+  const keys = getCacheKeysForView(viewId);
+  const cached = localStorage.getItem(keys.dataKey);
+  const cachedTs = localStorage.getItem(keys.timeKey);
+  if (!cached) return false;
+  document.getElementById('paste-area').value = cached;
+  parseAndLoad({ source: 'cache', loadedAt: cachedTs || new Date().toISOString() });
+  updateCacheStatusDisplay(cachedTs);
+  if (cachedTs) {
+    const parsedTs = new Date(cachedTs);
+    if (!Number.isNaN(parsedTs.getTime())) {
+      document.getElementById('drive-status').textContent = 'Loaded cached schedule · ' + parsedTs.toLocaleString();
+      document.getElementById('drive-status').className = 'drive-status ok';
+    }
+  }
+  return true;
+}
+
+async function refreshActiveViewData() {
+  const btn = document.getElementById('cache-refresh-btn');
+  if (btn) btn.disabled = true;
+  try {
+    await loadFromDrive({ manualRefresh: true });
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
 async function loadFromDrive(opts = {}) {
   const initialLoad = !!opts.initialLoad;
   const btn    = document.getElementById('drive-load-btn');
@@ -2447,8 +2524,10 @@ async function loadFromDrive(opts = {}) {
 
     // Convert JSON → TSV and feed through the existing paste pipeline
     const tsv = jsonToTSV(json);
+    const cacheIsoTime = json.fetchedAt || new Date().toISOString();
+    saveScheduleCacheForAllViews(tsv, cacheIsoTime);
     document.getElementById('paste-area').value = tsv;
-    parseAndLoad({ source: 'drive' });
+    parseAndLoad({ source: 'drive', loadedAt: cacheIsoTime });
 
     if (status) {
       status.textContent = '\u2713 Loaded ' + json.rowCount + ' rows · ' +
@@ -3348,8 +3427,11 @@ document.addEventListener('DOMContentLoaded',()=>{
   baseFontPx = defaultFontPxForViewport();
   applyFontSize();
   updateThemeBtn(document.documentElement.getAttribute('data-theme')||'dark');
-  showInitialLoading();
-  loadFromDrive({ initialLoad: true });
+  const loadedFromCache = loadCachedScheduleForView('dashboard');
+  if (!loadedFromCache) {
+    showInitialLoading();
+    loadFromDrive({ initialLoad: true });
+  }
 });
 
 function openFeedbackModal(){
