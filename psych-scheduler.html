@@ -381,16 +381,16 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
   body { display: block !important; height: auto !important; overflow: visible !important;
          background: #fff !important; color: #111 !important; zoom: 1 !important; }
 
-  /* Hide nav/chrome */
-  .sidebar, .font-ctrl, .filter-bar, .col-panel, .col-toggle-btn, .page-controls-bar,
-  .pag, .parse-btn, .cal-export-btn, .cal-nav-btn, .parse-result,
-  #clear-btn, .footer-btn, .cal-filter-group, .sec-hd + .table-wrap + .sec-hd,
-  .gf-cache{display:flex;align-items:center;gap:8px;margin-left:auto;flex-wrap:wrap}
-  .gf-cache-text{font-size:12px;color:var(--muted)}
-  .gf-refresh{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:10px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer}
-  .gf-refresh:disabled{opacity:.65;cursor:wait}
-
-  .topbar-right, .mob-menu-btn, .global-filter-bar { display: none !important; }
+  /* Hide non-content chrome */
+  .initial-loading-screen,
+  .sidebar, .sidebar-overlay, .font-ctrl, .filter-bar, .col-panel, .col-toggle-btn,
+  .page-controls-bar, .global-filter-bar, #cache-status-wrap, .gf-cache,
+  .topbar-right, .mob-menu-btn,
+  .pag, .parse-btn, .parse-result, .cal-export-btn, .cal-nav-btn, .cal-filter-group,
+  #clear-btn, .footer-btn, .sidebar-header, .sidebar-footer,
+  .sec-hd + .table-wrap + .sec-hd {
+    display: none !important;
+  }
 
   /* Topbar: minimal header (CHANGE 1 — re-enabled only for print) */
   .topbar { display: flex !important; background: #fff !important; border-bottom: 1px solid #ccc !important;
@@ -634,10 +634,6 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
   .main{width:100%;height:100vh}
   .mob-menu-btn{display:inline-flex !important}
   .sidebar-overlay.open{display:block}
-}
-
-@media print{
-  .mob-menu-btn,.sidebar-overlay,.global-filter-bar{display:none!important}
 }
 
 #excel-drop-zone.drag-active {
@@ -1584,6 +1580,10 @@ function parseAndLoad(opts = {}) {
   const text = document.getElementById('paste-area').value.trim();
   const res  = document.getElementById('parse-result');
   if (!text) { showResult(res,'error','Please paste schedule data first.'); return; }
+  const preserveActiveView = !!opts.preserveActiveView;
+  const targetViewId = (opts.targetViewId === 'backup' || opts.targetViewId === 'calendar' || opts.targetViewId === 'dashboard')
+    ? opts.targetViewId
+    : getActiveDataViewId();
   try {
     const parsed = parseRawData(text);
     if (!parsed.length) { showResult(res,'error','No valid date rows found. Include the header row.'); return; }
@@ -1595,7 +1595,7 @@ function parseAndLoad(opts = {}) {
     // Jump to today's month if data includes today
     const now = new Date();
     if (DATA.some(r => r.date >= TODAY)) { calYear = now.getFullYear(); calMonth = now.getMonth(); }
-    onDataLoaded();
+    onDataLoaded({ preserveActiveView, targetViewId });
     if (opts.source !== 'drive' && opts.source !== 'cache') {
       const isExcel = opts.source === 'excel';
       const noteParts = [];
@@ -1622,7 +1622,7 @@ function showResult(el,type,msg){
   el.textContent=msg;
 }
 
-function onDataLoaded() {
+function onDataLoaded(opts = {}) {
   ['dashboard','backup','calendar'].forEach(id=>{
     const el=document.getElementById('nav-'+id);
     if(el) el.classList.remove('disabled');
@@ -1640,7 +1640,10 @@ function onDataLoaded() {
   const todayFmt = fmtDate(TODAY);
   document.getElementById('today-badge').textContent = 'Today: '+todayFmt;
   initGlobalRange();
-  showView('dashboard');
+  const nextView = (opts.preserveActiveView && (opts.targetViewId === 'backup' || opts.targetViewId === 'calendar' || opts.targetViewId === 'dashboard'))
+    ? opts.targetViewId
+    : 'dashboard';
+  showView(nextView);
 }
 
 function clearData() {
@@ -2458,6 +2461,11 @@ function saveScheduleCacheForAllViews(tsvText, isoTs) {
   updateCacheStatusDisplay(isoTs);
 }
 
+function normalizeTSVForCompare(tsvText) {
+  if (typeof tsvText !== 'string') return '';
+  return tsvText.replace(/\r\n?/g, '\n').trim();
+}
+
 function loadCachedScheduleForView(viewId) {
   const keys = getCacheKeysForView(viewId);
   const cached = localStorage.getItem(keys.dataKey);
@@ -2480,7 +2488,7 @@ async function refreshActiveViewData() {
   const btn = document.getElementById('cache-refresh-btn');
   if (btn) btn.disabled = true;
   try {
-    await loadFromDrive({ manualRefresh: true });
+    await loadFromDrive({ manualRefresh: true, preserveActiveView: true });
   } finally {
     if (btn) btn.disabled = false;
   }
@@ -2488,30 +2496,48 @@ async function refreshActiveViewData() {
 
 async function loadFromDrive(opts = {}) {
   const initialLoad = !!opts.initialLoad;
+  const manualRefresh = !!opts.manualRefresh;
+  const silentRefresh = !!opts.silentRefresh;
+  const preserveActiveView = opts.preserveActiveView !== undefined ? !!opts.preserveActiveView : (manualRefresh || silentRefresh);
+  const targetViewId = (opts.targetViewId === 'backup' || opts.targetViewId === 'calendar' || opts.targetViewId === 'dashboard')
+    ? opts.targetViewId
+    : getActiveDataViewId();
   const btn    = document.getElementById('drive-load-btn');
   const status = document.getElementById('drive-status');
   const uncfg  = document.getElementById('drive-uncfg');
 
+  if (silentRefresh && typeof navigator !== 'undefined' && navigator.onLine === false) {
+    return false;
+  }
+
   if (!DRIVE_EXEC_URL) {
     if (initialLoad) hideInitialLoading();
-    if (uncfg) uncfg.style.display = 'block';
-    if (status) {
-      status.textContent  = 'Not configured';
-      status.className    = 'drive-status err';
+    if (!silentRefresh) {
+      if (uncfg) uncfg.style.display = 'block';
+      if (status) {
+        status.textContent  = 'Not configured';
+        status.className    = 'drive-status err';
+      }
+      updateDataUpdatedBar('error', null, 'Google Sheet connection is not configured');
     }
-    updateDataUpdatedBar('error', null, 'Google Sheet connection is not configured');
-    return;
+    return false;
   }
   if (uncfg) uncfg.style.display = 'none';
 
   if (btn) btn.disabled = true;
-  if (status) {
-    status.textContent  = 'Fetching from Google Drive…';
+  if (status && !silentRefresh) {
+    status.textContent  = 'Fetching from Google Drive...';
     status.className    = 'drive-status';
   }
-  updateDataUpdatedBar('loading', null, '(loading Google Sheet…)');
+  if (!silentRefresh) {
+    updateDataUpdatedBar('loading', null, '(loading Google Sheet...)');
+  }
 
   try {
+    const activeKeys = getCacheKeysForView(targetViewId);
+    const cachedTsv = localStorage.getItem(activeKeys.dataKey) || '';
+    const cachedNorm = normalizeTSVForCompare(cachedTsv);
+
     const url      = DRIVE_EXEC_URL + (DRIVE_EXEC_URL.includes('?') ? '&' : '?') + '_cb=' + Date.now();
     const res      = await fetch(url);
     if (!res.ok)   throw new Error('HTTP ' + res.status);
@@ -2522,14 +2548,23 @@ async function loadFromDrive(opts = {}) {
     const liveLabel = 'Live.' + sheetName;
     driveStatus = { fetchedAt: json.fetchedAt, rowCount: json.rowCount, error: null, sheetName };
 
-    // Convert JSON → TSV and feed through the existing paste pipeline
+    // Convert JSON to TSV and feed through the existing paste pipeline.
     const tsv = jsonToTSV(json);
     const cacheIsoTime = json.fetchedAt || new Date().toISOString();
+    const freshNorm = normalizeTSVForCompare(tsv);
+    const dataChanged = freshNorm !== cachedNorm;
     saveScheduleCacheForAllViews(tsv, cacheIsoTime);
-    document.getElementById('paste-area').value = tsv;
-    parseAndLoad({ source: 'drive', loadedAt: cacheIsoTime });
+    if (dataChanged || !DATA.length) {
+      document.getElementById('paste-area').value = tsv;
+      parseAndLoad({
+        source: 'drive',
+        loadedAt: cacheIsoTime,
+        preserveActiveView,
+        targetViewId
+      });
+    }
 
-    if (status) {
+    if (status && !silentRefresh) {
       status.textContent = '\u2713 Loaded ' + json.rowCount + ' rows · ' +
         (json.fetchedAt ? new Date(json.fetchedAt).toLocaleString() : 'timestamp unavailable');
       status.className   = 'drive-status ok';
@@ -2540,15 +2575,19 @@ async function loadFromDrive(opts = {}) {
       sheetName,
       label: liveLabel
     });
-    await fetchDriveMeta();
+    await fetchDriveMeta({ updateBar: !silentRefresh });
+    return true;
   } catch(err) {
     if (initialLoad) showView('paste');
     driveStatus = { fetchedAt: null, rowCount: 0, error: err.message };
-    if (status) {
-      status.textContent = 'Error: ' + err.message;
-      status.className   = 'drive-status err';
+    if (!silentRefresh) {
+      if (status) {
+        status.textContent = 'Error: ' + err.message;
+        status.className   = 'drive-status err';
+      }
+      updateDataUpdatedBar('error', null, 'automatic Google Sheet load failed: ' + err.message);
     }
-    updateDataUpdatedBar('error', null, 'automatic Google Sheet load failed: ' + err.message);
+    return false;
   } finally {
     if (btn) btn.disabled = false;
     if (initialLoad) hideInitialLoading();
@@ -3428,7 +3467,12 @@ document.addEventListener('DOMContentLoaded',()=>{
   applyFontSize();
   updateThemeBtn(document.documentElement.getAttribute('data-theme')||'dark');
   const loadedFromCache = loadCachedScheduleForView('dashboard');
-  if (!loadedFromCache) {
+  if (loadedFromCache) {
+    hideInitialLoading();
+    if (typeof navigator !== 'undefined' && navigator.onLine) {
+      loadFromDrive({ silentRefresh: true, preserveActiveView: true }).catch(() => {});
+    }
+  } else {
     showInitialLoading();
     loadFromDrive({ initialLoad: true });
   }
