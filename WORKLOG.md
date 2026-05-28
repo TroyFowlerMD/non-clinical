@@ -147,3 +147,8 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 - Completed: Verified the script with `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\setup-codex-projects.ps1 -DryRun`.
 - In progress: Existing Psych Scheduler product tasks remain unchanged.
 - Blockers/notes: This was a workflow setup/documentation change only; no app runtime code changed.
+
+### 2026-05-28 - Codex CLI - Added Psych Scheduler APK GitHub Actions workflow
+- Completed: Added `.github/workflows/build-psych-apk.yml` to build a Capacitor Android debug APK from `psych-scheduler.html` with Psych Scheduler app ID/name and `INTERNET` permission enforcement in the manifest.
+- In progress: Existing Psych Scheduler product tasks remain unchanged.
+- Blockers/notes: `git pull --ff-only` could not run because local branch `work` has no upstream tracking configured in this Codex environment.
