@@ -1,0 +1,12 @@
+{
+  "appId": "com.troyfowlermd.jfkmedstaffschedule",
+  "appName": "JFK Med Staff Schedule",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}

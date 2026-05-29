@@ -4,6 +4,13 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 
 ---
 
+### 2026-05-29 - Codex desktop - JFK v2 Android app and widget branch
+- Completed: Added a dedicated `android-jfk-v2/` Capacitor build path for `jfk-med-staff-schedule-experimental-v2.html`.
+- Completed: Added native Android widget source templates for a daily-only home-screen schedule widget, plus a GitHub Actions APK build workflow.
+- Completed: Added a browser-safe JFK v2 Capacitor bridge that syncs daily schedule snapshots to the native widget only inside the Android app.
+- In progress: GitHub Actions must build the debug APK and the APK/widget still need installation testing on an Android device or emulator.
+- Blockers/notes: `gh` is not installed on this workstation, so PR creation and CI inspection use the GitHub connector and web/GitHub APIs instead of GitHub CLI.
+
 ### 2026-05-22 - Codex desktop - Added `#IT` scheduler request command
 - Completed: Added `#IT` and plain-language IT variants to `AGENTS.md` as aliases for opening the Psych Scheduler Feedback tab and proposing actions.
 - Completed: Updated `docs/psych-scheduler-it-request-inbox.md` with the expected active-request triage response shape.

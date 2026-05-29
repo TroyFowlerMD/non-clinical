@@ -20,5 +20,6 @@ Non-clinical TroyMD tools and personal/professional utility pages. The primary a
 - `docs/psych-scheduler-post-call-staffing-bug-fixed.md`: Final targeted post-call staffing count fix.
 - `docs/consolidated-duplicate-psych-scheduler-project-page.md`: Notion duplicate consolidation note.
 - `docs/windows-codex-github-workstation-setup.md`: Other-computer setup guide for GitHub repos, Codex Desktop, clasp, and Psych Scheduler Apps Script access.
+- `docs/jfk-v2-android-widget.md`: JFK v2 Android app and native daily-widget build notes.
 - `scripts/setup-codex-projects.ps1`: Bootstrap active repos and optionally run Psych Scheduler Apps Script access setup on another Windows workstation.
 - `scripts/setup-psych-scheduler-appscript-access.ps1`: Install/verify Node.js, clasp, Google Apps Script login, and local feedback admin token access.

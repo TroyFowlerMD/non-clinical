@@ -12,8 +12,10 @@
 ## Upcoming
 - [ ] Consider future `non-clinical` professional section organization if more professional utilities are added.
 - [ ] Re-test public non-clinical hub links after future dashboard or repo-routing changes.
+- [ ] Install and device-test the JFK v2 Android debug APK and full-screen daily widget after the GitHub Actions artifact is available.
 
 ## Completed (last 30 days)
+- [x] Added a dedicated JFK v2 Android app build path with native daily-widget source templates and documentation.
 - [x] Added `#IT` as the Psych Scheduler Feedback-tab triage command so Codex reports active requests and proposes actions.
 - [x] Resolved active Psych Scheduler feedback requests for mobile My Schedule date-column pinning, 16px mobile default text, and all-provider FT Phone display.
 - [x] Confirmed and polished Psych Scheduler production data-source display so live Sheet, pasted data, and Excel uploads show distinct source states with a 7-day stale Sheet warning.
