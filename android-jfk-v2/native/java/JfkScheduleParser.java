@@ -130,15 +130,19 @@ final class JfkScheduleParser {
 
         int medEnd = c.medRes > 0 ? c.medRes : headers.length();
         for (int i = 0; i < MEDICAL.length; i++) {
-            int col = first(headers, 0, medEnd, h -> sameHeader(h, MEDICAL[i].header));
-            if (col >= 0) c.med.add(MEDICAL[i].withCol(i, col));
+            final int order = i;
+            final Person person = MEDICAL[i];
+            int col = first(headers, 0, medEnd, h -> sameHeader(h, person.header));
+            if (col >= 0) c.med.add(person.withCol(order, col));
         }
 
         int psychStart = c.pharmacy >= 0 ? c.pharmacy + 1 : 0;
         int psychEnd = c.psychRes >= 0 ? c.psychRes : headers.length();
         for (int i = 0; i < PSYCH.length; i++) {
-            int col = first(headers, psychStart, psychEnd, h -> sameHeader(h, PSYCH[i].header));
-            if (col >= 0) c.psych.add(PSYCH[i].withCol(i, col));
+            final int order = i;
+            final Person person = PSYCH[i];
+            int col = first(headers, psychStart, psychEnd, h -> sameHeader(h, person.header));
+            if (col >= 0) c.psych.add(person.withCol(order, col));
         }
 
         Set<Integer> skip = new HashSet<>();
