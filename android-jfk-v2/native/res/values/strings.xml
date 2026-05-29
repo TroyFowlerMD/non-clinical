@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">JFK Med Staff Schedule</string>
+    <string name="title_activity_main">JFK Med Staff Schedule</string>
+    <string name="jfk_widget_description">JFK daily medical staff schedule</string>
+</resources>

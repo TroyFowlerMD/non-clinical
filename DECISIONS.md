@@ -4,6 +4,12 @@ This file records durable architectural, workflow, safety, and publishing decisi
 
 ---
 
+### 2026-05-29 - Build JFK v2 Android Widget As Native Android
+Context: JFK v2 needs an Android app plus a home-screen widget that visually mirrors the daily schedule view.
+Decision: Package `jfk-med-staff-schedule-experimental-v2.html` through a dedicated `android-jfk-v2/` Capacitor build path, and build the widget as native Android `AppWidgetProvider` / `RemoteViews` code driven by a shared daily schedule snapshot.
+Rationale: Android launchers host widgets outside the app WebView, so a widget cannot simply embed the HTML page. A native daily snapshot contract lets the widget mirror the schedule view while preserving the browser page.
+Consequences: Future JFK v2 widget changes must keep the web snapshot contract and native widget renderer in sync. Existing Five Crowns and Psych Scheduler APK workflows should remain separate.
+
 ### 2026-05-22 - Add `#IT` As The Scheduler Request Triage Command
 Context: Dr. Fowler wants a short command that makes Codex go straight to the Psych Scheduler feedback inbox and propose actions without rediscovering the sheet workflow.
 Decision: Treat `#IT` and plain-language IT variants as command aliases for reading `Medical Staff Schedule ANALYSIS SHEET` > `Feedback`, reporting active non-test rows, and proposing concrete actions before implementation.

@@ -1,0 +1,14 @@
+{
+  "name": "jfk-v2-schedule-apk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "JFK Med Staff Schedule v2 Android WebView wrapper with native daily widget",
+  "scripts": {
+    "sync": "cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "6.1.2",
+    "@capacitor/cli": "6.1.2",
+    "@capacitor/core": "6.1.2"
+  }
+}
