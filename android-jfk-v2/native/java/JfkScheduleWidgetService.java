@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
+import android.widget.RemoteViewsService.RemoteViewsFactory;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

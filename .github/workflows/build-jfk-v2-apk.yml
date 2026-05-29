@@ -40,6 +40,7 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
+          log-accepted-android-sdk-licenses: false
 
       - name: Sync JFK v2 page into Capacitor web bundle
         working-directory: android-jfk-v2
@@ -130,7 +131,7 @@ jobs:
 
       - name: Build debug APK
         working-directory: android-jfk-v2/android
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        run: ./gradlew assembleDebug --no-daemon --console=plain
 
       - name: Confirm widget receiver and INTERNET permission
         working-directory: android-jfk-v2
