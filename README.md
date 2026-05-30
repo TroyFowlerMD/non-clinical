@@ -3,6 +3,7 @@
 Non-clinical TroyMD tools and personal/professional utility pages. The primary active app is Psych Scheduler, a single-file static GitHub Pages scheduling tool that defaults to a live Google Sheet and keeps paste/Excel fallback ingestion available.
 
 ## Project Files
+- `volunteer-hub/`: Static site listing 12 vetted volunteer opportunities for a solo 15-year-old in Buncombe County, NC (cards, Leaflet map, comparison table). See `volunteer-hub/README.md`.
 - `CONTEXT.md`: Short session-start briefing for Codex and returning developers.
 - `TASKS.md`: Live working task list seeded from the migrated Notion state.
 - `WORKLOG.md`: Append-only session-end worklog format.
