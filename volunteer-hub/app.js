@@ -4,7 +4,16 @@
    ============================================================ */
 
 (function () {
-  const OPPS = window.OPPORTUNITIES;
+  // Sort default order: verified -> verify -> posted-16, then by distance (nulls last).
+  const STATUS_RANK = { 'verified': 0, 'verify': 1, 'posted-16': 2 };
+  const OPPS = [...window.OPPORTUNITIES].sort((a, b) => {
+    const sa = STATUS_RANK[a.soloStatus] ?? 9;
+    const sb = STATUS_RANK[b.soloStatus] ?? 9;
+    if (sa !== sb) return sa - sb;
+    const da = a.distanceMi == null ? Infinity : a.distanceMi;
+    const db = b.distanceMi == null ? Infinity : b.distanceMi;
+    return da - db;
+  });
   const ARDEN = window.ARDEN;
 
   // ---- ICONS ----
