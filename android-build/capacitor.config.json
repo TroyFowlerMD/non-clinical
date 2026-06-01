@@ -1,6 +1,6 @@
 {
-  "appId": "md.troyfowler.fivecrowns",
-  "appName": "Five Crowns",
+  "appId": "com.troyfowlermd.psychscheduler",
+  "appName": "Psych Scheduler",
   "webDir": "www",
   "bundledWebRuntime": false,
   "server": {

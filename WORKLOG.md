@@ -152,3 +152,19 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 - Completed: Added `.github/workflows/build-psych-apk.yml` to build a Capacitor Android debug APK from `psych-scheduler.html` with Psych Scheduler app ID/name and `INTERNET` permission enforcement in the manifest.
 - In progress: Existing Psych Scheduler product tasks remain unchanged.
 - Blockers/notes: `git pull --ff-only` could not run because local branch `work` has no upstream tracking configured in this Codex environment.
+
+### 2026-05-28 - Codex desktop - Psych Scheduler Android widget v1 and cache bridge
+- Completed: Switched `android-build` app identity to `com.troyfowlermd.psychscheduler`, generated and tracked `android-build/android/`, and added widget native resources plus Kotlin provider/bridge wiring.
+- Completed: Added `PsychSchedulerWidget.kt`, `WidgetDataBridge.kt`, widget manifest registration, resizable widget metadata/layout/background, and MainActivity plugin registration for widget cache sync + refresh request handoff.
+- Completed: Updated `psych-scheduler.html` to push schedule caches into the native bridge on cache writes and to consume widget-triggered refresh requests on launch.
+- Completed: Updated `.github/workflows/build-psych-apk.yml` with a widget-file presence check after Capacitor Android sync so APK builds fail fast if widget sources are missing.
+- In progress: Device/emulator visual verification of widget resize behavior and full interaction path remains pending until an Android runtime test pass is run.
+- Blockers/notes: Local `gradlew assembleDebug` validation failed on this workstation because Gradle ran under Java 8 compatibility while AGP 8.2.1 requires Java 11+; CI uses JDK 21 and is expected to validate build compatibility after push.
+
+### 2026-05-28 - Codex desktop - Widget mirror mode (app-driven snapshot)
+- Completed: Reworked `psych-scheduler.html` widget sync to publish a debounced snapshot payload containing active view, selected provider, filter/toggle context, and preformatted lines for dashboard/backup/calendar.
+- Completed: Updated native `PsychSchedulerWidget.kt` to render from snapshot JSON as primary source and keep legacy TSV parsing as fallback only.
+- Completed: Updated `WidgetDataBridge.kt` to persist snapshot JSON alongside existing cache keys and trigger widget redraws.
+- Completed: Added `widget_context` line in widget layout to surface mirrored context (provider/filter summary).
+- In progress: Physical-device UX validation is still needed to confirm the mirrored lines feel equivalent to expected in-app context at each widget size.
+- Blockers/notes: Local Gradle APK build still could not be executed in this workstation session because `ANDROID_SDK_ROOT` is not set; JavaScript syntax validation and Capacitor Android sync passed locally, and CI run should be used as build source of truth.

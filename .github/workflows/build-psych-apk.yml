@@ -64,6 +64,14 @@ jobs:
             npx cap sync android
           fi
 
+      - name: Verify widget source files are present
+        working-directory: android-build
+        run: |
+          test -f android/app/src/main/java/com/troyfowlermd/psychscheduler/PsychSchedulerWidget.kt
+          test -f android/app/src/main/java/com/troyfowlermd/psychscheduler/WidgetDataBridge.kt
+          test -f android/app/src/main/res/layout/widget_schedule.xml
+          test -f android/app/src/main/res/xml/widget_info.xml
+
       - name: Ensure INTERNET permission in AndroidManifest.xml
         working-directory: android-build
         run: |
