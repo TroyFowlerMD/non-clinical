@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JFK Schedule Analyzer</title>
+<title>JFK Psych Schedule</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -55,7 +55,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh
 .nav-section{font-size:10px;font-weight:600;color:var(--faint);text-transform:uppercase;letter-spacing:0.06em;padding:10px 8px 4px}
 .nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius-sm);
   cursor:pointer;font-size:13px;color:var(--muted);transition:all 140ms ease;margin-bottom:1px;
-  border:none;background:none;width:100%;text-align:left}
+  border:none;background:none;width:100%;text-align:left;text-decoration:none}
 .nav-item:hover{background:var(--surface2);color:var(--text)}
 .nav-item.active{background:var(--primary-bg);color:var(--primary);font-weight:500}
 .nav-item svg{width:15px;height:15px;flex-shrink:0;opacity:0.7}
@@ -711,7 +711,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
   <div class="sidebar-logo">
     <div class="logo-row">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      <span class="logo-title">JFK Schedule Analyzer</span>
+      <span class="logo-title">JFK Psych Schedule</span>
     </div>
     <div class="provider-select-wrap" title="Switch provider profile">
       <svg class="provider-select-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -739,6 +739,11 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/></svg>
       Calendar
     </button>
+    <div class="nav-section">Related</div>
+    <a class="nav-item" href="jfk-med-staff-schedule-experimental-v2.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16"/><path d="M17 9h2a2 2 0 0 1 2 2v10"/><path d="M9 7h2"/><path d="M9 11h2"/><path d="M9 15h2"/></svg>
+      JFK Medical Staff Schedule
+    </a>
   </div>
   <div class="sidebar-footer">
     <button class="footer-btn" onclick="openFeedbackModal()">
@@ -760,7 +765,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
   <div class="initial-loading-screen" id="initial-loading-screen" aria-live="polite" aria-busy="true">
     <canvas class="initial-loading-canvas" id="initial-loading-canvas"></canvas>
     <div class="initial-loading-panel">
-      <div class="initial-loading-kicker">JFK Schedule Analyzer</div>
+      <div class="initial-loading-kicker">JFK Psych Schedule</div>
       <div class="initial-loading-title">Loading schedule</div>
       <div class="initial-loading-copy">Reading the latest Google Sheet so the schedule opens with current data.</div>
       <div class="initial-loading-pulse">Reading Google Sheet...</div>
@@ -772,7 +777,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
        Status pill, today badge, and topbar-meta remain so getElementById() calls still resolve. -->
   <div class="topbar">
     <div class="topbar-left">
-      <div class="topbar-title">JFK Schedule Analyzer <span style="font-size:12px;font-weight:500;color:var(--muted);letter-spacing:0">· Troy Fowler, MD</span></div>
+      <div class="topbar-title">JFK Psych Schedule <span style="font-size:12px;font-weight:500;color:var(--muted);letter-spacing:0">· Troy Fowler, MD</span></div>
       <div class="topbar-meta" id="topbar-meta">No schedule loaded — paste data to begin</div>
     </div>
     <div class="topbar-right">
@@ -3014,7 +3019,7 @@ function exportICS() {
   if(!events.length) { alert('No events to export (check filter selections).'); return; }
 
   const now = new Date().toISOString().replace(/[-:.]/g,'').slice(0,15)+'Z';
-  let ics = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//JFK Schedule Analyzer//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n`;
+  let ics = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//JFK Psych Schedule//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n`;
 
   events.forEach((ev,i)=>{
     ics += `BEGIN:VEVENT\r\n`;
@@ -3503,7 +3508,7 @@ function buildFeedbackFormData(name, comment, page, timestamp) {
   fd.append('comment', comment);
   fd.append('page', page);
   fd.append('timestamp', timestamp);
-  fd.append('_subject', 'JFK Schedule Analyzer Maintenance Request');
+  fd.append('_subject', 'JFK Psych Schedule Maintenance Request');
   fd.append('_template', 'table');
   fd.append('_captcha', 'false');
   return fd;
