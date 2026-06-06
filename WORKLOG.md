@@ -152,3 +152,9 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 - Completed: Added `.github/workflows/build-psych-apk.yml` to build a Capacitor Android debug APK from `psych-scheduler.html` with Psych Scheduler app ID/name and `INTERNET` permission enforcement in the manifest.
 - In progress: Existing Psych Scheduler product tasks remain unchanged.
 - Blockers/notes: `git pull --ff-only` could not run because local branch `work` has no upstream tracking configured in this Codex environment.
+
+### 2026-06-06 - Codex CLI - Compact mobile schedule header
+- Completed: Implemented GitHub issue #15 by replacing the separate Psych Scheduler source/update, upload, refresh, and display-control rows with one compact schedule toolbar containing the mobile menu button, date range, theme toggle, and text-size controls.
+- Completed: Moved the last-updated timestamp into the sidebar near the upload latest schedule file workflow and renamed the dashboard column reset action to Reset page with date-range and column reset behavior.
+- In progress: Existing live Google Sheet default-startup task remains open.
+- Blockers/notes: Full headed browser screenshots at requested mobile widths could not be captured because this environment lacks an installed browser and Playwright's Chromium download was blocked by the network/proxy; jsdom interaction checks and JavaScript syntax checks passed.
