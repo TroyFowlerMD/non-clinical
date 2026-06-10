@@ -4,18 +4,24 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 
 ---
 
+### 2026-06-10 - Codex desktop - Feedback migration status cleanup and experimental Psych alignment
+- Completed: Confirmed `psych-scheduler-experimental.html` had been the one remaining stale feedback path, migrated it to the shared Vercel endpoint, and verified raw GitHub plus the live GitHub Pages experimental page now match the shared private-GitHub-Issues flow.
+- Completed: Updated `TASKS.md`, `WORKLOG.md`, and `DECISIONS.md` so current schedule-app feedback status no longer describes live activation or `#IT` triage as if the old Google Sheet/FormSubmit inbox were still current.
+- In progress: The live Google Sheet default-startup preservation task remains open as an ongoing guardrail.
+- Blockers/notes: This cleanup pass was documentation/status work only; no new shared-feedback runtime implementation remained pending after the experimental page alignment.
+
 ### 2026-06-10 - Codex desktop - Shared GitHub Issues feedback migration
 - Completed: Added `vercel-jfk/api/feedback.js` as the shared feedback endpoint for Psych Scheduler and JFK Med Staff Schedule, with exact-origin allowlisting, honeypot support, payload limits, simple IP rate limiting, submission-ID dedupe, GitHub issue creation, and consistent success/failure handling.
 - Completed: Updated `psych-scheduler.html` and canonical `vercel-jfk/index.html` to submit feedback to the shared Vercel endpoint, warn users not to include patient details or passwords, preserve typed text on failure, and use one generated submission ID per attempt.
 - Completed: Updated `AGENTS.md`, `README.md`, `DECISIONS.md`, `TASKS.md`, `docs/non-clinical-feedback-github-issues.md`, and `docs/psych-scheduler-it-request-inbox.md` so future `#IT` and scheduler-request triage use the private GitHub Issues inbox instead of the old Google Sheet/FormSubmit flow.
-- In progress: Live end-to-end issue creation still depends on the private repo `TroyFowlerMD/non-clinical-feedback`, the fine-grained PAT, and the Vercel env vars being available to the deployed project.
-- Blockers/notes: Local code verification can confirm endpoint behavior and app wiring, but live private-issue creation cannot be claimed until GitHub access to the private repo and deployed Vercel env vars are verified.
+- Completed: Live end-to-end issue creation was later verified against the deployed Vercel project and private repo, and the experimental Psych page was aligned afterward so both live Psych pages now use the shared endpoint.
+- Blockers/notes: Historical note: earlier in the rollout, private-repo access, PAT scope, and deployed Vercel env vars were the final verification dependencies. Those blockers are now cleared.
 
 ### 2026-06-10 - Codex desktop - Shared schedule directory source and Psych directory rollout
 - Completed: Added `data/schedule-directory.json` as the canonical shared contact source and `scripts/sync-schedule-directory.mjs` to regenerate both app data blocks plus keep the two JFK alias HTML files synced to canonical `vercel-jfk/index.html`.
 - Completed: Updated `psych-scheduler.html` to consume generated directory/contact data, added a full Directory view with shared provider/section content plus OTP/OBOT search, and added a mobile text/call contact sheet for directory entries.
 - Completed: Switched the canonical JFK file to generated shared-directory blocks and wired future text/call overrides through `ACTION_PHONE_LOOKUP`.
-- In progress: Shared GitHub Issues feedback migration remains the next schedule-app implementation project.
+- Completed: Historical status clarification: at the time of this directory rollout, shared GitHub Issues feedback migration remained the next schedule-app implementation project. That migration was completed later on 2026-06-10.
 - Blockers/notes: Final verification should include `node scripts/sync-schedule-directory.mjs --check`, JavaScript syntax checks for both app script blocks, alias-file equality, and repo-wide stale-target searches before publish.
 
 ### 2026-06-09 - Codex desktop - Schedule route registry and med-staff forwarder cleanup
@@ -26,11 +32,11 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 - Blockers/notes: Public verification should confirm the GitHub Pages Psych Scheduler page, the legacy forwarder page, the Vercel med-staff page, and the TroyMD dashboard card after push.
 
 ### 2026-05-22 - Codex desktop - Added `#IT` scheduler request command
-- Completed: Added `#IT` and plain-language IT variants to `AGENTS.md` as aliases for opening the Psych Scheduler Feedback tab and proposing actions.
+- Completed: Added `#IT` and plain-language IT variants to `AGENTS.md` as aliases for opening the then-current Psych Scheduler Feedback tab and proposing actions.
 - Completed: Updated `docs/psych-scheduler-it-request-inbox.md` with the expected active-request triage response shape.
 - Completed: Recorded the command alias workflow decision in `DECISIONS.md`.
 - In progress: The live Google Sheet default-startup preservation task remains open as an ongoing guardrail.
-- Blockers/notes: This was documentation/instruction work only; no runtime app code or Apps Script deployment changed.
+- Blockers/notes: This was documentation/instruction work only; no runtime app code or Apps Script deployment changed. Historical note: `#IT` now uses the private GitHub Issues inbox added on 2026-06-10 rather than the retired sheet-based request tab.
 
 ### 2026-05-22 - Codex desktop - Psych Scheduler mobile and FT Phone requests
 - Completed: Updated production `psych-scheduler.html` so the My Schedule `Day / Date` column stays pinned during horizontal scrolling on mobile.

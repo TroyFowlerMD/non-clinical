@@ -23,10 +23,10 @@ Rationale: A single canonical registry plus explicit forwarder policy makes futu
 Consequences: Future schedule-app work should start by reading the registry, verify both the current live URL and any intentional legacy-forwarder URL after publish, and avoid treating old GitHub Pages copies as active apps unless Dr. Fowler explicitly reverses that policy.
 
 ### 2026-05-22 - Add `#IT` As The Scheduler Request Triage Command
-Context: Dr. Fowler wants a short command that makes Codex go straight to the Psych Scheduler feedback inbox and propose actions without rediscovering the sheet workflow.
-Decision: Treat `#IT` and plain-language IT variants as command aliases for reading `Medical Staff Schedule ANALYSIS SHEET` > `Feedback`, reporting active non-test rows, and proposing concrete actions before implementation.
+Context: Before the 2026-06-10 shared feedback migration, Dr. Fowler wanted a short command that made Codex go straight to the then-current Psych Scheduler feedback inbox and propose actions without rediscovering the sheet workflow.
+Decision: At that time, treat `#IT` and plain-language IT variants as command aliases for reading `Medical Staff Schedule ANALYSIS SHEET` > `Feedback`, reporting active non-test rows, and proposing concrete actions before implementation.
 Rationale: A command alias reduces setup friction and keeps scheduler request triage consistent across Codex sessions and workstations.
-Consequences: Future Codex sessions should not ask which sheet to use for `#IT`; they should read `docs/psych-scheduler-it-request-inbox.md`, inspect the Feedback tab, and wait for approval before editing files or closing rows.
+Consequences: Historical only. This sheet-based `#IT` workflow was superseded on 2026-06-10 by the private GitHub Issues inbox decision above. Current `#IT` triage should read `docs/psych-scheduler-it-request-inbox.md`, inspect `TroyFowlerMD/non-clinical-feedback`, and wait for approval before editing files or closing issues.
 
 ### 2026-05-22 - Distinguish Psych Scheduler Data Sources In The Production Badge
 Context: The production scheduler can load from the live Google Sheet, pasted TSV, or Excel upload, but the existing top data bar could continue showing Google Sheet freshness after manual data replacement.
@@ -35,10 +35,10 @@ Rationale: Users need to know what data they are actually viewing, especially wh
 Consequences: Future production source-display changes should update the shared in-memory source state rather than deriving the label only from `driveStatus`. Excel upload may sync back to Drive, but the current page source should still identify the upload unless the page reloads from `Live.Sheet1`.
 
 ### 2026-05-22 - Track Psych Scheduler IT Requests In The Schedule Sheet
-Context: Dr. Fowler wants future Codex sessions to check active scheduler feedback/IT requests, report them, suggest fixes, and ask clarifying questions when needed.
-Decision: Use the existing `Medical Staff Schedule ANALYSIS SHEET` as the request inbox by adding a separate `Feedback` tab, while leaving schedule reads on `Sheet1`. Keep the Apps Script source in this repo under `apps-script/psych-scheduler-feedback/` and use clasp for future edits/deploys.
+Context: Before the 2026-06-10 shared feedback migration, Dr. Fowler wanted future Codex sessions to check active scheduler feedback/IT requests, report them, suggest fixes, and ask clarifying questions when needed.
+Decision: At that time, use the existing `Medical Staff Schedule ANALYSIS SHEET` as the request inbox by adding a separate `Feedback` tab, while leaving schedule reads on `Sheet1`. Keep the Apps Script source in this repo under `apps-script/psych-scheduler-feedback/` and use clasp for future edits/deploys.
 Rationale: This keeps the request workflow tied to the scheduler's existing Google infrastructure without adding a separate backend or changing the schedule-loading path.
-Consequences: Future scheduler request triage should read `docs/psych-scheduler-it-request-inbox.md` and the `Feedback` tab first, then use the token-protected status update operation when a request is triaged or completed. Other workstations should run `scripts/setup-psych-scheduler-appscript-access.ps1` after cloning/pulling the repo. Apps Script deployments should update the existing web app deployment so `DRIVE_EXEC_URL` remains stable.
+Consequences: Historical only. The sheet-based request inbox was superseded on 2026-06-10 by the shared Vercel-to-private-GitHub-Issues flow. Current scheduler request triage should use `docs/psych-scheduler-it-request-inbox.md` plus `TroyFowlerMD/non-clinical-feedback` as the operational inbox. The Apps Script project still remains relevant for schedule-data reads, so `DRIVE_EXEC_URL` stability and workstation clasp setup guidance still matter for that narrower scope.
 
 ### 2026-05-21 - Keep My Schedule Provider Assignments In A Left-Side Block
 Context: My Schedule users can remove and re-add the selected-provider assignment column and individual provider schedule columns. Re-added columns could move to the far right, away from the day/date and selected-provider context.

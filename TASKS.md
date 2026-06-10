@@ -9,7 +9,6 @@
 ## Active Tasks
 - [~] Keep Psych Scheduler default startup tied to the live Google Sheet while preserving paste/Excel fallback behavior.
 - [~] Keep `docs/schedule-app-canonical-routes.md` current whenever schedule-app URLs, hosts, or repo ownership change.
-- [~] Finish live shared-feedback activation after confirming the private repo, fine-grained PAT, and Vercel env vars for `TroyFowlerMD/non-clinical-feedback`.
 
 ## Upcoming
 - [ ] Consider future `non-clinical` professional section organization if more professional utilities are added.
@@ -18,10 +17,11 @@
 
 ## Completed (last 30 days)
 - [x] Replaced the old Psych/JFK feedback intake code paths with one shared Vercel endpoint and private GitHub Issues workflow, plus updated `#IT`/operator docs to use `TroyFowlerMD/non-clinical-feedback`.
+- [x] Aligned `psych-scheduler-experimental.html` with the shared Vercel feedback endpoint so both live Psych pages now submit to the private GitHub Issues inbox.
 - [x] Added one canonical shared schedule-directory source at `data/schedule-directory.json`, generated directory blocks into both apps, added the Psych directory view, and synced the JFK alias HTML files from the canonical Vercel file.
 - [x] Repointed Psych Scheduler and non-clinical hub med-staff entrypoints to `https://non-clinical-lac.vercel.app/`, replaced the old GitHub Pages med-staff page with a forwarder, and added a canonical schedule-route registry.
 - [x] Implemented GitHub issue #15 compact Psych Scheduler mobile schedule header with sidebar last-updated timestamp and Reset page behavior.
-- [x] Added `#IT` as the Psych Scheduler Feedback-tab triage command so Codex reports active requests and proposes actions.
+- [x] Added `#IT` as the scheduler-request triage command; it now routes through the private GitHub Issues inbox instead of the retired Psych Scheduler Feedback tab.
 - [x] Resolved active Psych Scheduler feedback requests for mobile My Schedule date-column pinning, 16px mobile default text, and all-provider FT Phone display.
 - [x] Confirmed and polished Psych Scheduler production data-source display so live Sheet, pasted data, and Excel uploads show distinct source states with a 7-day stale Sheet warning.
 - [x] Added other-computer bootstrap support for Psych Scheduler Apps Script editing, clasp login, feedback admin token verification, and request status updates.
