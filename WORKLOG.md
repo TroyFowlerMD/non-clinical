@@ -4,6 +4,13 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 
 ---
 
+### 2026-06-10 - Codex desktop - Shared schedule directory source and Psych directory rollout
+- Completed: Added `data/schedule-directory.json` as the canonical shared contact source and `scripts/sync-schedule-directory.mjs` to regenerate both app data blocks plus keep the two JFK alias HTML files synced to canonical `vercel-jfk/index.html`.
+- Completed: Updated `psych-scheduler.html` to consume generated directory/contact data, added a full Directory view with shared provider/section content plus OTP/OBOT search, and added a mobile text/call contact sheet for directory entries.
+- Completed: Switched the canonical JFK file to generated shared-directory blocks and wired future text/call overrides through `ACTION_PHONE_LOOKUP`.
+- In progress: Shared GitHub Issues feedback migration remains the next schedule-app implementation project.
+- Blockers/notes: Final verification should include `node scripts/sync-schedule-directory.mjs --check`, JavaScript syntax checks for both app script blocks, alias-file equality, and repo-wide stale-target searches before publish.
+
 ### 2026-06-09 - Codex desktop - Schedule route registry and med-staff forwarder cleanup
 - Completed: Updated `psych-scheduler.html` and the public `index.html` hub card so current med-staff entrypoints now point directly to `https://non-clinical-lac.vercel.app/`.
 - Completed: Replaced `jfk-med-staff-schedule-experimental-v2.html` with a thin legacy forwarder page and removed the stray `snippet_psych_scheduler_link.html` artifact.

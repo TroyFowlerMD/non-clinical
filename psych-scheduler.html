@@ -263,6 +263,35 @@ tr.holiday-row:hover td{background:color-mix(in srgb,var(--amber-bg) 160%,var(--
 .working-provider-link:hover,.working-provider-link:focus{background:var(--primary-bg);color:var(--primary-h);text-decoration:none;outline:none}
 .sms-all-btn{display:inline-flex;align-items:center;justify-content:center;min-width:24px;min-height:22px;margin-left:4px;padding:1px 5px;border-radius:var(--radius-sm);background:var(--surface2);border:1px solid var(--border);color:var(--primary);font-size:11px;line-height:1;text-decoration:none;vertical-align:middle}
 .sms-all-btn:hover,.sms-all-btn:focus{background:var(--primary-bg);border-color:var(--primary);color:var(--primary-h);outline:none}
+.directory-shell{display:flex;flex-direction:column;gap:14px;max-width:1080px}
+.dir-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow)}
+.dir-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.dir-head-title{font-size:13px;font-weight:700;letter-spacing:0.01em}
+.dir-head-sub{font-size:11px;color:var(--muted)}
+.dir-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1px;background:var(--border)}
+.dir-item{display:flex;flex-direction:column;gap:6px;padding:12px;background:var(--surface);min-width:0}
+.dir-name{font-size:13px;font-weight:700;color:var(--text);line-height:1.2}
+.dir-name-btn{border:none;background:none;padding:0;text-align:left;cursor:pointer}
+.dir-name-btn.has-phone{color:var(--primary)}
+.dir-name-btn.has-phone:hover,.dir-name-btn.has-phone:focus{color:var(--primary-h);outline:none}
+.dir-source{display:inline-flex;align-items:center;width:max-content;padding:2px 6px;border-radius:999px;background:var(--primary-bg);color:var(--primary);font-size:10px;font-weight:600}
+.dir-phone-stack{display:flex;flex-direction:column;gap:4px}
+.dir-phone-line,.dir-ext{font-size:11px;color:var(--muted);line-height:1.35}
+.dir-phone-line a{color:var(--primary);text-decoration:none}
+.dir-phone-line a:hover,.dir-phone-line a:focus{text-decoration:none;color:var(--primary-h)}
+.dir-empty{padding:12px 14px;font-size:12px;color:var(--muted);background:var(--surface)}
+.dir-search-wrap{padding:12px 14px;background:var(--surface);border-bottom:1px solid var(--border)}
+.dir-search{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface2);color:var(--text);font-size:13px;font-family:var(--font)}
+.dir-search:focus{outline:2px solid var(--primary);outline-offset:1px;border-color:transparent}
+.contact-sheet{position:fixed;inset:0;z-index:65;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.5)}
+.contact-sheet.open{display:flex}
+.contact-sheet-card{width:min(440px,100%);background:var(--surface);border:1px solid var(--border);border-bottom:none;border-radius:18px 18px 0 0;padding:18px 16px 24px;box-shadow:0 -12px 36px rgba(0,0,0,0.28)}
+.contact-sheet-title{font-size:18px;font-weight:700;margin-bottom:4px}
+.contact-sheet-sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+.contact-sheet-actions{display:grid;gap:8px}
+.contact-sheet-btn{display:flex;align-items:center;justify-content:center;min-height:42px;padding:0 12px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;font-weight:600;text-decoration:none}
+.contact-sheet-btn.primary{background:var(--primary);border-color:transparent;color:#fff}
+.contact-sheet-btn:hover,.contact-sheet-btn:focus{text-decoration:none}
 
 /* BADGES */
 .badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:3px;font-size:11px;font-weight:600;white-space:nowrap}
@@ -703,6 +732,18 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
   </div>
 </div>
 
+<div class="contact-sheet" id="contact-sheet" onclick="closeContactSheet(event)" aria-hidden="true">
+  <div class="contact-sheet-card" onclick="event.stopPropagation()">
+    <div class="contact-sheet-title" id="contact-sheet-name">Contact</div>
+    <div class="contact-sheet-sub" id="contact-sheet-phone">No phone available</div>
+    <div class="contact-sheet-actions">
+      <a class="contact-sheet-btn primary" id="contact-sheet-text" href="#">Text</a>
+      <a class="contact-sheet-btn" id="contact-sheet-call" href="#">Call</a>
+      <button type="button" class="contact-sheet-btn" onclick="hideContactSheet()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <nav class="sidebar">
   <div class="sidebar-logo">
     <div class="logo-row">
@@ -735,6 +776,10 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
     <button class="nav-item disabled" id="nav-calendar" onclick="showView('calendar')" data-view="calendar">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/></svg>
       Calendar
+    </button>
+    <button class="nav-item" id="nav-directory" onclick="showView('directory')" data-view="directory">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19a2 2 0 0 0 2 2h12"/><path d="M6 2h12a2 2 0 0 1 2 2v16a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2V4a2 2 0 0 1 2-2z"/><path d="M9 7h6"/><path d="M9 11h6"/><path d="M9 15h4"/></svg>
+      Directory
     </button>
     <div class="nav-section">Related</div>
     <a class="nav-item" href="https://non-clinical-lac.vercel.app/">
@@ -955,6 +1000,20 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
       </div>
     </div>
 
+    <div class="view" id="view-directory">
+      <div class="directory-shell" id="directory-root">
+        <div class="dir-section">
+          <div class="dir-head">
+            <div>
+              <div class="dir-head-title">Directory</div>
+              <div class="dir-head-sub">Loading shared directory data...</div>
+            </div>
+          </div>
+          <div class="dir-empty">Directory content will appear here.</div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -968,25 +1027,943 @@ const CORE_PROVIDERS = ['Patil','German','Anderson','Fowler','Carter','Ondreyka'
 const PROVIDER_SELECT_HIDE = new Set(['Patil','German']);
 const BACKUP_POOL    = ['Fowler','Carter','Ondreyka'];
 const BACKUP_POOL_SET = new Set(BACKUP_POOL);
-  const PROVIDER_PHONES = {
-  'Fowler':    '+13606061046',
-  'Ondreyka':  '+17347091295',
-  'Carter':    '+19198641056',
-  'Anderson':  '+19122222759',
-  'Cooley':    '+19137102670',
-  'Smith':     '+18285513508',
-  'Wren':      '+19098023352',
-  'Patil':     '+14238029271',
-  'German':    '+13364651513',
-  'Coburn':    '+16173061134',
-  'Bennett':   '+13362602926',
-  'Williams':  '+19199153291',
-  'Eidson':    '+18034132609',
-  'Tran':      '+19808002145',
-  'Camiliere': '+14805861791',
-  'Bandell':   '+14439287357',
-  'Dickerson': '+18137663257',
+// BEGIN GENERATED_PSYCH_DIRECTORY_DATA
+const PROVIDER_PHONES = {
+  "Anderson": "+19122222759",
+  "Bandell": "+14439287357",
+  "Bennett": "+13362602926",
+  "Camiliere": "+14805861791",
+  "Carter": "+19198641056",
+  "Coburn": "+16173061134",
+  "Cooley": "+19137102670",
+  "DeBell": "+19703761182",
+  "Dickerson": "+18137663257",
+  "Dill": "+18285067870",
+  "Edwards": "+18289251696",
+  "Eidson": "+18034132609",
+  "Fowler": "+13606061046",
+  "German": "+13364651513",
+  "Griffith": "+19084033248",
+  "King": "+15018376887",
+  "Kuetemeyer": "+12032531662",
+  "McKay": "+18286825479",
+  "Millonas": "+18083914357",
+  "Moore": "+18284236673",
+  "Morales": "+18647048569",
+  "Nolan": "+18284121095",
+  "Ondreyka": "+17347091295",
+  "Patil": "+14238029271",
+  "Poetter": "+13365492166",
+  "Ramirez": "+12034701369",
+  "Smith": "+18285513508",
+  "Tran": "+19808002145",
+  "Williams": "+19199153291",
+  "Wolf": "+14102183110",
+  "Wren": "+19098023352"
 };
+
+const PROVIDER_ACTION_PHONES = {
+  "Anderson": {
+    "text": "+19122222759",
+    "call": "+19122222759"
+  },
+  "Bandell": {
+    "text": "+14439287357",
+    "call": "+14439287357"
+  },
+  "Bennett": {
+    "text": "+13362602926",
+    "call": "+13362602926"
+  },
+  "Camiliere": {
+    "text": "+14805861791",
+    "call": "+14805861791"
+  },
+  "Carter": {
+    "text": "+19198641056",
+    "call": "+19198641056"
+  },
+  "Coburn": {
+    "text": "+16173061134",
+    "call": "+16173061134"
+  },
+  "Cooley": {
+    "text": "+19137102670",
+    "call": "+19137102670"
+  },
+  "DeBell": {
+    "text": "+19703761182",
+    "call": "+19703761182"
+  },
+  "Dickerson": {
+    "text": "+18137663257",
+    "call": "+18137663257"
+  },
+  "Dill": {
+    "text": "+18285067870",
+    "call": "+18285067870"
+  },
+  "Edwards": {
+    "text": "+18289251696",
+    "call": "+18289251696"
+  },
+  "Eidson": {
+    "text": "+18034132609",
+    "call": "+18034132609"
+  },
+  "Fowler": {
+    "text": "+13606061046",
+    "call": "+13606061046"
+  },
+  "German": {
+    "text": "+13364651513",
+    "call": "+13364651513"
+  },
+  "Griffith": {
+    "text": "+19084033248",
+    "call": "+19084033248"
+  },
+  "King": {
+    "text": "+15018376887",
+    "call": "+15018376887"
+  },
+  "Kuetemeyer": {
+    "text": "+12032531662",
+    "call": "+12032531662"
+  },
+  "McKay": {
+    "text": "+18286825479",
+    "call": "+18286825479"
+  },
+  "Millonas": {
+    "text": "+18083914357",
+    "call": "+18083914357"
+  },
+  "Moore": {
+    "text": "+18284236673",
+    "call": "+18284236673"
+  },
+  "Morales": {
+    "text": "+18647048569",
+    "call": "+18647048569"
+  },
+  "Nolan": {
+    "text": "+18284121095",
+    "call": "+18284121095"
+  },
+  "Ondreyka": {
+    "text": "+17347091295",
+    "call": "+17347091295"
+  },
+  "Patil": {
+    "text": "+14238029271",
+    "call": "+14238029271"
+  },
+  "Poetter": {
+    "text": "+13365492166",
+    "call": "+13365492166"
+  },
+  "Ramirez": {
+    "text": "+12034701369",
+    "call": "+12034701369"
+  },
+  "Smith": {
+    "text": "+18285513508",
+    "call": "+18285513508"
+  },
+  "Tran": {
+    "text": "+19808002145",
+    "call": "+19808002145"
+  },
+  "Williams": {
+    "text": "+19199153291",
+    "call": "+19199153291"
+  },
+  "Wolf": {
+    "text": "+14102183110",
+    "call": "+14102183110"
+  },
+  "Wren": {
+    "text": "+19098023352",
+    "call": "+19098023352"
+  }
+};
+
+const PROVIDER_ALIASES = {
+  "Anderson": [
+    "ANDERSON"
+  ],
+  "Carter": [
+    "CARTER"
+  ],
+  "Cooley": [
+    "COOLEY"
+  ],
+  "Fowler": [
+    "FOWLER",
+    "TFOWLER",
+    "TROY FOWLER",
+    "T FOWLER"
+  ],
+  "German": [
+    "GERMAN"
+  ],
+  "Ondreyka": [
+    "ONDREYKA"
+  ],
+  "Patil": [
+    "PATIL"
+  ],
+  "Smith": [
+    "SMITH"
+  ]
+};
+
+const PSYCH_DIRECTORY_PROVIDERS = [
+  {
+    "name": "Anderson",
+    "group": "psych",
+    "phone": "+19122222759",
+    "textPhone": "+19122222759",
+    "callPhone": "+19122222759",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "Bandell",
+    "group": "medical",
+    "phone": "+14439287357",
+    "textPhone": "+14439287357",
+    "callPhone": "+14439287357",
+    "alternatePhones": [],
+    "sourceLabel": "Medical column"
+  },
+  {
+    "name": "Bennett",
+    "group": "psych",
+    "phone": "+13362602926",
+    "textPhone": "+13362602926",
+    "callPhone": "+13362602926",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "Camiliere",
+    "group": "psych",
+    "phone": "+14805861791",
+    "textPhone": "+14805861791",
+    "callPhone": "+14805861791",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "Carter",
+    "group": "psych",
+    "phone": "+19198641056",
+    "textPhone": "+19198641056",
+    "callPhone": "+19198641056",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "Coburn",
+    "group": "psych",
+    "phone": "+16173061134",
+    "textPhone": "+16173061134",
+    "callPhone": "+16173061134",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "Cooley",
+    "group": "psych",
+    "phone": "+19137102670",
+    "textPhone": "+19137102670",
+    "callPhone": "+19137102670",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "DeBell",
+    "group": "medical",
+    "phone": "+19703761182",
+    "textPhone": "+19703761182",
+    "callPhone": "+19703761182",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "Dickerson",
+    "group": "psych",
+    "phone": "+18137663257",
+    "textPhone": "+18137663257",
+    "callPhone": "+18137663257",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "Dill",
+    "group": "medical",
+    "phone": "+18285067870",
+    "textPhone": "+18285067870",
+    "callPhone": "+18285067870",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "Edwards",
+    "group": "medical",
+    "phone": "+18289251696",
+    "textPhone": "+18289251696",
+    "callPhone": "+18289251696",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "Eidson",
+    "group": "psych",
+    "phone": "+18034132609",
+    "textPhone": "+18034132609",
+    "callPhone": "+18034132609",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "Fowler",
+    "group": "psych",
+    "phone": "+13606061046",
+    "textPhone": "+13606061046",
+    "callPhone": "+13606061046",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "German",
+    "group": "psych",
+    "phone": "+13364651513",
+    "textPhone": "+13364651513",
+    "callPhone": "+13364651513",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "Griffith",
+    "group": "medical",
+    "phone": "+19084033248",
+    "textPhone": "+19084033248",
+    "callPhone": "+19084033248",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "King",
+    "group": "medical",
+    "phone": "+15018376887",
+    "textPhone": "+15018376887",
+    "callPhone": "+15018376887",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "Kuetemeyer",
+    "group": "medical",
+    "phone": "+12032531662",
+    "textPhone": "+12032531662",
+    "callPhone": "+12032531662",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "McKay",
+    "group": "medical",
+    "phone": "+18286825479",
+    "textPhone": "+18286825479",
+    "callPhone": "+18286825479",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "Millonas",
+    "group": "medical",
+    "phone": "+18083914357",
+    "textPhone": "+18083914357",
+    "callPhone": "+18083914357",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "Moore",
+    "group": "medical",
+    "phone": "+18284236673",
+    "textPhone": "+18284236673",
+    "callPhone": "+18284236673",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "Morales",
+    "group": "psych",
+    "phone": "+18647048569",
+    "textPhone": "+18647048569",
+    "callPhone": "+18647048569",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "Nolan",
+    "group": "medical",
+    "phone": "+18284121095",
+    "textPhone": "+18284121095",
+    "callPhone": "+18284121095",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "Ondreyka",
+    "group": "psych",
+    "phone": "+17347091295",
+    "textPhone": "+17347091295",
+    "callPhone": "+17347091295",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "Patil",
+    "group": "psych",
+    "phone": "+14238029271",
+    "textPhone": "+14238029271",
+    "callPhone": "+14238029271",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "Poetter",
+    "group": "medical",
+    "phone": "+13365492166",
+    "textPhone": "+13365492166",
+    "callPhone": "+13365492166",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "Ramirez",
+    "group": "medical",
+    "phone": "+12034701369",
+    "textPhone": "+12034701369",
+    "callPhone": "+12034701369",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "Smith",
+    "group": "psych",
+    "phone": "+18285513508",
+    "textPhone": "+18285513508",
+    "callPhone": "+18285513508",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "Tran",
+    "group": "psych",
+    "phone": "+19808002145",
+    "textPhone": "+19808002145",
+    "callPhone": "+19808002145",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "Williams",
+    "group": "psych",
+    "phone": "+19199153291",
+    "textPhone": "+19199153291",
+    "callPhone": "+19199153291",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "Wolf",
+    "group": "medical",
+    "phone": "+14102183110",
+    "textPhone": "+14102183110",
+    "callPhone": "+14102183110",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  },
+  {
+    "name": "Wren",
+    "group": "psych",
+    "phone": "+19098023352",
+    "textPhone": "+19098023352",
+    "callPhone": "+19098023352",
+    "alternatePhones": [],
+    "sourceLabel": ""
+  }
+];
+
+const PSYCH_DIRECTORY_SECTIONS = [
+  {
+    "title": "Admissions",
+    "items": [
+      {
+        "name": "Admissions RN cell 1",
+        "phone": "828-803-5473",
+        "alternatePhones": [],
+        "ext": ""
+      },
+      {
+        "name": "Admissions RN cell 2",
+        "phone": "828-803-4279",
+        "alternatePhones": [],
+        "ext": ""
+      },
+      {
+        "name": "Admissions RN office 1",
+        "phone": "828-257-6400",
+        "alternatePhones": [],
+        "ext": ""
+      },
+      {
+        "name": "Admissions RN office 2",
+        "phone": "828-257-6270",
+        "alternatePhones": [],
+        "ext": ""
+      },
+      {
+        "name": "Admissions Coordinator",
+        "phone": "828-257-6230",
+        "alternatePhones": [],
+        "ext": ""
+      }
+    ]
+  },
+  {
+    "title": "Information Technology",
+    "items": [
+      {
+        "name": "JFK Helpdesk",
+        "phone": "828-257-6444",
+        "alternatePhones": [],
+        "ext": ""
+      },
+      {
+        "name": "DSOHF Helpdesk",
+        "phone": "984-683-7064",
+        "alternatePhones": [],
+        "ext": ""
+      }
+    ]
+  },
+  {
+    "title": "Operations",
+    "items": [
+      {
+        "name": "Maintenance cell",
+        "phone": "828-273-3278",
+        "alternatePhones": [],
+        "ext": ""
+      },
+      {
+        "name": "Admin on Call",
+        "phone": "828-450-9406",
+        "alternatePhones": [],
+        "ext": ""
+      }
+    ]
+  },
+  {
+    "title": "Units",
+    "items": [
+      {
+        "name": "ACU - Unit Clerk",
+        "phone": "257-6265",
+        "alternatePhones": [],
+        "ext": "2119"
+      },
+      {
+        "name": "ACU - Nurse Station 1",
+        "phone": "257-6267",
+        "alternatePhones": [],
+        "ext": "2121"
+      },
+      {
+        "name": "ACU - Nurse Station 2",
+        "phone": "257-6269",
+        "alternatePhones": [],
+        "ext": "2122"
+      },
+      {
+        "name": "ACU - Nurse Station 3",
+        "phone": "252-6271",
+        "alternatePhones": [],
+        "ext": "2124"
+      },
+      {
+        "name": "ACU - Nurse Station 4",
+        "phone": "257-6374",
+        "alternatePhones": [],
+        "ext": "2126"
+      },
+      {
+        "name": "ACU - Conference Room",
+        "phone": "257-6264",
+        "alternatePhones": [],
+        "ext": "2118"
+      },
+      {
+        "name": "ACU - Fax - Chart Room",
+        "phone": "257-6204",
+        "alternatePhones": [],
+        "ext": "2905"
+      },
+      {
+        "name": "ACU - Fax - Copy Room",
+        "phone": "257-6249",
+        "alternatePhones": [],
+        "ext": "2904"
+      },
+      {
+        "name": "ACU - HCT Desk",
+        "phone": "257-6275",
+        "alternatePhones": [],
+        "ext": "2127"
+      },
+      {
+        "name": "ACU - HCT Desk",
+        "phone": "257-6277",
+        "alternatePhones": [],
+        "ext": "2129"
+      },
+      {
+        "name": "ACU - Med Room",
+        "phone": "257-6273",
+        "alternatePhones": [],
+        "ext": "2125"
+      },
+      {
+        "name": "Empathy (1,2) - Unit Clerk",
+        "phone": "257-6316",
+        "alternatePhones": [],
+        "ext": "2303"
+      },
+      {
+        "name": "Empathy (1,2) - Nurse Station 1",
+        "phone": "257-6314",
+        "alternatePhones": [],
+        "ext": "2301"
+      },
+      {
+        "name": "Empathy (1,2) - Nurse Station 2",
+        "phone": "257-6315",
+        "alternatePhones": [],
+        "ext": "2302"
+      },
+      {
+        "name": "Empathy (1,2) - Nurse Station 3",
+        "phone": "257-6318",
+        "alternatePhones": [],
+        "ext": "2305"
+      },
+      {
+        "name": "Empathy (1,2) - Nurse Station 4",
+        "phone": "257-6315",
+        "alternatePhones": [],
+        "ext": "2306"
+      },
+      {
+        "name": "Empathy (1,2) - Nursing Fax",
+        "phone": "257-6328",
+        "alternatePhones": [],
+        "ext": "2907"
+      },
+      {
+        "name": "Empathy (1,2) - HCT",
+        "phone": "",
+        "alternatePhones": [],
+        "ext": "2316"
+      },
+      {
+        "name": "Empathy (1,2) - Provider Office",
+        "phone": "257-6326",
+        "alternatePhones": [],
+        "ext": "2311"
+      },
+      {
+        "name": "Empathy (1,2) - Treatment Room",
+        "phone": "257-6280",
+        "alternatePhones": [],
+        "ext": "2617"
+      },
+      {
+        "name": "Empathy (1,2) - Exam Room",
+        "phone": "257-6242",
+        "alternatePhones": [],
+        "ext": "2308"
+      },
+      {
+        "name": "Empathy (1,2) - Med Room",
+        "phone": "257-6313",
+        "alternatePhones": [],
+        "ext": "2300"
+      },
+      {
+        "name": "Hope (3,4,5) - Unit Clerk",
+        "phone": "257-6336",
+        "alternatePhones": [],
+        "ext": "2406"
+      },
+      {
+        "name": "Hope (3,4,5) - HCT",
+        "phone": "257-6333",
+        "alternatePhones": [],
+        "ext": "2403"
+      },
+      {
+        "name": "Hope (3,4,5) - Exam Room",
+        "phone": "257-6424",
+        "alternatePhones": [],
+        "ext": "2409"
+      },
+      {
+        "name": "Hope (3,4,5) - Nursing Fax",
+        "phone": "257-6330",
+        "alternatePhones": [],
+        "ext": "2908"
+      }
+    ]
+  },
+  {
+    "title": "DHHS Police",
+    "items": [
+      {
+        "name": "DHHS Police Cell Phone",
+        "phone": "230-7491",
+        "alternatePhones": [],
+        "ext": ""
+      },
+      {
+        "name": "Mark McWilliams, Chief",
+        "phone": "257-6388",
+        "alternatePhones": [],
+        "ext": ""
+      }
+    ]
+  }
+];
+
+const OTP_OBOT_DIRECTORY = [
+  {
+    "name": "Appalachian Mountain Health - Asheville (formerly Dale Fell Community Health Center)",
+    "phones": [
+      "828-712-1350"
+    ]
+  },
+  {
+    "name": "Ascension Solutions (Formerly Asheville Suboxone Treatment)",
+    "phones": [
+      "828-622-4058",
+      "828-595-6548"
+    ]
+  },
+  {
+    "name": "Asheville Comprehensive Treatment Center",
+    "phones": [
+      "828-747-7045"
+    ]
+  },
+  {
+    "name": "Bakersville Health Center (under Moutain Community Health Partnership umbrella) (Location added by CB 10/27/22)",
+    "phones": [
+      "828-592-1794"
+    ]
+  },
+  {
+    "name": "BHG Clyde",
+    "phones": [
+      "828-341-2561"
+    ]
+  },
+  {
+    "name": "Blue Ridge Health",
+    "phones": [
+      "828-625-4400",
+      "828-692-4289 ext. 2291",
+      "828-692-4289"
+    ]
+  },
+  {
+    "name": "Burnsville Health Center (under Moutain Community Health Partnership umbrella) (Location added by CB 10/27/22)",
+    "phones": [
+      "828-592-1794"
+    ]
+  },
+  {
+    "name": "Celo Health Center (under Mountain Community Health Partnership umbrella)",
+    "phones": [
+      "828-592-1794"
+    ]
+  },
+  {
+    "name": "Crossroads Treatment Center (Asheville)",
+    "phones": [
+      "828-575-9403"
+    ]
+  },
+  {
+    "name": "Crossroads Treatment Center (Greensboro)",
+    "phones": [
+      "336-272-9990",
+      "336-500-8789"
+    ]
+  },
+  {
+    "name": "Crossroads Treatment Center (Shelby) CLOSED?",
+    "phones": [
+      "800-805-6989"
+    ]
+  },
+  {
+    "name": "Crossroads Treatment Center (Weaverville)",
+    "phones": [
+      "800-805-6989"
+    ]
+  },
+  {
+    "name": "Daymark",
+    "phones": [
+      "828-733-5889"
+    ]
+  },
+  {
+    "name": "Eleanor Health",
+    "phones": [
+      "828-372-0856",
+      "828-761-3096"
+    ]
+  },
+  {
+    "name": "Hazelwood Healthcare (Waynesville)",
+    "phones": [
+      "828-595-9001"
+    ]
+  },
+  {
+    "name": "High Country Community Health - Burke Medical/Burke Integrated Health (2locations: Morganton and Connely Springs-East Burke Location)",
+    "phones": [
+      "828-406-3971"
+    ]
+  },
+  {
+    "name": "Lexington Treatment Center",
+    "phones": [
+      "336-224-1919"
+    ]
+  },
+  {
+    "name": "McLeod Addictive Disease Center- Charlotte",
+    "phones": [
+      "704-332-9001 ext. 2528"
+    ]
+  },
+  {
+    "name": "McLeod Addictive Disease Center- Concord",
+    "phones": [
+      "704-782-3131",
+      "704-332-9001 ext. 2528"
+    ]
+  },
+  {
+    "name": "McLeod Addictive Disease Center- Gastonia",
+    "phones": [
+      "704-865-1558",
+      "704-332-9001 ext. 2528"
+    ]
+  },
+  {
+    "name": "McLeod Addictive Disease Center- Hickory",
+    "phones": [
+      "704-332-9001 ext. 2528"
+    ]
+  },
+  {
+    "name": "McLeod Addictive Disease Center- Lenoir",
+    "phones": [
+      "828-610-2740",
+      "704-332-9001 ext. 2528"
+    ]
+  },
+  {
+    "name": "McLeod Addictive Disease Center- Marion",
+    "phones": [
+      "828-659-3966",
+      "704-332-9001 ext. 2528",
+      "828-442-2384"
+    ]
+  },
+  {
+    "name": "McLeod Addictive Disease Center- Monroe",
+    "phones": [
+      "704-289-9869",
+      "704-332-9001 ext. 2528"
+    ]
+  },
+  {
+    "name": "McLeod Addictive Disease Center- Statesville",
+    "phones": [
+      "704-871-2992",
+      "828-442-2384"
+    ]
+  },
+  {
+    "name": "New Season Gastonia Treatment Center",
+    "phones": [
+      "980-285-2990 ext. 27225",
+      "877-284-7074",
+      "980-285-2990"
+    ]
+  },
+  {
+    "name": "New Season Morganton Treatment Center",
+    "phones": [
+      "877-284-7074",
+      "828-608-0500"
+    ]
+  },
+  {
+    "name": "New Season/Hickory Metro Treatment Center",
+    "phones": [
+      "877-284-7074",
+      "828-485-1320"
+    ]
+  },
+  {
+    "name": "Pyramid (Formerly October Road)",
+    "phones": [
+      "770-866-1850",
+      "704-300-9805"
+    ]
+  },
+  {
+    "name": "RHA Marion",
+    "phones": [
+      "828-652-2919"
+    ]
+  },
+  {
+    "name": "Spruce Pine Health Center (under Moutain Community Health Partnership umbrella) (Location added by CB 10/27/22)",
+    "phones": [
+      "828-592-1794"
+    ]
+  },
+  {
+    "name": "The Free Clinics",
+    "phones": [
+      "828-697-8422",
+      "828-676-8258"
+    ]
+  }
+];
+// END GENERATED_PSYCH_DIRECTORY_DATA
 
 // ── Google Drive / Apps Script integration ────────────────────────────────
 // After deploying Code.gs as a Web App, paste the /exec URL here:
@@ -1063,17 +2040,6 @@ function isPostCall(raw) {
 // Provider alias map — derived from CORE_PROVIDERS plus common Fowler/etc. nicknames.
 // Used to recognize a provider name in any free-text cell (overnight, backup, FT phone).
 // CORE_PROVIDERS is NOT mutated; this is a lookup only.
-const PROVIDER_ALIASES = {
-  Patil:    ['PATIL'],
-  German:   ['GERMAN'],
-  Anderson: ['ANDERSON'],
-  Fowler:   ['FOWLER','TFOWLER','TROY FOWLER','T FOWLER'],
-  Carter:   ['CARTER'],
-  Ondreyka: ['ONDREYKA'],
-  Smith:    ['SMITH'],
-  Cooley:   ['COOLEY'],
-};
-
 // Returns true if `raw` mentions provider `name` as a token. Handles "FOWLER - CALL",
 // "Fowler/Carter", "T. Fowler", parentheticals, extra spaces, punctuation.
 function textMentionsProvider(raw, name) {
@@ -1439,6 +2405,8 @@ let dashPage = 0;
 let calYear, calMonth;
 let PG = 240;
 let calTouchStart = null;
+let directoryOtpQuery = '';
+let contactSheetState = null;
 
 // Global date-range filter state (in-memory only)
 let globalRange = { start: null, end: null, autoStart: null, autoEnd: null };
@@ -1736,7 +2704,7 @@ function showView(id) {
   if(view) view.classList.add('active');
   if(nav)  nav.classList.add('active');
   closeSidebar();
-  if(DATA.length===0 && id!=='paste') return;
+  if(DATA.length===0 && id!=='paste' && id!=='directory') return;
   const keys = getCacheKeysForView(id);
   updateCacheStatusDisplay(localStorage.getItem(keys.timeKey));
   if(id==='dashboard') renderDashboard();
@@ -1745,6 +2713,7 @@ function showView(id) {
     hideDashboardStickyClone();
     if(id==='backup') renderBackup();
     else if(id==='calendar') renderCalendar();
+    else if(id==='directory') renderDirectory();
   }
 }
 
@@ -1943,10 +2912,20 @@ function escapeHtml(s) {
   }[ch]));
 }
 
+function actionPhoneEntry(name) {
+  return PROVIDER_ACTION_PHONES[name] || {};
+}
+function providerTextPhone(name) {
+  return actionPhoneEntry(name).text || PROVIDER_PHONES[name] || '';
+}
+function providerCallPhone(name) {
+  return actionPhoneEntry(name).call || PROVIDER_PHONES[name] || '';
+}
+
 function renderWorkingProviderName(name, opts={}) {
   const label = escapeHtml(name);
   const content = opts.strong ? `<strong>${label}</strong>` : label;
-  const phone = PROVIDER_PHONES[name];
+  const phone = providerTextPhone(name);
   if(!phone) return content;
   return `<a href="sms:${phone}" class="working-provider-link">${content}</a>`;
 }
@@ -1968,7 +2947,7 @@ function stripHtmlLabel(label) {
 function renderTextAllButton(names) {
   const phones = names
     .filter(name => name !== 'Fowler')
-    .map(name => PROVIDER_PHONES[name])
+    .map(name => providerTextPhone(name))
     .filter(Boolean);
   if(phones.length < 2) return '';
   return `<a href="sms:${phones.join(',')}" class="sms-all-btn" title="Text all working providers" aria-label="Text all working providers">💬</a>`;
@@ -3003,6 +3982,131 @@ function renderCalendar() {
   document.getElementById('cal-grid-container').innerHTML=`<div class="cal-dow-row">${dowRow}</div><div class="cal-grid">${weeksHtml}</div>`;
 }
 
+function isCoarsePointer() {
+  return !!(window.matchMedia && window.matchMedia('(max-width:760px),(pointer:coarse)').matches);
+}
+function showContactSheet(name, displayPhone, textPhone, callPhone) {
+  const root = document.getElementById('contact-sheet');
+  const textLink = document.getElementById('contact-sheet-text');
+  const callLink = document.getElementById('contact-sheet-call');
+  if(!root || !textLink || !callLink) return;
+  contactSheetState = { name, displayPhone, textPhone, callPhone };
+  document.getElementById('contact-sheet-name').textContent = name || 'Contact';
+  document.getElementById('contact-sheet-phone').textContent = displayPhone || textPhone || callPhone || 'No phone available';
+  textLink.href = textPhone ? `sms:${textPhone}` : '#';
+  callLink.href = callPhone ? `tel:${callPhone}` : '#';
+  textLink.style.display = textPhone ? 'flex' : 'none';
+  callLink.style.display = callPhone ? 'flex' : 'none';
+  root.classList.add('open');
+  root.setAttribute('aria-hidden', 'false');
+}
+function hideContactSheet() {
+  const root = document.getElementById('contact-sheet');
+  if(root) {
+    root.classList.remove('open');
+    root.setAttribute('aria-hidden', 'true');
+  }
+  contactSheetState = null;
+}
+function closeContactSheet(event) {
+  if(event.target && event.target.id === 'contact-sheet') hideContactSheet();
+}
+function openDirectoryContactFromElement(el) {
+  if(!el) return;
+  const name = el.dataset.name || '';
+  const displayPhone = el.dataset.displayPhone || '';
+  const textPhone = el.dataset.textPhone || '';
+  const callPhone = el.dataset.callPhone || '';
+  if(!textPhone && !callPhone) return;
+  if(!isCoarsePointer()) {
+    window.location.href = textPhone ? `sms:${textPhone}` : `tel:${callPhone}`;
+    return;
+  }
+  showContactSheet(name, displayPhone, textPhone, callPhone);
+}
+function dirPhoneInfo(raw) {
+  const source = String(raw || '').trim();
+  if(!source) return null;
+  const extMatch = source.match(/\b(?:ext\.?|x|extension)\s*\.?\s*(\d+)$/i);
+  const ext = extMatch ? extMatch[1] : '';
+  const base = extMatch ? source.slice(0, extMatch.index).trim() : source;
+  let digits = base.replace(/\D/g, '');
+  if(!digits && ext) return { display:`Ext ${ext}`, href:'', internal:true };
+  if(digits.length === 4 && !ext) return { display:digits, href:'', internal:true };
+  if(digits.length === 7) digits = '828' + digits;
+  if(digits.length === 11 && digits.startsWith('1')) digits = digits.slice(1);
+  if(digits.length !== 10) return { display:source, href:'', internal:digits.length <= 4 };
+  return {
+    display:`${digits.slice(0,3)}-${digits.slice(3,6)}-${digits.slice(6)}${ext ? ' ext. ' + ext : ''}`,
+    href:'tel:+1' + digits,
+    internal:false
+  };
+}
+function dirPhoneHTML(raw, label='') {
+  const info = dirPhoneInfo(raw);
+  if(!info) return '';
+  const prefix = label ? `${escapeHtml(label)}: ` : '';
+  if(info.href) return `<div class="dir-phone-line">${prefix}<a href="${escapeHtml(info.href)}">${escapeHtml(info.display)}</a></div>`;
+  return `<div class="dir-ext">${prefix}${escapeHtml(info.display)}</div>`;
+}
+function dirProviderItemHTML(provider) {
+  const textPhone = provider.textPhone || '';
+  const callPhone = provider.callPhone || '';
+  const displayPhone = provider.phone || textPhone || callPhone || '';
+  const hasAction = !!(textPhone || callPhone);
+  const nameHtml = hasAction
+    ? `<button class="dir-name dir-name-btn has-phone" data-name="${escapeHtml(provider.name)}" data-display-phone="${escapeHtml(displayPhone)}" data-text-phone="${escapeHtml(textPhone)}" data-call-phone="${escapeHtml(callPhone)}" onclick="openDirectoryContactFromElement(this)">${escapeHtml(provider.name)}</button>`
+    : `<div class="dir-name">${escapeHtml(provider.name)}</div>`;
+  const source = provider.sourceLabel ? `<div class="dir-source">${escapeHtml(provider.sourceLabel)}</div>` : '';
+  const primaryPhone = provider.phone ? dirPhoneHTML(provider.phone) : '';
+  const alternatePhones = (provider.alternatePhones || []).map(entry => dirPhoneHTML(entry.phone, entry.label || '')).join('');
+  const fallback = (!primaryPhone && !alternatePhones) ? '<div class="dir-ext">No phone listed</div>' : '';
+  return `<div class="dir-item">${nameHtml}${source}<div class="dir-phone-stack">${primaryPhone}${alternatePhones}${fallback}</div></div>`;
+}
+function dirItemHTML(item) {
+  const primaryPhone = item.phone ? dirPhoneHTML(item.phone) : '';
+  const alternatePhones = (item.alternatePhones || []).map(entry => dirPhoneHTML(entry.phone, entry.label || '')).join('');
+  const ext = item.ext ? `<div class="dir-ext">Ext ${escapeHtml(item.ext)}</div>` : '';
+  const fallback = (!primaryPhone && !alternatePhones && !ext) ? '<div class="dir-ext">No phone listed</div>' : '';
+  return `<div class="dir-item"><div class="dir-name">${escapeHtml(item.name)}</div><div class="dir-phone-stack">${ext}${primaryPhone}${alternatePhones}${fallback}</div></div>`;
+}
+function dirSectionHTML(title, items, itemRenderer, subtitle='') {
+  return `<section class="dir-section"><div class="dir-head"><div><div class="dir-head-title">${escapeHtml(title)}</div>${subtitle ? `<div class="dir-head-sub">${escapeHtml(subtitle)}</div>` : ''}</div></div>${items.length ? `<div class="dir-grid">${items.map(itemRenderer).join('')}</div>` : '<div class="dir-empty">No contacts listed.</div>'}</section>`;
+}
+function otpSearchText(item) {
+  return [item.name].concat(item.phones || []).join(' ').toLowerCase();
+}
+function renderOtpResults() {
+  const input = document.getElementById('dir-otp-search');
+  const root = document.getElementById('dir-otp-results');
+  if(!input || !root) return;
+  directoryOtpQuery = (input.value || '').trim();
+  const letters = directoryOtpQuery.replace(/[^a-z]/gi, '').length;
+  if(letters < 2) {
+    root.innerHTML = '<div class="dir-empty">Type at least 2 letters to search the OTP/OBOT directory.</div>';
+    return;
+  }
+  const q = directoryOtpQuery.toLowerCase();
+  const matches = OTP_OBOT_DIRECTORY.filter(item => otpSearchText(item).includes(q));
+  root.innerHTML = matches.length
+    ? `<div class="dir-grid">${matches.map(item => dirItemHTML({ name:item.name, phone:item.phones[0] || '', alternatePhones:item.phones.slice(1).map(phone => ({ label:'', phone })), ext:'' })).join('')}</div>`
+    : '<div class="dir-empty">No matching OTP/OBOT contacts.</div>';
+}
+function renderDirectory() {
+  const root = document.getElementById('directory-root');
+  if(!root) return;
+  const psychProviders = PSYCH_DIRECTORY_PROVIDERS.filter(provider => provider.group === 'psych');
+  const medicalProviders = PSYCH_DIRECTORY_PROVIDERS.filter(provider => provider.group === 'medical');
+  const sections = [
+    dirSectionHTML('Psych providers', psychProviders, dirProviderItemHTML, 'Shared contact source'),
+    dirSectionHTML('Medical providers', medicalProviders, dirProviderItemHTML, 'Mirrors the JFK med-staff directory data'),
+    ...PSYCH_DIRECTORY_SECTIONS.map(section => dirSectionHTML(section.title, section.items, dirItemHTML))
+  ];
+  const otpSection = `<section class="dir-section"><div class="dir-head"><div><div class="dir-head-title">OTP/OBOT Directory</div><div class="dir-head-sub">Shared source; searchable here inside Psych Scheduler</div></div></div><div class="dir-search-wrap"><input class="dir-search" id="dir-otp-search" type="search" autocomplete="off" placeholder="Search OTP/OBOT directory" value="${escapeHtml(directoryOtpQuery)}" oninput="renderOtpResults()"></div><div id="dir-otp-results"><div class="dir-empty">Type at least 2 letters to search the OTP/OBOT directory.</div></div></section>`;
+  root.innerHTML = sections.join('') + otpSection;
+  renderOtpResults();
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // ICS EXPORT
 // ═══════════════════════════════════════════════════════════════════════════
@@ -3664,6 +4768,8 @@ document.addEventListener('keydown', function(e){
   if(e.key === 'Escape'){
     const ov = document.getElementById('fb-overlay');
     if(ov && ov.classList.contains('open')) closeFeedbackModal();
+    const sheet = document.getElementById('contact-sheet');
+    if(sheet && sheet.classList.contains('open')) hideContactSheet();
   }
 });
 </script>

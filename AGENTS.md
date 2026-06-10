@@ -17,6 +17,8 @@
 ## Project Structure
 - psych-scheduler.html - main single-file static app
 - vercel-jfk/ - Vercel deployment root for the current JFK Med Staff Schedule app
+- data/schedule-directory.json - canonical shared directory/contact source for Psych Scheduler and JFK Med Staff Schedule
+- scripts/sync-schedule-directory.mjs - rewrites generated directory blocks in both apps and keeps JFK alias HTML files synced to the canonical file
 - docs/ - Psych Scheduler and non-clinical project documentation
 - scripts/setup-codex-projects.ps1 - Windows helper for setting up Codex/GitHub project folders on another computer
 - Google Apps Script and Google Sheets - external live data/maintenance request dependencies
@@ -92,6 +94,8 @@ Append entries to WORKLOG.md using this shape:
 - All app state is in memory; do not introduce localStorage casually.
 - When a schedule-app public URL, repo location, or deployment host changes, update `docs/schedule-app-canonical-routes.md`, all live entrypoints that should point at the current app, and the legacy-URL behavior in the same change set.
 - Old schedule-app URLs should default to redirect-forwarders, not preserved live copies, unless Dr. Fowler explicitly chooses a different retirement mode.
+- Shared schedule-directory contact data lives in `data/schedule-directory.json`. Update that file first, then run `node scripts/sync-schedule-directory.mjs` so both apps regenerate from the same source.
+- Do not hand-edit content inside `GENERATED_PSYCH_DIRECTORY_DATA` or `GENERATED_JFK_DIRECTORY_DATA`; those blocks are owned by the sync script.
 - Provider names are last-name-only strings and should not be renamed without explicit request.
 - Validate referenced globals/helpers before shipping code, especially in user-provided snippets.
 - Explain GitHub/deploy steps in beginner-friendly outcome language when talking to the repo owner.
@@ -99,6 +103,7 @@ Append entries to WORKLOG.md using this shape:
 ## Verification Guidance
 - For Psych Scheduler code changes, inspect psych-scheduler.html first and verify the specific affected workflow.
 - For schedule routing changes, verify the canonical registry, the current public URL, and any intentional legacy-forwarder URL after publish.
+- For shared directory changes, run `node scripts/sync-schedule-directory.mjs --check` before shutdown and confirm the two JFK alias HTML files still exactly match `vercel-jfk/index.html`.
 - If changing visible UI, check mobile-friendly behavior.
 - If live Google Sheet or Apps Script access cannot be verified, state that clearly in WORKLOG.md and the shutdown summary.
 - If Dr. Fowler asks to check Psych Scheduler feedback, IT requests, website requests, or active scheduler requests, or uses the `#IT` command, read `docs/psych-scheduler-it-request-inbox.md` first and use the `Feedback` tab in `Medical Staff Schedule ANALYSIS SHEET` as the request inbox.

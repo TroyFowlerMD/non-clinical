@@ -9,6 +9,8 @@ Personal non-clinical scheduling tool for the psych team at JFK ADATC. Pulls the
 ## Current Status
 Current deployed production file is `psych-scheduler.html` on `main`. Core v3.1 scheduling features remain intact: live Google Sheets pull, TSV/Excel paste fallback, provider profile switcher, date-range filter, PTO/backup call risk views, mobile nav (hamburger/overlay), XLSX ingestion, theme toggle, and font-size controls. Maintenance layer: sidebar `Send Feedback` modal uses the scheduler Apps Script bridge as the primary owned email/log path, with FormSubmit as a confirmed email fallback.
 
+Shared directory layer: production `psych-scheduler.html` now includes a full Directory view backed by generated data from `data/schedule-directory.json`. The same canonical contact source also feeds the JFK Med Staff Schedule Vercel app, with `scripts/sync-schedule-directory.mjs` regenerating both apps' inline directory blocks and keeping the JFK alias HTML files synced to canonical `vercel-jfk/index.html`.
+
 Experimental command-center clone: `psych-scheduler-experimental.html` is a separate single-file clone that keeps the same live Google Sheet default and fallback ingestion while adding mode-specific table defaults, staffing-risk analytics cards, and a canvas-based risk timeline. This file is intentionally separate from production until Dr. Fowler explicitly chooses to promote any experimental behavior.
 
 **My Schedule column system now covers all six core providers:** Anderson, Fowler, Carter, Ondreyka, Smith, Cooley each have a column-toggle chip rendering via `providerCell()`. Pre-existing Carter/Ondreyka chips were silently broken (referenced an undefined `poolCell()`) and are now functional. **Backup Call page** has its own column-toggle chip group for `Working Providers` and `Total Staff Core+Temp`, default off. **Provider switcher** auto-deselects the active column chip matching the newly selected provider to prevent duplicate data with the My Assignment column.
@@ -41,6 +43,7 @@ These surrounding repo/hub updates are still local only and have not been commit
 ## Architecture Map
 **Layer structure:**
 - **UI:** Single self-contained HTML file. No server, no build tools, no framework, no localStorage (sandboxed-iframe constraint). All state in memory. External dependency: Google Fonts (Inter + JetBrains Mono).
+- **Shared directory source:** `data/schedule-directory.json` is the single editable contact/directory source for Psych Scheduler and JFK Med Staff Schedule. `scripts/sync-schedule-directory.mjs` rewrites generated blocks inside both apps; neither app fetches directory JSON at runtime.
 - **Apps Script bridge:** Deployed Google Apps Script Web App at URL hardcoded as `DRIVE_EXEC_URL` in the HTML. Returns JSON `{headers, rows, sheetName, fetchedAt, rowCount}` for `Sheet1` and handles feedback POST logging to the `Feedback` tab. Deployment access set to "Anyone" to resolve CORS on `fetch()`.
 - **Google Sheets backend:** Source spreadsheet `Medical Staff Schedule ANALYSIS SHEET`, tab `Sheet1`, columns A-AD. Feedback/IT requests live in a separate `Feedback` tab. Stable Sheet ID enables auto-update on re-upload.
 - **Fallback ingestion:** Excel TSV paste via `parseTSVRobust()` (quoted-field, multiline Excel cells).

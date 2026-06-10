@@ -1,0 +1,1018 @@
+{
+  "meta": {
+    "schemaVersion": 1,
+    "lastVerifiedDate": "2026-06-10",
+    "sourceSnapshot": {
+      "psychSchedulerFile": "psych-scheduler.html",
+      "jfkCanonicalFile": "vercel-jfk/index.html"
+    }
+  },
+  "providers": [
+    {
+      "id": "anderson",
+      "displayName": "Anderson",
+      "group": "psych",
+      "primaryPhone": "+19122222759",
+      "alternatePhones": [],
+      "matchAliases": [
+        "ANDERSON"
+      ],
+      "scheduleHeaders": {
+        "psychScheduler": {
+          "primary": "Anderson",
+          "alternates": [],
+          "sourceLabel": ""
+        },
+        "jfkMedStaff": {
+          "primary": "Anderson",
+          "alternates": [],
+          "sourceLabel": ""
+        }
+      }
+    },
+    {
+      "id": "fowler",
+      "displayName": "Fowler",
+      "group": "psych",
+      "primaryPhone": "+13606061046",
+      "alternatePhones": [],
+      "matchAliases": [
+        "FOWLER",
+        "TFOWLER",
+        "TROY FOWLER",
+        "T FOWLER"
+      ],
+      "scheduleHeaders": {
+        "psychScheduler": {
+          "primary": "Fowler",
+          "alternates": [],
+          "sourceLabel": ""
+        },
+        "jfkMedStaff": {
+          "primary": "Fowler",
+          "alternates": [],
+          "sourceLabel": ""
+        }
+      }
+    },
+    {
+      "id": "carter",
+      "displayName": "Carter",
+      "group": "psych",
+      "primaryPhone": "+19198641056",
+      "alternatePhones": [],
+      "matchAliases": [
+        "CARTER"
+      ],
+      "scheduleHeaders": {
+        "psychScheduler": {
+          "primary": "Carter",
+          "alternates": [],
+          "sourceLabel": ""
+        },
+        "jfkMedStaff": {
+          "primary": "Carter",
+          "alternates": [],
+          "sourceLabel": ""
+        }
+      }
+    },
+    {
+      "id": "ondreyka",
+      "displayName": "Ondreyka",
+      "group": "psych",
+      "primaryPhone": "+17347091295",
+      "alternatePhones": [],
+      "matchAliases": [
+        "ONDREYKA"
+      ],
+      "scheduleHeaders": {
+        "psychScheduler": {
+          "primary": "Ondreyka",
+          "alternates": [],
+          "sourceLabel": ""
+        },
+        "jfkMedStaff": {
+          "primary": "Ondreyka",
+          "alternates": [],
+          "sourceLabel": ""
+        }
+      }
+    },
+    {
+      "id": "smith",
+      "displayName": "Smith",
+      "group": "psych",
+      "primaryPhone": "+18285513508",
+      "alternatePhones": [],
+      "matchAliases": [
+        "SMITH"
+      ],
+      "scheduleHeaders": {
+        "psychScheduler": {
+          "primary": "Smith",
+          "alternates": [],
+          "sourceLabel": ""
+        },
+        "jfkMedStaff": {
+          "primary": "Smith",
+          "alternates": [],
+          "sourceLabel": ""
+        }
+      }
+    },
+    {
+      "id": "cooley",
+      "displayName": "Cooley",
+      "group": "psych",
+      "primaryPhone": "+19137102670",
+      "alternatePhones": [],
+      "matchAliases": [
+        "COOLEY"
+      ],
+      "scheduleHeaders": {
+        "psychScheduler": {
+          "primary": "Cooley",
+          "alternates": [],
+          "sourceLabel": ""
+        },
+        "jfkMedStaff": {
+          "primary": "Cooley",
+          "alternates": [],
+          "sourceLabel": ""
+        }
+      }
+    },
+    {
+      "id": "patil",
+      "displayName": "Patil",
+      "group": "psych",
+      "primaryPhone": "+14238029271",
+      "alternatePhones": [],
+      "matchAliases": [
+        "PATIL"
+      ],
+      "scheduleHeaders": {
+        "psychScheduler": {
+          "primary": "Patil",
+          "alternates": [],
+          "sourceLabel": ""
+        },
+        "jfkMedStaff": {
+          "primary": "Patil",
+          "alternates": [],
+          "sourceLabel": ""
+        }
+      }
+    },
+    {
+      "id": "german",
+      "displayName": "German",
+      "group": "psych",
+      "primaryPhone": "+13364651513",
+      "alternatePhones": [],
+      "matchAliases": [
+        "GERMAN"
+      ],
+      "scheduleHeaders": {
+        "psychScheduler": {
+          "primary": "German",
+          "alternates": [],
+          "sourceLabel": ""
+        },
+        "jfkMedStaff": {
+          "primary": "German",
+          "alternates": [],
+          "sourceLabel": ""
+        }
+      }
+    },
+    {
+      "id": "wren",
+      "displayName": "Wren",
+      "group": "psych",
+      "primaryPhone": "+19098023352",
+      "alternatePhones": [],
+      "matchAliases": [],
+      "scheduleHeaders": {
+        "psychScheduler": null,
+        "jfkMedStaff": null
+      }
+    },
+    {
+      "id": "coburn",
+      "displayName": "Coburn",
+      "group": "psych",
+      "primaryPhone": "+16173061134",
+      "alternatePhones": [],
+      "matchAliases": [],
+      "scheduleHeaders": {
+        "psychScheduler": null,
+        "jfkMedStaff": null
+      }
+    },
+    {
+      "id": "bennett",
+      "displayName": "Bennett",
+      "group": "psych",
+      "primaryPhone": "+13362602926",
+      "alternatePhones": [],
+      "matchAliases": [],
+      "scheduleHeaders": {
+        "psychScheduler": null,
+        "jfkMedStaff": null
+      }
+    },
+    {
+      "id": "williams",
+      "displayName": "Williams",
+      "group": "psych",
+      "primaryPhone": "+19199153291",
+      "alternatePhones": [],
+      "matchAliases": [],
+      "scheduleHeaders": {
+        "psychScheduler": null,
+        "jfkMedStaff": null
+      }
+    },
+    {
+      "id": "eidson",
+      "displayName": "Eidson",
+      "group": "psych",
+      "primaryPhone": "+18034132609",
+      "alternatePhones": [],
+      "matchAliases": [],
+      "scheduleHeaders": {
+        "psychScheduler": null,
+        "jfkMedStaff": null
+      }
+    },
+    {
+      "id": "tran",
+      "displayName": "Tran",
+      "group": "psych",
+      "primaryPhone": "+19808002145",
+      "alternatePhones": [],
+      "matchAliases": [],
+      "scheduleHeaders": {
+        "psychScheduler": null,
+        "jfkMedStaff": null
+      }
+    },
+    {
+      "id": "camiliere",
+      "displayName": "Camiliere",
+      "group": "psych",
+      "primaryPhone": "+14805861791",
+      "alternatePhones": [],
+      "matchAliases": [],
+      "scheduleHeaders": {
+        "psychScheduler": null,
+        "jfkMedStaff": null
+      }
+    },
+    {
+      "id": "dickerson",
+      "displayName": "Dickerson",
+      "group": "psych",
+      "primaryPhone": "+18137663257",
+      "alternatePhones": [],
+      "matchAliases": [],
+      "scheduleHeaders": {
+        "psychScheduler": null,
+        "jfkMedStaff": null
+      }
+    },
+    {
+      "id": "morales",
+      "displayName": "Morales",
+      "group": "psych",
+      "primaryPhone": "+18647048569",
+      "alternatePhones": [],
+      "matchAliases": [],
+      "scheduleHeaders": {
+        "psychScheduler": null,
+        "jfkMedStaff": null
+      }
+    },
+    {
+      "id": "griffith",
+      "displayName": "Griffith",
+      "group": "medical",
+      "primaryPhone": "+19084033248",
+      "alternatePhones": [],
+      "matchAliases": [],
+      "scheduleHeaders": {
+        "psychScheduler": null,
+        "jfkMedStaff": {
+          "primary": "Griffith, S",
+          "alternates": [],
+          "sourceLabel": ""
+        }
+      }
+    },
+    {
+      "id": "millonas",
+      "displayName": "Millonas",
+      "group": "medical",
+      "primaryPhone": "+18083914357",
+      "alternatePhones": [],
+      "matchAliases": [],
+      "scheduleHeaders": {
+        "psychScheduler": null,
+        "jfkMedStaff": {
+          "primary": "Millonas, S",
+          "alternates": [],
+          "sourceLabel": ""
+        }
+      }
+    },
+    {
+      "id": "kuetemeyer",
+      "displayName": "Kuetemeyer",
+      "group": "medical",
+      "primaryPhone": "+12032531662",
+      "alternatePhones": [],
+      "matchAliases": [],
+      "scheduleHeaders": {
+        "psychScheduler": null,
+        "jfkMedStaff": {
+          "primary": "Kuetemeyer",
+          "alternates": [],
+          "sourceLabel": ""
+        }
+      }
+    },
+    {
+      "id": "bandell",
+      "displayName": "Bandell",
+      "group": "medical",
+      "primaryPhone": "+14439287357",
+      "alternatePhones": [],
+      "matchAliases": [],
+      "sourceLabel": "Medical column",
+      "scheduleHeaders": {
+        "psychScheduler": null,
+        "jfkMedStaff": {
+          "primary": "Bandell",
+          "alternates": [],
+          "sourceLabel": "Medical column"
+        }
+      }
+    },
+    {
+      "id": "nolan",
+      "displayName": "Nolan",
+      "group": "medical",
+      "primaryPhone": "+18284121095",
+      "alternatePhones": [],
+      "matchAliases": [],
+      "scheduleHeaders": {
+        "psychScheduler": null,
+        "jfkMedStaff": {
+          "primary": "Nolan",
+          "alternates": [],
+          "sourceLabel": ""
+        }
+      }
+    },
+    {
+      "id": "moore",
+      "displayName": "Moore",
+      "group": "medical",
+      "primaryPhone": "+18284236673",
+      "alternatePhones": [],
+      "matchAliases": [],
+      "scheduleHeaders": {
+        "psychScheduler": null,
+        "jfkMedStaff": {
+          "primary": "Moore",
+          "alternates": [],
+          "sourceLabel": ""
+        }
+      }
+    },
+    {
+      "id": "king",
+      "displayName": "King",
+      "group": "medical",
+      "primaryPhone": "+15018376887",
+      "alternatePhones": [],
+      "matchAliases": [],
+      "scheduleHeaders": {
+        "psychScheduler": null,
+        "jfkMedStaff": {
+          "primary": "King",
+          "alternates": [],
+          "sourceLabel": ""
+        }
+      }
+    },
+    {
+      "id": "edwards",
+      "displayName": "Edwards",
+      "group": "medical",
+      "primaryPhone": "+18289251696",
+      "alternatePhones": [],
+      "matchAliases": [],
+      "scheduleHeaders": {
+        "psychScheduler": null,
+        "jfkMedStaff": {
+          "primary": "Edwards",
+          "alternates": [],
+          "sourceLabel": ""
+        }
+      }
+    },
+    {
+      "id": "ramirez",
+      "displayName": "Ramirez",
+      "group": "medical",
+      "primaryPhone": "+12034701369",
+      "alternatePhones": [],
+      "matchAliases": [],
+      "scheduleHeaders": {
+        "psychScheduler": null,
+        "jfkMedStaff": {
+          "primary": "Ramirez",
+          "alternates": [],
+          "sourceLabel": ""
+        }
+      }
+    },
+    {
+      "id": "poetter",
+      "displayName": "Poetter",
+      "group": "medical",
+      "primaryPhone": "+13365492166",
+      "alternatePhones": [],
+      "matchAliases": [
+        "POETTER MD"
+      ],
+      "scheduleHeaders": {
+        "psychScheduler": null,
+        "jfkMedStaff": {
+          "primary": "Poetter MD",
+          "alternates": [],
+          "sourceLabel": ""
+        }
+      }
+    },
+    {
+      "id": "dill",
+      "displayName": "Dill",
+      "group": "medical",
+      "primaryPhone": "+18285067870",
+      "alternatePhones": [],
+      "matchAliases": [
+        "DILL MD"
+      ],
+      "scheduleHeaders": {
+        "psychScheduler": null,
+        "jfkMedStaff": {
+          "primary": "Dill MD",
+          "alternates": [],
+          "sourceLabel": ""
+        }
+      }
+    },
+    {
+      "id": "debell",
+      "displayName": "DeBell",
+      "group": "medical",
+      "primaryPhone": "+19703761182",
+      "alternatePhones": [],
+      "matchAliases": [
+        "DEBELL MD"
+      ],
+      "scheduleHeaders": {
+        "psychScheduler": null,
+        "jfkMedStaff": {
+          "primary": "DeBell MD",
+          "alternates": [],
+          "sourceLabel": ""
+        }
+      }
+    },
+    {
+      "id": "mckay",
+      "displayName": "McKay",
+      "group": "medical",
+      "primaryPhone": "+18286825479",
+      "alternatePhones": [],
+      "matchAliases": [
+        "MCKAY MD"
+      ],
+      "scheduleHeaders": {
+        "psychScheduler": null,
+        "jfkMedStaff": {
+          "primary": "McKay MD",
+          "alternates": [],
+          "sourceLabel": ""
+        }
+      }
+    },
+    {
+      "id": "wolf",
+      "displayName": "Wolf",
+      "group": "medical",
+      "primaryPhone": "+14102183110",
+      "alternatePhones": [],
+      "matchAliases": [],
+      "scheduleHeaders": {
+        "psychScheduler": null,
+        "jfkMedStaff": {
+          "primary": "Wolf",
+          "alternates": [],
+          "sourceLabel": ""
+        }
+      }
+    }
+  ],
+  "directorySections": [
+    {
+      "id": "admissions",
+      "title": "Admissions",
+      "entries": [
+        {
+          "name": "Admissions RN cell 1",
+          "primaryPhone": "828-803-5473",
+          "alternatePhones": []
+        },
+        {
+          "name": "Admissions RN cell 2",
+          "primaryPhone": "828-803-4279",
+          "alternatePhones": []
+        },
+        {
+          "name": "Admissions RN office 1",
+          "primaryPhone": "828-257-6400",
+          "alternatePhones": []
+        },
+        {
+          "name": "Admissions RN office 2",
+          "primaryPhone": "828-257-6270",
+          "alternatePhones": []
+        },
+        {
+          "name": "Admissions Coordinator",
+          "primaryPhone": "828-257-6230",
+          "alternatePhones": []
+        }
+      ]
+    },
+    {
+      "id": "information-technology",
+      "title": "Information Technology",
+      "entries": [
+        {
+          "name": "JFK Helpdesk",
+          "primaryPhone": "828-257-6444",
+          "alternatePhones": []
+        },
+        {
+          "name": "DSOHF Helpdesk",
+          "primaryPhone": "984-683-7064",
+          "alternatePhones": []
+        }
+      ]
+    },
+    {
+      "id": "operations",
+      "title": "Operations",
+      "entries": [
+        {
+          "name": "Maintenance cell",
+          "primaryPhone": "828-273-3278",
+          "alternatePhones": []
+        },
+        {
+          "name": "Admin on Call",
+          "primaryPhone": "828-450-9406",
+          "alternatePhones": []
+        }
+      ]
+    },
+    {
+      "id": "units",
+      "title": "Units",
+      "entries": [
+        {
+          "name": "ACU - Unit Clerk",
+          "primaryPhone": "257-6265",
+          "alternatePhones": [],
+          "ext": "2119"
+        },
+        {
+          "name": "ACU - Nurse Station 1",
+          "primaryPhone": "257-6267",
+          "alternatePhones": [],
+          "ext": "2121"
+        },
+        {
+          "name": "ACU - Nurse Station 2",
+          "primaryPhone": "257-6269",
+          "alternatePhones": [],
+          "ext": "2122"
+        },
+        {
+          "name": "ACU - Nurse Station 3",
+          "primaryPhone": "252-6271",
+          "alternatePhones": [],
+          "ext": "2124"
+        },
+        {
+          "name": "ACU - Nurse Station 4",
+          "primaryPhone": "257-6374",
+          "alternatePhones": [],
+          "ext": "2126"
+        },
+        {
+          "name": "ACU - Conference Room",
+          "primaryPhone": "257-6264",
+          "alternatePhones": [],
+          "ext": "2118"
+        },
+        {
+          "name": "ACU - Fax - Chart Room",
+          "primaryPhone": "257-6204",
+          "alternatePhones": [],
+          "ext": "2905"
+        },
+        {
+          "name": "ACU - Fax - Copy Room",
+          "primaryPhone": "257-6249",
+          "alternatePhones": [],
+          "ext": "2904"
+        },
+        {
+          "name": "ACU - HCT Desk",
+          "primaryPhone": "257-6275",
+          "alternatePhones": [],
+          "ext": "2127"
+        },
+        {
+          "name": "ACU - HCT Desk",
+          "primaryPhone": "257-6277",
+          "alternatePhones": [],
+          "ext": "2129"
+        },
+        {
+          "name": "ACU - Med Room",
+          "primaryPhone": "257-6273",
+          "alternatePhones": [],
+          "ext": "2125"
+        },
+        {
+          "name": "Empathy (1,2) - Unit Clerk",
+          "primaryPhone": "257-6316",
+          "alternatePhones": [],
+          "ext": "2303"
+        },
+        {
+          "name": "Empathy (1,2) - Nurse Station 1",
+          "primaryPhone": "257-6314",
+          "alternatePhones": [],
+          "ext": "2301"
+        },
+        {
+          "name": "Empathy (1,2) - Nurse Station 2",
+          "primaryPhone": "257-6315",
+          "alternatePhones": [],
+          "ext": "2302"
+        },
+        {
+          "name": "Empathy (1,2) - Nurse Station 3",
+          "primaryPhone": "257-6318",
+          "alternatePhones": [],
+          "ext": "2305"
+        },
+        {
+          "name": "Empathy (1,2) - Nurse Station 4",
+          "primaryPhone": "257-6315",
+          "alternatePhones": [],
+          "ext": "2306"
+        },
+        {
+          "name": "Empathy (1,2) - Nursing Fax",
+          "primaryPhone": "257-6328",
+          "alternatePhones": [],
+          "ext": "2907"
+        },
+        {
+          "name": "Empathy (1,2) - HCT",
+          "alternatePhones": [],
+          "ext": "2316"
+        },
+        {
+          "name": "Empathy (1,2) - Provider Office",
+          "primaryPhone": "257-6326",
+          "alternatePhones": [],
+          "ext": "2311"
+        },
+        {
+          "name": "Empathy (1,2) - Treatment Room",
+          "primaryPhone": "257-6280",
+          "alternatePhones": [],
+          "ext": "2617"
+        },
+        {
+          "name": "Empathy (1,2) - Exam Room",
+          "primaryPhone": "257-6242",
+          "alternatePhones": [],
+          "ext": "2308"
+        },
+        {
+          "name": "Empathy (1,2) - Med Room",
+          "primaryPhone": "257-6313",
+          "alternatePhones": [],
+          "ext": "2300"
+        },
+        {
+          "name": "Hope (3,4,5) - Unit Clerk",
+          "primaryPhone": "257-6336",
+          "alternatePhones": [],
+          "ext": "2406"
+        },
+        {
+          "name": "Hope (3,4,5) - HCT",
+          "primaryPhone": "257-6333",
+          "alternatePhones": [],
+          "ext": "2403"
+        },
+        {
+          "name": "Hope (3,4,5) - Exam Room",
+          "primaryPhone": "257-6424",
+          "alternatePhones": [],
+          "ext": "2409"
+        },
+        {
+          "name": "Hope (3,4,5) - Nursing Fax",
+          "primaryPhone": "257-6330",
+          "alternatePhones": [],
+          "ext": "2908"
+        }
+      ]
+    },
+    {
+      "id": "dhhs-police",
+      "title": "DHHS Police",
+      "entries": [
+        {
+          "name": "DHHS Police Cell Phone",
+          "primaryPhone": "230-7491",
+          "alternatePhones": []
+        },
+        {
+          "name": "Mark McWilliams, Chief",
+          "primaryPhone": "257-6388",
+          "alternatePhones": []
+        }
+      ]
+    }
+  ],
+  "otpObotDirectory": [
+    {
+      "id": "appalachian-mountain-health-asheville",
+      "name": "Appalachian Mountain Health - Asheville (formerly Dale Fell Community Health Center)",
+      "phones": [
+        "828-712-1350"
+      ]
+    },
+    {
+      "id": "ascension-solutions",
+      "name": "Ascension Solutions (Formerly Asheville Suboxone Treatment)",
+      "phones": [
+        "828-622-4058",
+        "828-595-6548"
+      ]
+    },
+    {
+      "id": "asheville-comprehensive-treatment-center",
+      "name": "Asheville Comprehensive Treatment Center",
+      "phones": [
+        "828-747-7045"
+      ]
+    },
+    {
+      "id": "bakersville-health-center",
+      "name": "Bakersville Health Center (under Moutain Community Health Partnership umbrella) (Location added by CB 10/27/22)",
+      "phones": [
+        "828-592-1794"
+      ]
+    },
+    {
+      "id": "bhg-clyde",
+      "name": "BHG Clyde",
+      "phones": [
+        "828-341-2561"
+      ]
+    },
+    {
+      "id": "blue-ridge-health",
+      "name": "Blue Ridge Health",
+      "phones": [
+        "828-625-4400",
+        "828-692-4289 ext. 2291",
+        "828-692-4289"
+      ]
+    },
+    {
+      "id": "burnsville-health-center",
+      "name": "Burnsville Health Center (under Moutain Community Health Partnership umbrella) (Location added by CB 10/27/22)",
+      "phones": [
+        "828-592-1794"
+      ]
+    },
+    {
+      "id": "celo-health-center",
+      "name": "Celo Health Center (under Mountain Community Health Partnership umbrella)",
+      "phones": [
+        "828-592-1794"
+      ]
+    },
+    {
+      "id": "crossroads-treatment-center-asheville",
+      "name": "Crossroads Treatment Center (Asheville)",
+      "phones": [
+        "828-575-9403"
+      ]
+    },
+    {
+      "id": "crossroads-treatment-center-greensboro",
+      "name": "Crossroads Treatment Center (Greensboro)",
+      "phones": [
+        "336-272-9990",
+        "336-500-8789"
+      ]
+    },
+    {
+      "id": "crossroads-treatment-center-shelby",
+      "name": "Crossroads Treatment Center (Shelby) CLOSED?",
+      "phones": [
+        "800-805-6989"
+      ]
+    },
+    {
+      "id": "crossroads-treatment-center-weaverville",
+      "name": "Crossroads Treatment Center (Weaverville)",
+      "phones": [
+        "800-805-6989"
+      ]
+    },
+    {
+      "id": "daymark",
+      "name": "Daymark",
+      "phones": [
+        "828-733-5889"
+      ]
+    },
+    {
+      "id": "eleanor-health",
+      "name": "Eleanor Health",
+      "phones": [
+        "828-372-0856",
+        "828-761-3096"
+      ]
+    },
+    {
+      "id": "hazelwood-healthcare-waynesville",
+      "name": "Hazelwood Healthcare (Waynesville)",
+      "phones": [
+        "828-595-9001"
+      ]
+    },
+    {
+      "id": "high-country-community-health-burke",
+      "name": "High Country Community Health - Burke Medical/Burke Integrated Health (2locations: Morganton and Connely Springs-East Burke Location)",
+      "phones": [
+        "828-406-3971"
+      ]
+    },
+    {
+      "id": "lexington-treatment-center",
+      "name": "Lexington Treatment Center",
+      "phones": [
+        "336-224-1919"
+      ]
+    },
+    {
+      "id": "mcleod-charlotte",
+      "name": "McLeod Addictive Disease Center- Charlotte",
+      "phones": [
+        "704-332-9001 ext. 2528"
+      ]
+    },
+    {
+      "id": "mcleod-concord",
+      "name": "McLeod Addictive Disease Center- Concord",
+      "phones": [
+        "704-782-3131",
+        "704-332-9001 ext. 2528"
+      ]
+    },
+    {
+      "id": "mcleod-gastonia",
+      "name": "McLeod Addictive Disease Center- Gastonia",
+      "phones": [
+        "704-865-1558",
+        "704-332-9001 ext. 2528"
+      ]
+    },
+    {
+      "id": "mcleod-hickory",
+      "name": "McLeod Addictive Disease Center- Hickory",
+      "phones": [
+        "704-332-9001 ext. 2528"
+      ]
+    },
+    {
+      "id": "mcleod-lenoir",
+      "name": "McLeod Addictive Disease Center- Lenoir",
+      "phones": [
+        "828-610-2740",
+        "704-332-9001 ext. 2528"
+      ]
+    },
+    {
+      "id": "mcleod-marion",
+      "name": "McLeod Addictive Disease Center- Marion",
+      "phones": [
+        "828-659-3966",
+        "704-332-9001 ext. 2528",
+        "828-442-2384"
+      ]
+    },
+    {
+      "id": "mcleod-monroe",
+      "name": "McLeod Addictive Disease Center- Monroe",
+      "phones": [
+        "704-289-9869",
+        "704-332-9001 ext. 2528"
+      ]
+    },
+    {
+      "id": "mcleod-statesville",
+      "name": "McLeod Addictive Disease Center- Statesville",
+      "phones": [
+        "704-871-2992",
+        "828-442-2384"
+      ]
+    },
+    {
+      "id": "new-season-gastonia-treatment-center",
+      "name": "New Season Gastonia Treatment Center",
+      "phones": [
+        "980-285-2990 ext. 27225",
+        "877-284-7074",
+        "980-285-2990"
+      ]
+    },
+    {
+      "id": "new-season-morganton-treatment-center",
+      "name": "New Season Morganton Treatment Center",
+      "phones": [
+        "877-284-7074",
+        "828-608-0500"
+      ]
+    },
+    {
+      "id": "new-season-hickory-metro-treatment-center",
+      "name": "New Season/Hickory Metro Treatment Center",
+      "phones": [
+        "877-284-7074",
+        "828-485-1320"
+      ]
+    },
+    {
+      "id": "pyramid-formerly-october-road",
+      "name": "Pyramid (Formerly October Road)",
+      "phones": [
+        "770-866-1850",
+        "704-300-9805"
+      ]
+    },
+    {
+      "id": "rha-marion",
+      "name": "RHA Marion",
+      "phones": [
+        "828-652-2919"
+      ]
+    },
+    {
+      "id": "spruce-pine-health-center",
+      "name": "Spruce Pine Health Center (under Moutain Community Health Partnership umbrella) (Location added by CB 10/27/22)",
+      "phones": [
+        "828-592-1794"
+      ]
+    },
+    {
+      "id": "the-free-clinics",
+      "name": "The Free Clinics",
+      "phones": [
+        "828-697-8422",
+        "828-676-8258"
+      ]
+    }
+  ]
+}

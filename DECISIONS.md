@@ -4,6 +4,12 @@ This file records durable architectural, workflow, safety, and publishing decisi
 
 ---
 
+### 2026-06-10 - Keep One Canonical Shared Schedule Directory Source
+Context: The Psych Scheduler and JFK Med Staff Schedule both needed the same directory/contact data, and the owner explicitly wanted one source of truth so future URL changes, repo moves, and startup sessions would not miss stale copies.
+Decision: Keep shared schedule-directory data in `data/schedule-directory.json`. Regenerate app-specific inline data blocks with `scripts/sync-schedule-directory.mjs` instead of fetching runtime JSON. Treat `vercel-jfk/index.html` as the canonical JFK med-staff HTML file, and copy that full file byte-for-byte to the two alias HTML paths during the sync step.
+Rationale: One editable canonical file prevents silent contact drift, preserves the current single-file/static deployment architecture, and makes future contact changes or repo handoffs verifiable with one `--check` command.
+Consequences: Future schedule-directory edits should change the JSON first, rerun the sync script, avoid hand-editing generated blocks, and confirm the two alias HTML files still match the canonical JFK file exactly before shutdown.
+
 ### 2026-06-09 - Keep One Canonical Schedule-App Route Registry And Forward Legacy URLs
 Context: The schedule apps now span GitHub Pages and Vercel, and a partial Copilot update showed how easy it is for current URLs, old URLs, and repo ownership assumptions to drift apart across future sessions.
 Decision: Keep `docs/schedule-app-canonical-routes.md` as the primary routing source of truth for the schedule apps. When a schedule-app URL, host, or repo location changes, update the registry, all live entrypoints, and the old-URL behavior in the same change set. Retire old public schedule URLs as redirect-forwarders by default instead of leaving stale live copies behind.
