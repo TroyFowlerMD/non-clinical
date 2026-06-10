@@ -8,12 +8,15 @@
 
 ## Active Tasks
 - [~] Keep Psych Scheduler default startup tied to the live Google Sheet while preserving paste/Excel fallback behavior.
+- [~] Keep `docs/schedule-app-canonical-routes.md` current whenever schedule-app URLs, hosts, or repo ownership change.
 
 ## Upcoming
 - [ ] Consider future `non-clinical` professional section organization if more professional utilities are added.
 - [ ] Re-test public non-clinical hub links after future dashboard or repo-routing changes.
+- [ ] If the JFK Med Staff Schedule Vercel hostname changes later, update the canonical registry, live entrypoints, and legacy forwarder in one publish.
 
 ## Completed (last 30 days)
+- [x] Repointed Psych Scheduler and non-clinical hub med-staff entrypoints to `https://non-clinical-lac.vercel.app/`, replaced the old GitHub Pages med-staff page with a forwarder, and added a canonical schedule-route registry.
 - [x] Implemented GitHub issue #15 compact Psych Scheduler mobile schedule header with sidebar last-updated timestamp and Reset page behavior.
 - [x] Added `#IT` as the Psych Scheduler Feedback-tab triage command so Codex reports active requests and proposes actions.
 - [x] Resolved active Psych Scheduler feedback requests for mobile My Schedule date-column pinning, 16px mobile default text, and all-provider FT Phone display.

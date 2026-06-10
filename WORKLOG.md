@@ -4,6 +4,13 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 
 ---
 
+### 2026-06-09 - Codex desktop - Schedule route registry and med-staff forwarder cleanup
+- Completed: Updated `psych-scheduler.html` and the public `index.html` hub card so current med-staff entrypoints now point directly to `https://non-clinical-lac.vercel.app/`.
+- Completed: Replaced `jfk-med-staff-schedule-experimental-v2.html` with a thin legacy forwarder page and removed the stray `snippet_psych_scheduler_link.html` artifact.
+- Completed: Added `docs/schedule-app-canonical-routes.md` as the canonical schedule-app routing registry and updated repo instructions to require registry-first checks for future route changes.
+- In progress: The live Google Sheet default-startup preservation task remains open as an ongoing guardrail.
+- Blockers/notes: Public verification should confirm the GitHub Pages Psych Scheduler page, the legacy forwarder page, the Vercel med-staff page, and the TroyMD dashboard card after push.
+
 ### 2026-05-22 - Codex desktop - Added `#IT` scheduler request command
 - Completed: Added `#IT` and plain-language IT variants to `AGENTS.md` as aliases for opening the Psych Scheduler Feedback tab and proposing actions.
 - Completed: Updated `docs/psych-scheduler-it-request-inbox.md` with the expected active-request triage response shape.

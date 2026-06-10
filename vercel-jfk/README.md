@@ -13,7 +13,7 @@ Required Vercel environment variables:
 
 Published routes:
 
-- `/`
-- `/jfk-med-staff-schedule-experimental-v2.html`
-- `/non-clinical/jfk-med-staff-schedule-experimental-v2.html`
+- `/` - canonical current public entrypoint
+- `/jfk-med-staff-schedule-experimental-v2.html` - compatibility alias only
+- `/non-clinical/jfk-med-staff-schedule-experimental-v2.html` - compatibility alias only
 - `/login`

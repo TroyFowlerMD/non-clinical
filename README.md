@@ -1,6 +1,6 @@
 # non-clinical
 
-Non-clinical TroyMD tools and personal/professional utility pages. The primary active app is Psych Scheduler, a single-file static GitHub Pages scheduling tool that defaults to a live Google Sheet and keeps paste/Excel fallback ingestion available.
+Non-clinical TroyMD tools and personal/professional utility pages. The primary active app is Psych Scheduler, a single-file static GitHub Pages scheduling tool that defaults to a live Google Sheet and keeps paste/Excel fallback ingestion available. The current JFK Med Staff Schedule app is served from Vercel at `https://non-clinical-lac.vercel.app/`, while the older GitHub Pages med-staff URL is retained only as a legacy forwarder.
 
 ## Project Files
 - `volunteer-hub/`: Static site listing 12 vetted volunteer opportunities for a solo 15-year-old in Buncombe County, NC (cards, Leaflet map, comparison table). See `volunteer-hub/README.md`.
@@ -9,6 +9,7 @@ Non-clinical TroyMD tools and personal/professional utility pages. The primary a
 - `WORKLOG.md`: Append-only session-end worklog format.
 - `DECISIONS.md`: Key architectural and workflow decisions extracted from Notion.
 - `AGENTS.md`: Existing repo-specific Codex instructions for Psych Scheduler work.
+- `docs/schedule-app-canonical-routes.md`: Canonical registry for current schedule-app URLs, owning repos, dashboard entrypoints, and legacy-forwarder behavior.
 - `docs/psych-scheduler.md`: Canonical migrated Psych Scheduler project page.
 - `docs/psych-scheduler-feedback-logging-added.md`: Feedback modal and maintenance logging deployment note.
 - `docs/psych-scheduler-feedback-apps-script-contract.md`: Required feedback Apps Script email/log response contract.

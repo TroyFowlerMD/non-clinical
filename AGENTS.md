@@ -4,6 +4,7 @@
 - GitHub is the source of truth for this project: TroyFowlerMD/non-clinical.
 - Notion is no longer the operating source of truth for this repo. Historical Notion content has been migrated into docs/ and the repo memory files.
 - Durable documentation lives in docs/, AGENTS.md, TASKS.md, WORKLOG.md, and DECISIONS.md.
+- Canonical schedule-app routing now lives in `docs/schedule-app-canonical-routes.md`. Use that file as the first routing/source-of-truth check before editing schedule links, URLs, or repo ownership notes.
 - Work in this repo in place. Do not move folders, clone over this repo, or rewrite history unless Dr. Fowler explicitly asks.
 - Default branch: main.
 - Live/public target: https://troyfowlermd.github.io/non-clinical/psych-scheduler.html.
@@ -15,6 +16,7 @@
 
 ## Project Structure
 - psych-scheduler.html - main single-file static app
+- vercel-jfk/ - Vercel deployment root for the current JFK Med Staff Schedule app
 - docs/ - Psych Scheduler and non-clinical project documentation
 - scripts/setup-codex-projects.ps1 - Windows helper for setting up Codex/GitHub project folders on another computer
 - Google Apps Script and Google Sheets - external live data/maintenance request dependencies
@@ -31,6 +33,7 @@
 - docs/psych-scheduler-it-request-inbox.md
 - docs/psych-scheduler-post-call-staffing-bug-fixed.md
 - docs/reverted-post-call-classification-fix.md
+- docs/schedule-app-canonical-routes.md
 - docs/windows-codex-github-workstation-setup.md
 
 ## Required Startup Routine
@@ -38,8 +41,9 @@
 2. If there are staged, modified, or untracked files, stop and report exactly what is present before editing. Summarize whether the changes appear intentional, stale, unexpected, or in need of user review. Treat those changes as user or prior-Codex work; do not discard, overwrite, pull over, or auto-clean them without explicit approval.
 3. If the working tree is clean and network access is available, run git pull --ff-only before starting work. Do not merge, rebase, or force update unless explicitly approved.
 4. Read AGENTS.md, TASKS.md, WORKLOG.md, DECISIONS.md, and any task-relevant files in docs/.
-5. Report the current branch, repo status, active task, blockers, and proposed next action.
-6. Wait for approval before editing unless the user has already given explicit implementation approval.
+5. For any schedule-app routing, hostname, forwarder, or repo-move work, read `docs/schedule-app-canonical-routes.md` before editing and treat it as the primary routing registry.
+6. Report the current branch, repo status, active task, blockers, and proposed next action.
+7. Wait for approval before editing unless the user has already given explicit implementation approval.
 
 ## Required Shutdown Routine
 1. Update WORKLOG.md with what changed, what remains, and any blockers.
@@ -86,12 +90,15 @@ Append entries to WORKLOG.md using this shape:
 - Default Psych Scheduler startup should use the live Google Sheet; paste/drag-drop/upload remains fallback.
 - Preserve parseTSVRobust() and parseAndLoad() during surgical UI or startup patches.
 - All app state is in memory; do not introduce localStorage casually.
+- When a schedule-app public URL, repo location, or deployment host changes, update `docs/schedule-app-canonical-routes.md`, all live entrypoints that should point at the current app, and the legacy-URL behavior in the same change set.
+- Old schedule-app URLs should default to redirect-forwarders, not preserved live copies, unless Dr. Fowler explicitly chooses a different retirement mode.
 - Provider names are last-name-only strings and should not be renamed without explicit request.
 - Validate referenced globals/helpers before shipping code, especially in user-provided snippets.
 - Explain GitHub/deploy steps in beginner-friendly outcome language when talking to the repo owner.
 
 ## Verification Guidance
 - For Psych Scheduler code changes, inspect psych-scheduler.html first and verify the specific affected workflow.
+- For schedule routing changes, verify the canonical registry, the current public URL, and any intentional legacy-forwarder URL after publish.
 - If changing visible UI, check mobile-friendly behavior.
 - If live Google Sheet or Apps Script access cannot be verified, state that clearly in WORKLOG.md and the shutdown summary.
 - If Dr. Fowler asks to check Psych Scheduler feedback, IT requests, website requests, or active scheduler requests, or uses the `#IT` command, read `docs/psych-scheduler-it-request-inbox.md` first and use the `Feedback` tab in `Medical Staff Schedule ANALYSIS SHEET` as the request inbox.

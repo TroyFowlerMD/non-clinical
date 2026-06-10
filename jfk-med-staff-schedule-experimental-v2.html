@@ -3,45 +3,71 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JFK Schedule v2</title>
+<title>JFK Med Staff Schedule Moved</title>
+<meta http-equiv="refresh" content="0; url=https://non-clinical-lac.vercel.app/">
+<link rel="canonical" href="https://non-clinical-lac.vercel.app/">
 <style>
-  :root { color-scheme: dark; }
-  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #12171b; color: #f7f5ef; font-family: Inter, system-ui, sans-serif; }
-  .loader { max-width: 32rem; padding: 1rem; line-height: 1.45; text-align: center; }
+:root {
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --border: #d7dde4;
+  --text: #1f2933;
+  --muted: #5b6b7a;
+  --accent: #0f766e;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: linear-gradient(180deg, #eef4f8 0%, #f8fafc 100%);
+  color: var(--text);
+}
+.panel {
+  width: min(560px, 100%);
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
+}
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+h1 {
+  margin: 0 0 12px;
+  font-size: 28px;
+  line-height: 1.15;
+}
+p {
+  margin: 0 0 14px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+a {
+  color: var(--accent);
+  font-weight: 700;
+}
 </style>
+<script>
+window.location.replace("https://non-clinical-lac.vercel.app/");
+</script>
 </head>
 <body>
-<div class="loader" id="loader">Loading JFK Schedule v2…</div>
-<script>
-(async () => {
-  const sourceUrl = 'https://raw.githubusercontent.com/TroyFowlerMD/non-clinical/38342bc153895531180e5be62569432a19e2bafe/jfk-med-staff-schedule-experimental-v2.html';
-  const otpPhoneCss = '#otp-results .dir-phone{font-size:calc(11px * var(--scale));line-height:1.12;margin-top:4px;white-space:nowrap;overflow:visible;text-overflow:clip}#otp-results .dir-phone a{display:inline-block;min-height:22px;line-height:1.12}@media (max-width:560px){#otp-results .dir-phone{font-size:calc(10px * var(--scale))}}';
-
-  const cacheKey = 'jfkScheduleV2SourceHtml:38342bc153895531180e5be62569432a19e2bafe';
-  let html = '';
-  try {
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) html = cached;
-  } catch (e) {}
-
-  if (!html) {
-    const response = await fetch(sourceUrl, { cache: 'force-cache' });
-    if (!response.ok) throw new Error('Could not load app source: HTTP ' + response.status);
-    html = await response.text();
-    try { localStorage.setItem(cacheKey, html); } catch (e) {}
-  }
-
-  if (!html.includes('#otp-results .dir-phone')) {
-    html = html.replace('</style>', otpPhoneCss + '\n</style>');
-  }
-
-  document.open();
-  document.write(html);
-  document.close();
-})().catch(error => {
-  const loader = document.getElementById('loader');
-  loader.textContent = 'Could not load JFK Schedule v2. Please refresh or try again later. ' + error.message;
-});
-</script>
+  <main class="panel">
+    <div class="eyebrow">Legacy Forwarder</div>
+    <h1>JFK Med Staff Schedule moved</h1>
+    <p>This older GitHub Pages address is now a forwarder only.</p>
+    <p>You should be redirected automatically to the current schedule app at <a href="https://non-clinical-lac.vercel.app/">non-clinical-lac.vercel.app</a>.</p>
+  </main>
 </body>
 </html>

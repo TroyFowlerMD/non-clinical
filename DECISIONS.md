@@ -4,6 +4,12 @@ This file records durable architectural, workflow, safety, and publishing decisi
 
 ---
 
+### 2026-06-09 - Keep One Canonical Schedule-App Route Registry And Forward Legacy URLs
+Context: The schedule apps now span GitHub Pages and Vercel, and a partial Copilot update showed how easy it is for current URLs, old URLs, and repo ownership assumptions to drift apart across future sessions.
+Decision: Keep `docs/schedule-app-canonical-routes.md` as the primary routing source of truth for the schedule apps. When a schedule-app URL, host, or repo location changes, update the registry, all live entrypoints, and the old-URL behavior in the same change set. Retire old public schedule URLs as redirect-forwarders by default instead of leaving stale live copies behind.
+Rationale: A single canonical registry plus explicit forwarder policy makes future repo moves, hostname swaps, and cross-repo schedule work less likely to miss the current live app or revive an old one accidentally.
+Consequences: Future schedule-app work should start by reading the registry, verify both the current live URL and any intentional legacy-forwarder URL after publish, and avoid treating old GitHub Pages copies as active apps unless Dr. Fowler explicitly reverses that policy.
+
 ### 2026-05-22 - Add `#IT` As The Scheduler Request Triage Command
 Context: Dr. Fowler wants a short command that makes Codex go straight to the Psych Scheduler feedback inbox and propose actions without rediscovering the sheet workflow.
 Decision: Treat `#IT` and plain-language IT variants as command aliases for reading `Medical Staff Schedule ANALYSIS SHEET` > `Feedback`, reporting active non-test rows, and proposing concrete actions before implementation.
