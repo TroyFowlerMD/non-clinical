@@ -725,6 +725,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
         <label class="fb-label" for="fb-name">Name</label>
         <input class="fb-input" type="text" id="fb-name" name="name" required autocomplete="name">
       </div>
+      <input type="text" id="fb-company" name="company" autocomplete="off" tabindex="-1" style="display:none">
       <div>
         <label class="fb-label" for="fb-comment">Request / Comment</label>
         <textarea class="fb-textarea" id="fb-comment" name="comment" required placeholder="Describe the issue, request, or idea..."></textarea>
@@ -1055,8 +1056,7 @@ const BACKUP_POOL    = ['Fowler','Carter','Ondreyka'];
 // ── Google Drive / Apps Script integration ────────────────────────────────
 // After deploying Code.gs as a Web App, paste the /exec URL here:
 const DRIVE_EXEC_URL = 'https://script.google.com/macros/s/AKfycbyMi0090cG0OpaW8vijCrijox-R1Y_d-4uGBbeg2Jq8KAYmICqctoF3ctZlqheHyEWC/exec'; // e.g. 'https://script.google.com/macros/s/AKfy.../exec'
-const FEEDBACK_EXEC_URL = 'https://script.google.com/macros/s/AKfycbxtM_sCWARu_IWy7MZe9ZD7grBX5WrlSr42ECmxa60Fpg7ZHm2eIUgDnO2Yp1xBCVYf/exec';
-const FEEDBACK_EMAIL = 'troyfowlermd@gmail.com';
+const FEEDBACK_API_URL = 'https://non-clinical-lac.vercel.app/api/feedback';
 let driveStatus = null;    // { fetchedAt, rowCount, error }
 const NP_STAFF       = ['Anderson','Smith','Cooley'];
 
@@ -3361,65 +3361,39 @@ function feedbackMessage(kind, text) {
   msg.className = 'fb-msg fb-' + kind;
   msg.textContent = text;
 }
-function buildFeedbackFormData(name, comment, page, timestamp) {
-  const fd = new FormData();
-  fd.append('name', name);
-  fd.append('comment', comment);
-  fd.append('page', page);
-  fd.append('timestamp', timestamp);
-  fd.append('_subject', 'JFK Schedule Analyzer Maintenance Request');
-  fd.append('_template', 'table');
-  fd.append('_captcha', 'false');
-  return fd;
+function createFeedbackSubmissionId() {
+  if(window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
+  return 'fb-' + Date.now() + '-' + Math.random().toString(16).slice(2);
 }
-function sendFeedbackScriptConfirmed(payload) {
-  if(!FEEDBACK_EXEC_URL) return Promise.reject(new Error('feedback Apps Script URL missing'));
-  return fetch(FEEDBACK_EXEC_URL, {
+function submitFeedbackRequest(payload) {
+  if(!FEEDBACK_API_URL) return Promise.reject(new Error('feedback API URL missing'));
+  return fetch(FEEDBACK_API_URL, {
     method: 'POST',
-    headers: {'Content-Type': 'text/plain;charset=utf-8'},
     body: JSON.stringify(payload)
   }).then(function(r){
-    if(!r.ok) throw new Error('feedback Apps Script failed: HTTP ' + r.status);
-    return r.text();
-  }).then(function(text){
-    let json = {};
-    if(text) {
-      try { json = JSON.parse(text); }
-      catch(err) { throw new Error('feedback Apps Script returned non-JSON response'); }
-    }
-    if(json.ok === false) throw new Error(json.error || 'feedback Apps Script reported failure');
-    if(json.emailed !== true) {
-      const err = new Error('feedback Apps Script did not confirm email delivery');
-      err.logged = json.logged === true || json.status === 'ok' || json.ok === true;
-      throw err;
-    }
-    return json;
-  });
-}
-function sendFeedbackEmailFallback(formData) {
-  return fetch('https://formsubmit.co/ajax/' + FEEDBACK_EMAIL, {
-    method: 'POST',
-    body: formData
-  }).then(function(r){
-    if(!r.ok) throw new Error('FormSubmit email failed: HTTP ' + r.status);
-    return r;
-  });
-}
-function sendFeedbackUnconfirmedBackup(payload) {
-  if(!FEEDBACK_EXEC_URL) return Promise.reject(new Error('feedback Apps Script URL missing'));
-  return fetch(FEEDBACK_EXEC_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    body: JSON.stringify(Object.assign({}, payload, {source: payload.source + '-unconfirmed-backup'}))
+    return r.text().then(function(text){
+      let json = {};
+      if(text) {
+        try { json = JSON.parse(text); }
+        catch(err) { throw new Error('feedback service returned non-JSON response'); }
+      }
+      if(!r.ok || json.ok === false) {
+        const err = new Error(json.error || ('feedback service failed: HTTP ' + r.status));
+        err.code = json.error || 'feedback_submit_failed';
+        throw err;
+      }
+      return json;
+    });
   });
 }
 function submitFeedback(event){
   if(event && event.preventDefault) event.preventDefault();
   const nameEl = document.getElementById('fb-name');
   const commentEl = document.getElementById('fb-comment');
+  const honeypotEl = document.getElementById('fb-company');
   const submitBtn = document.getElementById('fb-submit');
   const msg = document.getElementById('fb-msg');
-  if(!nameEl || !commentEl || !submitBtn) return false;
+  if(!nameEl || !commentEl || !honeypotEl || !submitBtn) return false;
   const name = (nameEl.value || '').trim();
   const comment = (commentEl.value || '').trim();
   if(!name || !comment){
@@ -3430,53 +3404,29 @@ function submitFeedback(event){
   submitBtn.disabled = true;
   submitBtn.textContent = 'Sending…';
   if(msg){ msg.className = 'fb-msg'; msg.textContent = ''; }
-  const timestamp = new Date().toISOString();
-  const page = document.title;
-
-  const fd = buildFeedbackFormData(name, comment, page, timestamp);
   const feedbackPayload = {
-    site: document.title || window.location.pathname,
+    appId: 'psych-scheduler',
     name: name,
-    comment: comment,
-    page: page,
-    url: window.location.href,
-    timestamp: timestamp,
-    source: 'psych-scheduler-feedback-modal'
+    message: comment,
+    pageTitle: document.title || '',
+    pageUrl: window.location.href,
+    source: 'psych-scheduler-feedback-modal',
+    userAgent: navigator.userAgent || '',
+    submissionId: createFeedbackSubmissionId(),
+    company: (honeypotEl.value || '').trim()
   };
 
-  sendFeedbackScriptConfirmed(feedbackPayload).then(function(){
+  submitFeedbackRequest(feedbackPayload).then(function(){
     submitBtn.disabled = false;
     submitBtn.textContent = origText || 'Send';
-    feedbackMessage('success', 'Thanks - your feedback was emailed and logged.');
+    feedbackMessage('success', 'Thanks - your feedback was submitted.');
     const form = document.getElementById('fb-form');
     if(form) form.reset();
-  }).catch(function(scriptErr){
-    console.warn('[feedback] Apps Script confirmed path failed:', scriptErr);
-    sendFeedbackEmailFallback(fd).then(function(){
-      submitBtn.disabled = false;
-      submitBtn.textContent = origText || 'Send';
-      feedbackMessage('success', 'Thanks - your feedback email was sent.');
-      const form = document.getElementById('fb-form');
-      if(form) form.reset();
-    }).catch(function(emailErr){
-      console.warn('[feedback] email fallback failed:', emailErr);
-      if(scriptErr && scriptErr.logged) {
-        submitBtn.disabled = false;
-        submitBtn.textContent = origText || 'Send';
-        feedbackMessage('warning', 'Your request was logged, but I could not confirm the email. Please email directly if this is urgent.');
-        return;
-      }
-      sendFeedbackUnconfirmedBackup(feedbackPayload).then(function(){
-        submitBtn.disabled = false;
-        submitBtn.textContent = origText || 'Send';
-        feedbackMessage('warning', 'I could not confirm the email. I sent a backup maintenance-log request, but please email directly if this is urgent.');
-      }).catch(function(backupErr){
-        submitBtn.disabled = false;
-        submitBtn.textContent = origText || 'Send';
-        console.warn('[feedback] all submit paths failed:', {scriptErr, emailErr, backupErr});
-        feedbackMessage('error', 'Sorry - I could not send or log this feedback. Please try again later.');
-      });
-    });
+  }).catch(function(error){
+    console.warn('[feedback] submit failed:', error);
+    submitBtn.disabled = false;
+    submitBtn.textContent = origText || 'Send';
+    feedbackMessage('error', 'Sorry - I could not submit this feedback right now. Please try again in a moment. Your message is still here.');
   });
   return false;
 }
