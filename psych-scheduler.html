@@ -305,6 +305,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
 .cal-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
 .cal-nav{display:flex;align-items:center;gap:8px}
 .cal-month-label{font-size:16px;font-weight:700;min-width:160px;text-align:center}
+.cal-swipe-zone{touch-action:pan-y pinch-zoom}
 .cal-nav-btn{display:flex;align-items:center;justify-content:center;width:32px;height:32px;
   border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);
   color:var(--muted);cursor:pointer;transition:all 140ms}
@@ -337,9 +338,9 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
 .cal-dot-shift{background:var(--green-bg);color:var(--green-text)}
 .cal-dot-pc{background:var(--gray-bg);color:var(--gray-text)}
 .cal-dot-thin{background:var(--red-bg);color:var(--red-text);font-size:9px}
-.cal-dot-pto-f,.cal-dot-pto-5{background:var(--green-bg);color:var(--green);font-size:9px}
-.cal-dot-pto-c{background:var(--amber-bg);color:var(--amber-text);font-size:9px;opacity:0.7}
-.cal-dot-pto-6{background:var(--green);color:var(--surface);font-size:9px}
+.cal-dot-pto-f,.cal-dot-pto-5{background:var(--purple-bg);color:var(--purple);font-size:9px}
+.cal-dot-pto-c{background:rgba(79,155,232,0.12);color:var(--primary);font-size:9px;opacity:0.9}
+.cal-dot-pto-6{background:var(--primary);color:#fff;font-size:9px}
 .cal-dot-staff{font-size:9px}
 .cal-dot-trainee{background:var(--purple-bg);color:var(--purple);font-size:9px}
 .cal-dot-provider{background:var(--teal-bg);color:var(--teal);font-size:9px}
@@ -934,7 +935,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
           <div class="cal-controls">
             <div class="cal-filter-group">
               <label class="cal-cb-label"><input type="checkbox" id="cb-shifts" checked onchange="renderCalendar()"> My Shifts</label>
-              <label class="cal-cb-label"><input type="checkbox" id="cb-backup" checked onchange="renderCalendar()"> Backup Call</label>
+              <label class="cal-cb-label" id="cal-filter-backup-wrap"><input type="checkbox" id="cb-backup" checked onchange="renderCalendar()"> Backup Call</label>
               <label class="cal-cb-label"><input type="checkbox" id="cb-postcall" checked onchange="renderCalendar()"> Post-Call</label>
               <label class="cal-cb-label"><input type="checkbox" id="cb-my-overnight" checked onchange="renderCalendar()"> My overnight</label>
               <label class="cal-cb-label"><input type="checkbox" id="cb-all-overnight" onchange="renderCalendar()"> All overnight</label>
@@ -950,7 +951,7 @@ kbd{background:var(--surface3);padding:1px 5px;border-radius:3px;font-family:var
             </button>
           </div>
         </div>
-        <div id="cal-grid-container"></div>
+        <div id="cal-grid-container" class="cal-swipe-zone"></div>
       </div>
     </div>
 
@@ -966,6 +967,7 @@ const CORE_PROVIDERS = ['Patil','German','Anderson','Fowler','Carter','Ondreyka'
 // Providers hidden from the UI provider switcher dropdown. Parser/column-detection still references them.
 const PROVIDER_SELECT_HIDE = new Set(['Patil','German']);
 const BACKUP_POOL    = ['Fowler','Carter','Ondreyka'];
+const BACKUP_POOL_SET = new Set(BACKUP_POOL);
   const PROVIDER_PHONES = {
   'Fowler':    '+13606061046',
   'Ondreyka':  '+17347091295',
@@ -1435,7 +1437,8 @@ let TODAY = new Date().toISOString().slice(0,10);
 let bkpFilter = 'upcoming';
 let dashPage = 0;
 let calYear, calMonth;
-let PG = 80;
+let PG = 240;
+let calTouchStart = null;
 
 // Global date-range filter state (in-memory only)
 let globalRange = { start: null, end: null, autoStart: null, autoEnd: null };
@@ -1512,6 +1515,69 @@ function applyGlobalRange(rows) {
 
 function activeViewId() {
   return document.querySelector('.view.active')?.id?.replace('view-','') || 'paste';
+}
+
+function providerSupportsBackup(name = selectedProvider) {
+  return BACKUP_POOL_SET.has(name);
+}
+
+function hasCustomGlobalRange() {
+  const hasAnyRange = !!(globalRange.start || globalRange.end);
+  if (!hasAnyRange) return false;
+  return globalRange.start !== globalRange.autoStart || globalRange.end !== globalRange.autoEnd;
+}
+
+function calendarSourceRows() {
+  return hasCustomGlobalRange() ? applyGlobalRange(DATA) : DATA;
+}
+
+function syncProviderScopedUI() {
+  const canShowBackup = providerSupportsBackup();
+  const backupNav = document.getElementById('nav-backup');
+  if (backupNav) backupNav.hidden = !canShowBackup;
+  const backupFilterWrap = document.getElementById('cal-filter-backup-wrap');
+  if (backupFilterWrap) {
+    backupFilterWrap.hidden = !canShowBackup;
+    const backupInput = backupFilterWrap.querySelector('input');
+    if (backupInput) backupInput.disabled = !canShowBackup;
+  }
+  if (!canShowBackup && activeViewId() === 'backup') {
+    showView(DATA.length ? 'dashboard' : 'paste');
+    return true;
+  }
+  return false;
+}
+
+function handleCalendarTouchStart(evt) {
+  const touch = evt.changedTouches && evt.changedTouches[0];
+  if (!touch) return;
+  calTouchStart = { x: touch.clientX, y: touch.clientY, at: Date.now() };
+}
+
+function handleCalendarTouchEnd(evt) {
+  if (!calTouchStart) return;
+  const touch = evt.changedTouches && evt.changedTouches[0];
+  if (!touch) {
+    calTouchStart = null;
+    return;
+  }
+  const dx = touch.clientX - calTouchStart.x;
+  const dy = touch.clientY - calTouchStart.y;
+  const dt = Date.now() - calTouchStart.at;
+  calTouchStart = null;
+  if (dt > 700) return;
+  if (Math.abs(dx) < 50) return;
+  if (Math.abs(dx) < Math.abs(dy) * 1.2) return;
+  if (dx > 0) calPrev();
+  else calNext();
+}
+
+function initCalendarSwipe() {
+  const host = document.getElementById('cal-grid-container');
+  if (!host || host.dataset.swipeReady === '1') return;
+  host.dataset.swipeReady = '1';
+  host.addEventListener('touchstart', handleCalendarTouchStart, { passive: true });
+  host.addEventListener('touchend', handleCalendarTouchEnd, { passive: true });
 }
 
 function rerenderActiveView() {
@@ -1629,6 +1695,7 @@ function onDataLoaded(opts = {}) {
   const todayFmt = fmtDate(TODAY);
   document.getElementById('today-badge').textContent = 'Today: '+todayFmt;
   initGlobalRange();
+  syncProviderScopedUI();
   const nextView = (opts.preserveActiveView && (opts.targetViewId === 'backup' || opts.targetViewId === 'calendar' || opts.targetViewId === 'dashboard'))
     ? opts.targetViewId
     : 'dashboard';
@@ -1652,6 +1719,7 @@ function clearData() {
   const gbar = document.getElementById('global-filter-bar');
   if(gbar) gbar.classList.add('hidden');
   setCurrentDataSource({ type:'none', label:'No data loaded', loadedAt:null });
+  syncProviderScopedUI();
   showView('paste');
 }
 
@@ -1660,6 +1728,7 @@ function clearData() {
 // ═══════════════════════════════════════════════════════════════════════════
 
 function showView(id) {
+  if(id === 'backup' && !providerSupportsBackup()) id = DATA.length ? 'dashboard' : 'paste';
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
   const view=document.getElementById('view-'+id);
@@ -1789,7 +1858,7 @@ const SCHED_COLS_ALL = [
   {id:'staffTotal',  label:'Total Staff<br>Core+Temp', sortable:true,  sortKey:r=>r.count},
 
   {id:'overnight',   label:'Overnight',        sortable:false},
-  {id:'backupPerson',label:'Backup Person',    sortable:false},
+  {id:'backupPerson',label:'&#128222; Backup', sortable:false},
   {id:'providers',   label:'Working Providers',sortable:false},
   {id:'ftPhone',     label:'FT Phone',         sortable:false},
   {id:'anderson',    label:'Anderson',         sortable:false},
@@ -1928,7 +1997,7 @@ function schedCell(id, r) {
       return `<td><span class="cnt ${totalK}">${r.count}</span><span class="cnt-temp" style="font-size:10px;margin-left:4px">${r.coreCount}c${tN?`+${tN}t`:''}</span></td>`;
     }
     case 'overnight':   return `<td style="font-size:11px;color:var(--muted)">${r.overnight||'<span style="color:var(--faint)">—</span>'}</td>`;
-    case 'backupPerson':return `<td>${r.bkpPerson||'<span style="color:var(--faint)">—</span>'}</td>`;
+    case 'backupPerson':return `<td>${r.bkpPerson ? renderWorkingProviderName(r.bkpPerson) : '<span style="color:var(--faint)">—</span>'}</td>`;
    case 'providers': {
   const workingCore = r.workingCore || [];
   const workingTemp = r.workingTemp || [];
@@ -2136,10 +2205,11 @@ function isProvOvernight(r) {
   return textMentionsProvider(r.overnight||'', selectedProvider);
 }
 function provBackup(r) {
+  if(!providerSupportsBackup()) return false;
   if(selectedProvider === 'Fowler')   return !!r.fowlerBackup;
   if(selectedProvider === 'Carter')   return !!r.carterBackup;
   if(selectedProvider === 'Ondreyka') return !!r.ondreykaBackup;
-  return false;
+  return textMentionsProvider(r.backupRaw||'', selectedProvider);
 }
 function provCallBadge(r) {
   let out = '';
@@ -2167,6 +2237,7 @@ function onProviderChange(prov) {
   if(idx >= 0) schedActiveCols.splice(idx, 1);
   normalizeSchedColumnOrder();
   recomputePTORisk();
+  if(syncProviderScopedUI()) return;
   // Re-render whichever view is currently active
   const activeId = document.querySelector('.view.active')?.id?.replace('view-','');
   if(activeId === 'dashboard') { renderColPicker(); renderDashboard(); }
@@ -2809,7 +2880,7 @@ function renderCalendar() {
   if(!DATA.length) return;
 
   const showShifts       = document.getElementById('cb-shifts').checked;
-  const showBackup       = document.getElementById('cb-backup').checked;
+  const showBackup       = providerSupportsBackup() && document.getElementById('cb-backup').checked;
   const showPC           = document.getElementById('cb-postcall').checked;
   const showMyOvernight  = document.getElementById('cb-my-overnight').checked;
   const showAllOvernight = document.getElementById('cb-all-overnight').checked;
@@ -2835,7 +2906,7 @@ function renderCalendar() {
     if(week.length===7||d===totalDays){ while(week.length<7)week.push(null); weeks.push(week); week=[]; }
   }
 
-  const filteredData = applyGlobalRange(DATA);
+  const filteredData = calendarSourceRows();
   const byDate = {};
   for(const row of filteredData) byDate[row.date]=row;
   const getISO=(y,m,d)=>`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
@@ -2940,7 +3011,7 @@ function exportICS() {
   if(!DATA.length) return;
 
   const showShifts       = document.getElementById('cb-shifts').checked;
-  const showBackup       = document.getElementById('cb-backup').checked;
+  const showBackup       = providerSupportsBackup() && document.getElementById('cb-backup').checked;
   const showPC           = document.getElementById('cb-postcall').checked;
   const showMyOvernight  = document.getElementById('cb-my-overnight').checked;
   const showAllOvernight = document.getElementById('cb-all-overnight').checked;
@@ -3433,6 +3504,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   baseFontPx = defaultFontPxForViewport();
   applyFontSize();
   updateThemeBtn(document.documentElement.getAttribute('data-theme')||'dark');
+  initCalendarSwipe();
+  syncProviderScopedUI();
   const loadedFromCache = loadCachedScheduleForView('dashboard');
   if (loadedFromCache) {
     hideInitialLoading();
