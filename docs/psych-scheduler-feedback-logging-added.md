@@ -3,6 +3,8 @@
 
 # 2026-05-11 - Psych Scheduler Feedback Logging Added
 
+Historical note: this document describes the retired Apps Script/FormSubmit feedback flow that was replaced on 2026-06-10 by the shared Vercel-to-private-GitHub-Issues intake. Keep it only for historical debugging context.
+
 ## Summary
 Added a maintenance-request feedback layer to `psych-scheduler.html` in `TroyFowlerMD/non-clinical`. The app remains a single-file static GitHub Pages app with no backend, build tools, framework conversion, dependency changes, or extra files.
 

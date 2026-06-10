@@ -1,71 +1,52 @@
-<!-- last-reviewed: 2026-05-22 -->
+<!-- last-reviewed: 2026-06-10 -->
 <!-- source: codex -->
 
 # Psych Scheduler IT Request Inbox
 
-Psych Scheduler feedback requests are tracked in the existing `Medical Staff Schedule ANALYSIS SHEET` Google Sheet on a separate `Feedback` tab. The schedule app continues to read schedule data from `Sheet1`; feedback logging must not alter `Sheet1`.
+Psych Scheduler and JFK Med Staff Schedule feedback now lands in the private GitHub repo `TroyFowlerMD/non-clinical-feedback`. The old Google Sheet `Feedback` tab and FormSubmit path are retired as the active request inbox.
 
-## Future Codex Workflow
+## Current `#IT` Workflow
 
 When Dr. Fowler says `#IT`, `IT`, `#it`, `check IT`, `scheduler IT`, or asks to check scheduler feedback, website requests, or active scheduler requests:
 
-1. Open/read the `Feedback` tab from `Medical Staff Schedule ANALYSIS SHEET`.
-2. Treat rows as active when `Status` is blank, `open`, `needs_clarification`, or `in_progress`.
-3. Ignore verification rows where `Source` starts with `codex-live-verification` or `Submitter` starts with `Codex test`.
-4. Report active requests first with `Request_ID`, `Timestamp`, `Submitter`, and `Description`.
+1. Open/read the private repo `TroyFowlerMD/non-clinical-feedback`.
+2. Treat issues as active when they are open and labeled `status:new`, `status:in-progress`, or `status:waiting`.
+3. Ignore explicit verification or test issues created only for endpoint checks.
+4. Report active requests first with issue number, title, source label, status label, and a short plain-language summary.
 5. Propose a concrete action for each active request: likely affected file/system, whether it is a direct fix or needs clarification, suggested priority, and the next command/action Codex should take.
-6. Do not edit files, deploy, or update request statuses until Dr. Fowler approves the proposed action plan or explicitly asks for implementation.
-7. After approved implementation, update `Status`, `Codex_Notes`, `Resolution_Notes`, and `Resolved_At` using the admin status update operation.
+6. Do not edit files, deploy, relabel, or close issues until Dr. Fowler approves the proposed action plan or explicitly asks for implementation.
+7. After approved implementation, add a comment with the commit/PR/deployment evidence, update labels as needed, and close the issue only after live verification.
 
 ## Expected `#IT` Response Shape
 
-Start with a short count of active non-test requests. Then list each active request in this shape:
+Start with a short count of active non-test issues. Then list each active request in this shape:
 
-- `Request_ID` - `Timestamp` - `Submitter`
+- `#<issue>` - `<source label>` - `<status label>`
   - Request: concise description
   - Proposed action: direct fix / needs clarification / defer / already handled
   - Likely target: file, app area, or external system
 
-End with a short "Recommended next action" section. If no active requests exist, say that directly and mention the last checked range.
+End with a short "Recommended next action" section. If no active requests exist, say that directly and mention the filters checked.
 
-## Sheet Columns
+## Useful GitHub Issue Filters
 
-`Request_ID`, `Timestamp`, `Submitter`, `Description`, `Page`, `URL`, `Source`, `Status`, `Codex_Notes`, `Resolution_Notes`, `Resolved_At`
+- New: `is:issue is:open label:status:new`
+- Psych only: `is:issue is:open label:source:psych-scheduler`
+- JFK only: `is:issue is:open label:source:jfk-med-staff`
+- In progress: `is:issue is:open label:status:in-progress`
+- Waiting: `is:issue is:open label:status:waiting`
+- Closed: `is:issue is:closed sort:updated-desc`
 
-## Apps Script Source
+## Shared Feedback Intake
 
-The Apps Script source is cloned into `apps-script/psych-scheduler-feedback/` and linked by the root `.clasp.json`. The same deployed web app serves `Sheet1` schedule reads and handles feedback POSTs.
+Both schedule apps now submit to the shared Vercel endpoint at `https://non-clinical-lac.vercel.app/api/feedback`.
 
-Use `scripts/clasp.cmd push` and redeploy the existing web app deployment so the public `DRIVE_EXEC_URL` does not change. The current live deployment ID is the one matching the `DRIVE_EXEC_URL` in `psych-scheduler.html`.
+- Psych Scheduler calls that endpoint cross-origin from GitHub Pages.
+- JFK Med Staff Schedule calls the same endpoint same-origin from Vercel.
+- The endpoint creates one private GitHub issue per accepted submission.
 
-## Updating Request Status
+See `docs/non-clinical-feedback-github-issues.md` for the full issue format, labels, protections, and operator workflow.
 
-Future Codex sessions on this workstation can update request status by POSTing to `DRIVE_EXEC_URL` with `op: "updateFeedbackStatus"` and the local admin token stored at `.codex-local/psych-scheduler-feedback-admin-token.txt`. This file is intentionally ignored by Git.
+## Apps Script Scope
 
-New workstation setup should run:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\setup-psych-scheduler-appscript-access.ps1
-```
-
-Payload fields:
-
-`op`, `token`, `requestId`, `status`, `codexNotes`, `resolutionNotes`
-
-Supported statuses:
-
-`open`, `needs_clarification`, `in_progress`, `done`, `wont_do`, `duplicate`, `test`
-
-Terminal statuses automatically fill `Resolved_At` when it is not provided.
-
-For routine updates from Codex, prefer the helper script:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\update-psych-scheduler-feedback-status.ps1 -RequestId "PS-..." -Status done -CodexNotes "Fixed in commit ..." -ResolutionNotes "Implemented and verified."
-```
-
-To provision a separate token for another workstation from an already-configured workstation:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\provision-psych-scheduler-feedback-token.ps1 -Label "other-computer"
-```
+The Apps Script source remains cloned in `apps-script/psych-scheduler-feedback/` and linked by the root `.clasp.json`, but it is now schedule-data infrastructure only. It may still serve `Sheet1` reads for Psych Scheduler. It is no longer the feedback inbox, and future `#IT` triage should not read or update the old Google Sheet `Feedback` tab as the system of record.

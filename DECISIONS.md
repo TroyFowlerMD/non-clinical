@@ -4,6 +4,12 @@ This file records durable architectural, workflow, safety, and publishing decisi
 
 ---
 
+### 2026-06-10 - Use Private GitHub Issues As The Shared Feedback Inbox
+Context: Both schedule apps had drifted into a mixed feedback setup using Apps Script, FormSubmit, email confirmation rules, and a Google Sheet `Feedback` tab. The owner wanted one shared mechanism, private by default, with a simpler future `#IT` triage workflow.
+Decision: Route Psych Scheduler and JFK Med Staff Schedule feedback through one shared Vercel endpoint at `vercel-jfk/api/feedback.js`, then create private issues in `TroyFowlerMD/non-clinical-feedback`. Keep the Google Apps Script bridge for schedule-data reads only, not as the feedback inbox.
+Rationale: One private GitHub Issues inbox gives both apps the same intake behavior, keeps operational requests off the public repo, and makes triage/documentation easier than maintaining separate Sheet and email flows.
+Consequences: Future feedback changes should update the shared endpoint, both app entrypoints, and the operator docs in the same change set. `#IT` should inspect the private GitHub Issues repo instead of the old Google Sheet `Feedback` tab. If the private repo, PAT, or Vercel env vars are missing, Codex must report that live verification is blocked instead of claiming the new inbox is active.
+
 ### 2026-06-10 - Keep One Canonical Shared Schedule Directory Source
 Context: The Psych Scheduler and JFK Med Staff Schedule both needed the same directory/contact data, and the owner explicitly wanted one source of truth so future URL changes, repo moves, and startup sessions would not miss stale copies.
 Decision: Keep shared schedule-directory data in `data/schedule-directory.json`. Regenerate app-specific inline data blocks with `scripts/sync-schedule-directory.mjs` instead of fetching runtime JSON. Treat `vercel-jfk/index.html` as the canonical JFK med-staff HTML file, and copy that full file byte-for-byte to the two alias HTML paths during the sync step.

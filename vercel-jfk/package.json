@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node --check api/login.js && node --check middleware.js"
+    "check": "node --check api/login.js && node --check api/feedback.js && node --check middleware.js"
   },
   "dependencies": {
     "@vercel/functions": "^2.2.0"

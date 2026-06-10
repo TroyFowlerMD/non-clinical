@@ -4,6 +4,13 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 
 ---
 
+### 2026-06-10 - Codex desktop - Shared GitHub Issues feedback migration
+- Completed: Added `vercel-jfk/api/feedback.js` as the shared feedback endpoint for Psych Scheduler and JFK Med Staff Schedule, with exact-origin allowlisting, honeypot support, payload limits, simple IP rate limiting, submission-ID dedupe, GitHub issue creation, and consistent success/failure handling.
+- Completed: Updated `psych-scheduler.html` and canonical `vercel-jfk/index.html` to submit feedback to the shared Vercel endpoint, warn users not to include patient details or passwords, preserve typed text on failure, and use one generated submission ID per attempt.
+- Completed: Updated `AGENTS.md`, `README.md`, `DECISIONS.md`, `TASKS.md`, `docs/non-clinical-feedback-github-issues.md`, and `docs/psych-scheduler-it-request-inbox.md` so future `#IT` and scheduler-request triage use the private GitHub Issues inbox instead of the old Google Sheet/FormSubmit flow.
+- In progress: Live end-to-end issue creation still depends on the private repo `TroyFowlerMD/non-clinical-feedback`, the fine-grained PAT, and the Vercel env vars being available to the deployed project.
+- Blockers/notes: Local code verification can confirm endpoint behavior and app wiring, but live private-issue creation cannot be claimed until GitHub access to the private repo and deployed Vercel env vars are verified.
+
 ### 2026-06-10 - Codex desktop - Shared schedule directory source and Psych directory rollout
 - Completed: Added `data/schedule-directory.json` as the canonical shared contact source and `scripts/sync-schedule-directory.mjs` to regenerate both app data blocks plus keep the two JFK alias HTML files synced to canonical `vercel-jfk/index.html`.
 - Completed: Updated `psych-scheduler.html` to consume generated directory/contact data, added a full Directory view with shared provider/section content plus OTP/OBOT search, and added a mobile text/call contact sheet for directory entries.

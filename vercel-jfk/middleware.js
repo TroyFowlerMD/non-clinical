@@ -2,7 +2,7 @@ import { next } from '@vercel/functions';
 
 const COOKIE_NAME = 'jfk_auth';
 const DEFAULT_COOKIE_DAYS = 365;
-const PUBLIC_PATHS = new Set(['/login', '/login.html', '/api/login']);
+const PUBLIC_PATHS = new Set(['/login', '/login.html', '/api/login', '/api/feedback']);
 
 function cookieDays() {
   const days = Number.parseInt(process.env.JFK_AUTH_COOKIE_DAYS || '', 10);
@@ -83,6 +83,6 @@ export default async function middleware(request) {
 }
 
 export const config = {
-  matcher: ['/((?!api/login).*)'],
+  matcher: ['/((?!api/login|api/feedback).*)'],
   runtime: 'edge'
 };

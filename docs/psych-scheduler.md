@@ -7,7 +7,7 @@
 Personal non-clinical scheduling tool for the psych team at JFK ADATC. Pulls the medical staff schedule from a Google Sheet via Apps Script or falls back to Excel TSV paste. Presents psych-only views: daily staffing, backup call risk, PTO evaluator, provider profile switcher (Patil, German, Anderson, Fowler, Carter, Ondreyka, Smith, Cooley), calendar, and date-range filter. Contained in the `TroyFowlerMD/non-clinical` repo alongside other non-clinical personal tools. This repo/hub is linked from the TroyMD personal dashboard.
 
 ## Current Status
-Current deployed production file is `psych-scheduler.html` on `main`. Core v3.1 scheduling features remain intact: live Google Sheets pull, TSV/Excel paste fallback, provider profile switcher, date-range filter, PTO/backup call risk views, mobile nav (hamburger/overlay), XLSX ingestion, theme toggle, and font-size controls. Maintenance layer: sidebar `Send Feedback` modal uses the scheduler Apps Script bridge as the primary owned email/log path, with FormSubmit as a confirmed email fallback.
+Current deployed production file is `psych-scheduler.html` on `main`. Core v3.1 scheduling features remain intact: live Google Sheets pull, TSV/Excel paste fallback, provider profile switcher, date-range filter, PTO/backup call risk views, mobile nav (hamburger/overlay), XLSX ingestion, theme toggle, and font-size controls. Maintenance layer: sidebar `Send Feedback` now submits to the shared Vercel endpoint at `https://non-clinical-lac.vercel.app/api/feedback`, which creates private issues in `TroyFowlerMD/non-clinical-feedback`.
 
 Shared directory layer: production `psych-scheduler.html` now includes a full Directory view backed by generated data from `data/schedule-directory.json`. The same canonical contact source also feeds the JFK Med Staff Schedule Vercel app, with `scripts/sync-schedule-directory.mjs` regenerating both apps' inline directory blocks and keeping the JFK alias HTML files synced to canonical `vercel-jfk/index.html`.
 
@@ -20,8 +20,11 @@ Experimental command-center clone: `psych-scheduler-experimental.html` is a sepa
 ## 2026-05-22 Mobile My Schedule and FT Phone Request Note
 The production My Schedule view now pins the `Day / Date` column during mobile horizontal scrolling, starts mobile browsers at 16px text while preserving the 17px desktop default, and renders the `FT Phone` column as matched provider names instead of a Fowler-only Yes/blank flag. The selected provider is highlighted in that column when they are the FT Phone assignee; other assignees remain normal text.
 
+## 2026-06-10 Shared Feedback Inbox Note
+Psych Scheduler now shares the same feedback intake path as the JFK Med Staff Schedule app. Both apps submit to `vercel-jfk/api/feedback.js`, which applies exact-origin checks, a honeypot field, payload limits, simple IP rate limiting, and submission-ID dedupe before creating a private GitHub issue. On failure, the modal keeps the user's typed text in place and shows a retry message instead of falsely claiming success.
+
 ## 2026-05-20 Feedback and PTO Column Note
-The feedback modal no longer shows a green success message just because an unconfirmed no-CORS logger request completed. It first looks for an Apps Script JSON response confirming `emailed: true`, then falls back to confirmed FormSubmit email. If only an unconfirmed backup log request can be sent, the modal keeps the fields in place and shows a warning.
+This note is now historical. The older Apps Script + FormSubmit feedback confirmation flow has been retired in favor of the shared GitHub Issues inbox described above.
 
 The My Schedule "Show only PTO feasible" filter now switches the visible columns to the PTO review set: selected provider, call, trainees, total staff/core+temp, working providers, and PTO feasible. Turning the filter off restores the user's prior columns.
 
@@ -44,8 +47,9 @@ These surrounding repo/hub updates are still local only and have not been commit
 **Layer structure:**
 - **UI:** Single self-contained HTML file. No server, no build tools, no framework, no localStorage (sandboxed-iframe constraint). All state in memory. External dependency: Google Fonts (Inter + JetBrains Mono).
 - **Shared directory source:** `data/schedule-directory.json` is the single editable contact/directory source for Psych Scheduler and JFK Med Staff Schedule. `scripts/sync-schedule-directory.mjs` rewrites generated blocks inside both apps; neither app fetches directory JSON at runtime.
-- **Apps Script bridge:** Deployed Google Apps Script Web App at URL hardcoded as `DRIVE_EXEC_URL` in the HTML. Returns JSON `{headers, rows, sheetName, fetchedAt, rowCount}` for `Sheet1` and handles feedback POST logging to the `Feedback` tab. Deployment access set to "Anyone" to resolve CORS on `fetch()`.
-- **Google Sheets backend:** Source spreadsheet `Medical Staff Schedule ANALYSIS SHEET`, tab `Sheet1`, columns A-AD. Feedback/IT requests live in a separate `Feedback` tab. Stable Sheet ID enables auto-update on re-upload.
+- **Apps Script bridge:** Deployed Google Apps Script Web App at URL hardcoded as `DRIVE_EXEC_URL` in the HTML. Returns JSON `{headers, rows, sheetName, fetchedAt, rowCount}` for `Sheet1`. Feedback logging to the old `Feedback` tab is retired.
+- **Shared feedback endpoint:** `vercel-jfk/api/feedback.js` accepts Psych Scheduler and JFK Med Staff Schedule feedback, then creates private issues in `TroyFowlerMD/non-clinical-feedback`.
+- **Google Sheets backend:** Source spreadsheet `Medical Staff Schedule ANALYSIS SHEET`, tab `Sheet1`, columns A-AD. `Sheet1` remains the schedule source. The old `Feedback` tab is no longer the operational request inbox.
 - **Fallback ingestion:** Excel TSV paste via `parseTSVRobust()` (quoted-field, multiline Excel cells).
 
 **Parser:**
@@ -61,15 +65,16 @@ These surrounding repo/hub updates are still local only and have not been commit
 ## Code Conventions
 - Versioned filename during dev: `psych-scheduler-<major>-<iter>.html`; deployed copy always `psych-scheduler.html` (suffix stripped).
 - No localStorage; all state in memory - sandboxed-iframe constraint. Do not introduce localStorage without replacing the access model.
-- Apps Script CORS resolved by deployment access set to "Anyone" - do not change without simultaneously replacing the access model.
+- Apps Script CORS resolved by deployment access set to "Anyone" for schedule-data reads - do not change without simultaneously replacing the access model.
 - `DRIVE_EXEC_URL` is hardcoded in the HTML; update it whenever Apps Script is redeployed to a new URL.
-- `FEEDBACK_EXEC_URL` points to `DRIVE_EXEC_URL`; the same Apps Script bridge should return JSON with `emailed: true` after the owner email is sent. See `docs/psych-scheduler-it-request-inbox.md`.
+- Feedback submission should use `FEEDBACK_API_URL = 'https://non-clinical-lac.vercel.app/api/feedback'`; do not restore FormSubmit or the old Apps Script feedback POST path as an active intake without an explicit decision update.
 - Preserve `parseTSVRobust()` and `parseAndLoad()` verbatim during surgical patches - these were fragile historically.
 
 ## Open Questions / Decisions Pending
 - **Parser hardening** - ongoing concern for full-sheet variation and stale-data edge cases.
 - **Stale-data badge / data-source polish** - `Live.Sheet1` vs Pasted badge and stale-data timestamp were v3 polish items; confirm current state.
 - **Apps Script redeployment cadence** - no documented policy for when/how to redeploy when Sheet structure changes.
+- **Private feedback repo / Vercel secret verification** - if `TroyFowlerMD/non-clinical-feedback` access or the Vercel feedback env vars are missing, live end-to-end issue creation stays blocked until those external prerequisites are confirmed.
 
 ## Reversals & Lessons
 - **Paste-only to live Google Sheet** - original tool was paste-only; Apps Script Web App added in v2-16. API key alternative rejected to avoid public key exposure in client-side HTML.
@@ -82,4 +87,4 @@ These surrounding repo/hub updates are still local only and have not been commit
 - Live: [psych-scheduler.html](https://troyfowlermd.github.io/non-clinical/psych-scheduler.html)
 - Google Sheet: `Medical Staff Schedule ANALYSIS SHEET`, tab `Sheet1`, cols A-AD
 
-Apps Script deployment URL (`DRIVE_EXEC_URL`) is sensitive. Do not paste it into this page.
+Apps Script deployment URL (`DRIVE_EXEC_URL`) and the private feedback PAT remain sensitive. Do not paste either into this page.

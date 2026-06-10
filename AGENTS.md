@@ -32,6 +32,7 @@
 - docs/psych-scheduler-column-toggles-backup-call-buttons-auto-deselect.md
 - docs/psych-scheduler-feedback-apps-script-contract.md
 - docs/psych-scheduler-feedback-logging-added.md
+- docs/non-clinical-feedback-github-issues.md
 - docs/psych-scheduler-it-request-inbox.md
 - docs/psych-scheduler-post-call-staffing-bug-fixed.md
 - docs/reverted-post-call-classification-fix.md
@@ -75,7 +76,7 @@ Append entries to WORKLOG.md using this shape:
 ## Command Aliases
 - If Dr. Fowler says `start`, `#start`, `start <repo>`, or `#start <repo>` while working in this repo, immediately run the Required Startup Routine. Do not simply acknowledge or repeat the command.
 - If Dr. Fowler says `done`, `#done`, `finish`, `shutdown`, `done <repo>`, or `#done <repo>` while working in this repo, immediately run the Required Shutdown Routine. Do not simply acknowledge or repeat the command.
-- If Dr. Fowler says `#IT`, `IT`, `#it`, `check IT`, `scheduler IT`, or asks to check scheduler feedback/requests, immediately read `docs/psych-scheduler-it-request-inbox.md`, open the `Feedback` tab in `Medical Staff Schedule ANALYSIS SHEET`, report active non-test requests, and propose likely actions before asking for implementation approval. Do not ask which sheet to use.
+- If Dr. Fowler says `#IT`, `IT`, `#it`, `check IT`, `scheduler IT`, or asks to check scheduler feedback/requests, immediately read `docs/psych-scheduler-it-request-inbox.md` and `docs/non-clinical-feedback-github-issues.md`, inspect the private GitHub Issues inbox in `TroyFowlerMD/non-clinical-feedback`, report active non-test requests, and propose likely actions before asking for implementation approval.
 - In a general or multi-repo chat, if the command names this repo, switch context to this repo before running the routine. If the target repo is ambiguous, ask one concise clarifying question.
 - Treat `#start`, `#done`, and `#IT` as stronger visual command markers, but keep the plain-language variants supported.
 
@@ -106,9 +107,9 @@ Append entries to WORKLOG.md using this shape:
 - For shared directory changes, run `node scripts/sync-schedule-directory.mjs --check` before shutdown and confirm the two JFK alias HTML files still exactly match `vercel-jfk/index.html`.
 - If changing visible UI, check mobile-friendly behavior.
 - If live Google Sheet or Apps Script access cannot be verified, state that clearly in WORKLOG.md and the shutdown summary.
-- If Dr. Fowler asks to check Psych Scheduler feedback, IT requests, website requests, or active scheduler requests, or uses the `#IT` command, read `docs/psych-scheduler-it-request-inbox.md` first and use the `Feedback` tab in `Medical Staff Schedule ANALYSIS SHEET` as the request inbox.
-- When a scheduler feedback request is completed or triaged, use the token-protected `updateFeedbackStatus` Apps Script operation documented in `docs/psych-scheduler-it-request-inbox.md`; do not leave completed work active in the sheet.
-- If `.codex-local/psych-scheduler-feedback-admin-token.txt` is missing on a workstation, run `scripts/setup-psych-scheduler-appscript-access.ps1` and ask Dr. Fowler to provide/import the local token; never commit or print the token.
+- If live GitHub Issues feedback creation cannot be verified because the private repo, token, or Vercel env vars are missing, state that clearly in WORKLOG.md and the shutdown summary.
+- If Dr. Fowler asks to check Psych Scheduler feedback, IT requests, website requests, or active scheduler requests, or uses the `#IT` command, read `docs/psych-scheduler-it-request-inbox.md` first and use the private GitHub Issues repo `TroyFowlerMD/non-clinical-feedback` as the request inbox.
+- When a scheduler feedback request is completed or triaged, update the GitHub issue labels/comments and close the issue after live verification; do not treat the old Google Sheet `Feedback` tab as the operational inbox.
 - For Psych Scheduler Apps Script work, use `scripts/clasp.cmd` from the repo root so Codex does not depend on Windows PATH finding the global `clasp` shim.
 
 ## Owner Communication

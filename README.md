@@ -14,9 +14,10 @@ Shared schedule-directory contact data now lives in `data/schedule-directory.jso
 - `data/schedule-directory.json`: Canonical shared directory/contact source for Psych Scheduler and JFK Med Staff Schedule.
 - `docs/schedule-app-canonical-routes.md`: Canonical registry for current schedule-app URLs, owning repos, dashboard entrypoints, and legacy-forwarder behavior.
 - `docs/psych-scheduler.md`: Canonical migrated Psych Scheduler project page.
-- `docs/psych-scheduler-feedback-logging-added.md`: Feedback modal and maintenance logging deployment note.
-- `docs/psych-scheduler-feedback-apps-script-contract.md`: Required feedback Apps Script email/log response contract.
-- `docs/psych-scheduler-it-request-inbox.md`: Google Sheet request inbox workflow for future Codex scheduler fixes.
+- `docs/psych-scheduler-feedback-logging-added.md`: Historical pre-migration note for the retired Apps Script/FormSubmit feedback path.
+- `docs/psych-scheduler-feedback-apps-script-contract.md`: Historical retired Apps Script feedback contract kept only for reference.
+- `docs/non-clinical-feedback-github-issues.md`: Current private GitHub Issues workflow for shared schedule-app feedback.
+- `docs/psych-scheduler-it-request-inbox.md`: Current `#IT` / scheduler-request triage workflow.
 - `docs/psych-scheduler-column-toggles-backup-call-buttons-auto-deselect.md`: Provider-column and Backup Call column-toggle change log.
 - `docs/excel-drag-and-drop-ingestion-added-to-psych-scheduler.md`: Initial Excel ingestion implementation note.
 - `docs/excel-ingestion-filelist-file-hotfix.md`: First Excel ingestion hotfix note.
