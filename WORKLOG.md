@@ -185,3 +185,9 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 - Completed: Moved the last-updated timestamp into the sidebar near the upload latest schedule file workflow and renamed the dashboard column reset action to Reset page with date-range and column reset behavior.
 - In progress: Existing live Google Sheet default-startup task remains open.
 - Blockers/notes: Full headed browser screenshots at requested mobile widths could not be captured because this environment lacks an installed browser and Playwright's Chromium download was blocked by the network/proxy; jsdom interaction checks and JavaScript syntax checks passed.
+
+### 2026-06-23 - Codex desktop - Dog Whistle Android APK scaffold and GitHub build
+- Completed: Added `dog-whistle-android/` as a native Kotlin/Compose Android app with press-and-hold whistle playback, vibration and audible feedback options, a foreground playback service, and an experimental accessibility-service screen-off mode.
+- Completed: Added `.github/workflows/build-dog-whistle-apk.yml`, fixed the Material theme dependency, pushed `main`, and verified a successful GitHub Actions run that uploaded the `dog-whistle-debug-apk` artifact for commit `4df18a7`.
+- In progress: Real-device testing still needs to confirm speaker behavior at 19 kHz, vibration feel, and whether the accessibility volume-button mode behaves acceptably on the target phone.
+- Blockers/notes: Stock Android still does not provide a true per-app above-device-max speaker override; the shipped build uses normal media max plus in-app whistle gain within platform limits.

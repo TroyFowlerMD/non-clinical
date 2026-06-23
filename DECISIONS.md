@@ -135,3 +135,9 @@ Context: Dr. Fowler uses Codex Desktop and GitHub Desktop across multiple Window
 Decision: Keep the workstation setup checklist and helper script in `TroyFowlerMD/non-clinical` under `docs/windows-codex-github-workstation-setup.md` and `scripts/setup-codex-projects.ps1`.
 Rationale: `non-clinical` is a familiar durable repo that is already part of the shared active-project set and can bootstrap the rest of the repos on a new machine.
 Consequences: On a new computer, clone `non-clinical` first, then use its setup guide/script to clone or update the other active repos under `Documents\Codex\Projects`.
+
+### 2026-06-23 - Build Dog Whistle As A Native Android Project
+Context: Dog Whistle needs press-and-hold audio playback, haptic feedback, screen-off notification controls, and an experimental hardware-button activation path, all ending in a sideloadable APK.
+Decision: Implement Dog Whistle as a standalone native Android project under `dog-whistle-android/` with Kotlin, Jetpack Compose, a foreground playback service, and GitHub Actions APK automation, instead of trying to force it into the repo's older Capacitor wrapper pattern.
+Rationale: The requested behavior depends on Android-native audio, service, vibration, and accessibility APIs that are materially more reliable and maintainable in a native app than in a web wrapper.
+Consequences: Future Dog Whistle iterations should stay in the native Android project, and APK verification should continue through the dedicated `Build Dog Whistle APK` workflow artifact path.

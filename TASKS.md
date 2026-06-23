@@ -16,6 +16,7 @@
 - [ ] If the JFK Med Staff Schedule Vercel hostname changes later, update the canonical registry, live entrypoints, and legacy forwarder in one publish.
 
 ## Completed (last 30 days)
+- [x] Added `dog-whistle-android/` as a native Android APK project with GitHub Actions debug-build automation, then verified a successful GitHub Actions artifact build for sideload testing.
 - [x] Replaced the old Psych/JFK feedback intake code paths with one shared Vercel endpoint and private GitHub Issues workflow, plus updated `#IT`/operator docs to use `TroyFowlerMD/non-clinical-feedback`.
 - [x] Aligned `psych-scheduler-experimental.html` with the shared Vercel feedback endpoint so both live Psych pages now submit to the private GitHub Issues inbox.
 - [x] Added one canonical shared schedule-directory source at `data/schedule-directory.json`, generated directory blocks into both apps, added the Psych directory view, and synced the JFK alias HTML files from the canonical Vercel file.
