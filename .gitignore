@@ -1,1 +1,8 @@
 .codex-local/
+.gradle/
+build/
+**/build/
+local.properties
+.idea/
+captures/
+*.iml

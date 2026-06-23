@@ -1,0 +1,9 @@
+<resources>
+    <color name="dw_background">#EEF4EA</color>
+    <color name="dw_surface">#FFFFFF</color>
+    <color name="dw_primary">#204A36</color>
+    <color name="dw_secondary">#7E9B59</color>
+    <color name="dw_accent">#E7B75D</color>
+    <color name="dw_text">#13261C</color>
+</resources>
+

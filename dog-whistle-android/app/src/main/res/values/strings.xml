@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Dog whistle</string>
+    <string name="accessibility_service_label">Dog whistle key mode</string>
+    <string name="accessibility_service_description">Lets Dog whistle try to use the volume buttons as a hold-to-whistle trigger while the app is armed.</string>
+    <string name="notification_channel_name">Dog whistle playback</string>
+    <string name="notification_channel_description">Screen-off controls for the Dog whistle app.</string>
+</resources>
+
