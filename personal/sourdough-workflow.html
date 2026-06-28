@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sourdough Workflow</title>
+<style>
+:root {
+  --bg: #fbf6ee;
+  --paper: #fffdf8;
+  --surface: #fffaf1;
+  --surface-2: #f4eadc;
+  --surface-3: #ede0cf;
+  --ink: #2d241c;
+  --muted: #6a5b4c;
+  --faint: #8f8172;
+  --line: #ded0be;
+  --line-strong: #c6ae96;
+  --accent: #a1532b;
+  --accent-2: #386b5a;
+  --accent-3: #8a6f28;
+  --accent-soft: rgba(161, 83, 43, 0.12);
+  --green-soft: rgba(56, 107, 90, 0.12);
+  --gold-soft: rgba(138, 111, 40, 0.14);
+  --shadow: 0 18px 42px rgba(76, 50, 29, 0.12);
+  --radius: 8px;
+  --font: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --bg: #17130f;
+  --paper: #211b16;
+  --surface: #281f18;
+  --surface-2: #33271e;
+  --surface-3: #403126;
+  --ink: #f8efe2;
+  --muted: #d7c6b4;
+  --faint: #aa9785;
+  --line: #4f3e30;
+  --line-strong: #69513f;
+  --accent: #f0aa76;
+  --accent-2: #8bd0ba;
+  --accent-3: #dfc76b;
+  --accent-soft: rgba(240, 170, 118, 0.14);
+  --green-soft: rgba(139, 208, 186, 0.13);
+  --gold-soft: rgba(223, 199, 107, 0.14);
+  --shadow: 0 20px 44px rgba(0, 0, 0, 0.34);
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: linear-gradient(180deg, var(--bg), var(--surface-2));
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+button,
+input,
+select,
+summary {
+  font: inherit;
+}
+
+button,
+summary,
+select {
+  touch-action: manipulation;
+}
+
+a {
+  color: var(--accent);
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 50;
+  padding: 0.65rem 0.85rem;
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+.shell {
+  width: min(100%, 1040px);
+  margin: 0 auto;
+  padding: 0 1rem 2rem;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+.topbar-inner {
+  width: min(100%, 1040px);
+  margin: 0 auto;
+  padding: 0.65rem 1rem;
+  display: grid;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.brand-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.brand {
+  min-width: 0;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(1.45rem, 7vw, 2.45rem);
+  line-height: 1.02;
+  letter-spacing: 0;
+}
+
+.subtitle {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+.actions {
+  display: flex;
+  gap: 0.45rem;
+  overflow-x: auto;
+  padding-bottom: 0.05rem;
+  scrollbar-width: none;
+  min-width: 0;
+}
+
+.actions::-webkit-scrollbar {
+  display: none;
+}
+
+.button,
+.icon-button {
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  font-weight: 760;
+  line-height: 1;
+}
+
+.button {
+  padding: 0.72rem 0.85rem;
+  white-space: nowrap;
+}
+
+.icon-button {
+  width: 44px;
+  flex: 0 0 44px;
+}
+
+.button.primary {
+  border-color: color-mix(in srgb, var(--accent) 52%, var(--line));
+  background: var(--accent);
+  color: #fffaf3;
+}
+
+.button.secondary {
+  background: var(--surface);
+}
+
+.button:hover,
+.icon-button:hover,
+.button:focus-visible,
+.icon-button:focus-visible,
+summary:focus-visible {
+  border-color: var(--line-strong);
+  outline: 3px solid var(--accent-soft);
+  outline-offset: 2px;
+}
+
+.theme-toggle {
+  color: var(--accent);
+}
+
+main {
+  padding-top: 1rem;
+}
+
+.tool-panel,
+.recipe-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+  box-shadow: var(--shadow);
+}
+
+.tool-panel {
+  padding: 1rem;
+}
+
+.section-kicker {
+  margin: 0 0 0.25rem;
+  color: var(--accent);
+  font-size: 0.74rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h2 {
+  margin: 0;
+  font-size: clamp(1.25rem, 5vw, 1.8rem);
+  line-height: 1.15;
+}
+
+.lede {
+  margin: 0.45rem 0 0;
+  color: var(--muted);
+}
+
+.math-rule {
+  margin: 1rem 0;
+  padding: 0.85rem;
+  border-left: 4px solid var(--accent);
+  border-radius: 0 7px 7px 0;
+  background: var(--accent-soft);
+  color: var(--ink);
+  font-weight: 720;
+}
+
+.calc-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.input-grid {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.38rem;
+}
+
+.field-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+label {
+  font-weight: 820;
+}
+
+.current-value {
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 850;
+}
+
+.input-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.45rem;
+}
+
+input,
+select {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 0.72rem 0.82rem;
+  font-size: 1rem;
+}
+
+input[type="number"] {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+input:focus,
+select:focus {
+  border-color: var(--accent);
+  outline: 3px solid var(--accent-soft);
+}
+
+.stepper {
+  display: grid;
+  grid-template-columns: 44px 44px;
+  gap: 0.35rem;
+}
+
+.stepper button {
+  width: 44px;
+  min-height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-2);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 1.25rem;
+  font-weight: 760;
+}
+
+.help-note {
+  margin: 0;
+  color: var(--faint);
+  font-size: 0.9rem;
+}
+
+.outputs {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.ingredient {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.35rem;
+  padding: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+}
+
+.ingredient-label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ingredient-main {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.grams {
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: clamp(1.45rem, 8vw, 2.1rem);
+  font-variant-numeric: tabular-nums;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.approx {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+
+.approx strong {
+  color: var(--accent-2);
+  font-weight: 850;
+}
+
+.detail-stack {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 1rem;
+}
+
+details.info,
+details.advanced {
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+}
+
+details.info summary,
+details.advanced summary {
+  min-height: 44px;
+  padding: 0.7rem 0.85rem;
+  cursor: pointer;
+  color: var(--ink);
+  font-weight: 820;
+  list-style: none;
+}
+
+details.info summary::-webkit-details-marker,
+details.advanced summary::-webkit-details-marker,
+.recipe-card summary::-webkit-details-marker {
+  display: none;
+}
+
+details.info summary::after,
+details.advanced summary::after {
+  content: "+";
+  float: right;
+  color: var(--accent);
+  font-weight: 900;
+}
+
+details.info[open] summary::after,
+details.advanced[open] summary::after {
+  content: "-";
+}
+
+.detail-body {
+  padding: 0 0.85rem 0.85rem;
+  color: var(--muted);
+}
+
+.detail-body p {
+  margin: 0.5rem 0 0;
+}
+
+.detail-body p:first-child {
+  margin-top: 0;
+}
+
+.advanced-grid {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 0.65rem;
+}
+
+.math-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 62%, transparent);
+}
+
+.math-line:last-child {
+  border-bottom: 0;
+}
+
+.math-line span:first-child {
+  color: var(--muted);
+}
+
+.math-line strong {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.directions {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.recipe-card {
+  overflow: clip;
+}
+
+.recipe-card summary {
+  display: block;
+  min-height: 44px;
+  padding: 1rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.recipe-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.recipe-card h3 {
+  margin: 0;
+  font-size: 1.08rem;
+  line-height: 1.2;
+}
+
+.open-indicator {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  font-weight: 900;
+}
+
+.recipe-card[open] .open-indicator {
+  background: var(--accent-soft);
+}
+
+.recipe-card[open] .open-indicator::before {
+  content: "-";
+}
+
+.open-indicator::before {
+  content: "+";
+}
+
+.quick-list {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0.8rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.quick-list li,
+.step-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.quick-list li::before,
+.step-line::before {
+  content: "";
+  width: 0.42rem;
+  height: 0.42rem;
+  margin-top: 0.58rem;
+  border-radius: 999px;
+  background: var(--accent-2);
+  flex: 0 0 auto;
+}
+
+.expanded-content {
+  display: grid;
+  gap: 0.8rem;
+  padding: 0 1rem 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.phase {
+  padding-top: 0.85rem;
+}
+
+.phase h4 {
+  margin: 0 0 0.45rem;
+  color: var(--ink);
+  font-size: 0.96rem;
+  line-height: 1.25;
+}
+
+.phase-body {
+  display: grid;
+  gap: 0.38rem;
+  color: var(--muted);
+}
+
+.action {
+  color: var(--accent);
+  font-weight: 870;
+}
+
+.equipment {
+  display: inline-block;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.05rem 0.38rem;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 0.88em;
+  font-weight: 720;
+  white-space: nowrap;
+}
+
+.num {
+  display: inline-block;
+  border-radius: 5px;
+  padding: 0.08rem 0.34rem;
+  background: var(--gold-soft);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 0.92em;
+  font-variant-numeric: tabular-nums;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.cue {
+  display: inline;
+  padding: 0.08rem 0.35rem;
+  border-radius: 5px;
+  background: var(--green-soft);
+  color: var(--accent-2);
+  font-weight: 820;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.bottom-actions {
+  margin-top: 1rem;
+  padding: 1rem 0 0.5rem;
+  display: flex;
+  gap: 0.45rem;
+  overflow-x: auto;
+  min-width: 0;
+}
+
+.print-dialog {
+  width: min(calc(100vw - 2rem), 440px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  padding: 0;
+  box-shadow: var(--shadow);
+}
+
+.print-dialog::backdrop {
+  background: rgba(36, 25, 16, 0.45);
+}
+
+.dialog-head {
+  padding: 1rem 1rem 0.65rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.dialog-head h2 {
+  font-size: 1.2rem;
+}
+
+.dialog-head p {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.dialog-options {
+  display: grid;
+  gap: 0.55rem;
+  padding: 1rem;
+}
+
+.dialog-options button {
+  min-height: 48px;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.dialog-close {
+  padding: 0 1rem 1rem;
+}
+
+.print-note {
+  margin: 0.8rem 0 0;
+  color: var(--faint);
+  font-size: 0.86rem;
+}
+
+@media (min-width: 760px) {
+  .topbar-inner {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .brand-row {
+    align-items: center;
+  }
+
+  .actions {
+    justify-content: flex-end;
+  }
+
+  main {
+    padding-top: 1.4rem;
+  }
+
+  .tool-panel {
+    padding: 1.25rem;
+  }
+
+  .calc-grid {
+    grid-template-columns: minmax(280px, 0.9fr) minmax(330px, 1.1fr);
+    align-items: start;
+  }
+
+  .outputs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .detail-stack {
+    grid-column: 1 / -1;
+  }
+
+  .directions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .recipe-card summary {
+    min-height: 230px;
+  }
+}
+
+@media (max-width: 380px) {
+  .shell,
+  .topbar-inner {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .button {
+    padding-left: 0.72rem;
+    padding-right: 0.72rem;
+  }
+
+  .grams {
+    font-size: 1.35rem;
+  }
+}
+
+@media print {
+  @page {
+    margin: 0.55in;
+  }
+
+  :root,
+  [data-theme="dark"] {
+    --bg: #ffffff;
+    --paper: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #ffffff;
+    --surface-3: #ffffff;
+    --ink: #1f1f1f;
+    --muted: #4a4a4a;
+    --faint: #666666;
+    --line: #cfcfcf;
+    --line-strong: #999999;
+    --accent: #743717;
+    --accent-2: #244f42;
+    --accent-3: #725914;
+    --accent-soft: #f3e4db;
+    --green-soft: #e8f0ec;
+    --gold-soft: #f2ecd5;
+    --shadow: none;
+    color-scheme: light;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: var(--ink) !important;
+    font-size: 11.5pt;
+  }
+
+  .skip-link,
+  .actions,
+  .theme-toggle,
+  .bottom-actions,
+  .print-dialog {
+    display: none !important;
+  }
+
+  .topbar {
+    position: static;
+    border-bottom: 1px solid var(--line);
+    background: #ffffff;
+  }
+
+  .topbar-inner,
+  .shell {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+  }
+
+  .topbar-inner {
+    display: block;
+    padding-bottom: 0.25in;
+  }
+
+  .subtitle {
+    color: #444444;
+  }
+
+  main {
+    padding-top: 0.15in;
+  }
+
+  .tool-panel,
+  .recipe-card,
+  details.info,
+  details.advanced,
+  .ingredient {
+    box-shadow: none;
+    break-inside: avoid;
+  }
+
+  .tool-panel {
+    padding: 0.15in;
+  }
+
+  .calc-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.14in;
+  }
+
+  .input-grid,
+  .detail-stack,
+  .dialog-options {
+    display: none !important;
+  }
+
+  .math-rule {
+    margin: 0.1in 0;
+  }
+
+  .outputs {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.08in;
+  }
+
+  .ingredient {
+    padding: 0.09in;
+  }
+
+  .grams {
+    font-size: 18pt;
+  }
+
+  .directions {
+    grid-template-columns: 1fr;
+    gap: 0.1in;
+  }
+
+  .recipe-card summary {
+    min-height: 0;
+    padding: 0.12in;
+  }
+
+  .expanded-content {
+    padding: 0 0.12in 0.12in;
+  }
+
+  .open-indicator {
+    display: none;
+  }
+
+  .num,
+  .cue,
+  .equipment {
+    border: 1px solid var(--line);
+  }
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#calculator">Skip to calculator</a>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand-row">
+      <div class="brand">
+        <h1>Sourdough Workflow</h1>
+        <p class="subtitle">Baker's math, next-step cues, and print-ready kitchen reference.</p>
+      </div>
+      <button class="icon-button theme-toggle" type="button" id="themeToggle" aria-label="Switch to dark mode" title="Light/dark mode">
+        <svg aria-hidden="true" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+          <path id="themeIcon" d="M12 3v2.2M12 18.8V21M4.6 4.6l1.55 1.55M17.85 17.85l1.55 1.55M3 12h2.2M18.8 12H21M4.6 19.4l1.55-1.55M17.85 6.15 19.4 4.6M12 7.4a4.6 4.6 0 1 0 0 9.2 4.6 4.6 0 0 0 0-9.2Z"></path>
+        </svg>
+      </button>
+    </div>
+    <nav class="actions" aria-label="Page actions">
+      <button class="button secondary" type="button" data-expand-all>Expand all</button>
+      <button class="button secondary" type="button" data-collapse-all>Collapse all</button>
+      <button class="button primary" type="button" data-open-print>Print</button>
+    </nav>
+  </div>
+</header>
+
+<main class="shell">
+  <section class="tool-panel" id="calculator" aria-labelledby="calc-title">
+    <p class="section-kicker">Calculator</p>
+    <h2 id="calc-title">Dough formula</h2>
+    <p class="lede">Enter starting dry flour weight, then adjust hydration, starter, and salt percentages.</p>
+
+    <div class="math-rule">
+      Baker's math rule: water %, starter %, and salt % are all calculated from the starting dry flour amount you enter.
+    </div>
+
+    <div class="calc-grid">
+      <div class="input-grid" aria-label="Calculator inputs">
+        <div class="field">
+          <div class="field-head">
+            <label for="flour">Flour (g)</label>
+            <span class="current-value" id="flourCurrent">1000 g</span>
+          </div>
+          <input id="flour" name="flour" type="number" inputmode="decimal" min="50" step="25" value="1000">
+        </div>
+
+        <div class="field">
+          <div class="field-head">
+            <label for="hydration">Hydration (%)</label>
+            <span class="current-value" id="hydrationCurrent">70%</span>
+          </div>
+          <div class="input-wrap">
+            <input id="hydration" name="hydration" type="number" inputmode="decimal" min="60" max="85" step="5" value="70">
+            <div class="stepper" aria-label="Hydration stepper">
+              <button type="button" data-step="hydration" data-delta="-5" aria-label="Decrease hydration by 5 percent">-</button>
+              <button type="button" data-step="hydration" data-delta="5" aria-label="Increase hydration by 5 percent">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field-head">
+            <label for="starter">Starter (%)</label>
+            <span class="current-value" id="starterCurrent">20%</span>
+          </div>
+          <div class="input-wrap">
+            <input id="starter" name="starter" type="number" inputmode="decimal" min="0" step="5" value="20">
+            <div class="stepper" aria-label="Starter stepper">
+              <button type="button" data-step="starter" data-delta="-5" aria-label="Decrease starter by 5 percent">-</button>
+              <button type="button" data-step="starter" data-delta="5" aria-label="Increase starter by 5 percent">+</button>
+            </div>
+          </div>
+          <p class="help-note">Common range: 10-30%.</p>
+        </div>
+
+        <div class="field">
+          <div class="field-head">
+            <label for="salt">Salt (%)</label>
+            <span class="current-value" id="saltCurrent">2%</span>
+          </div>
+          <input id="salt" name="salt" type="number" inputmode="decimal" min="0" step="0.1" value="2">
+        </div>
+
+        <div class="field">
+          <label for="saltType">Salt type</label>
+          <select id="saltType" name="saltType">
+            <option value="table">Table salt</option>
+            <option value="diamond">Diamond Crystal kosher salt</option>
+            <option value="morton">Morton kosher salt</option>
+          </select>
+          <p class="help-note">Salt type affects only approximate spoon volume, not grams.</p>
+        </div>
+      </div>
+
+      <div class="outputs" aria-live="polite" aria-label="Calculated ingredient amounts">
+        <div class="ingredient">
+          <div class="ingredient-label">Flour</div>
+          <div class="ingredient-main">
+            <output class="grams" id="flourOut">1000 g</output>
+          </div>
+          <div class="approx" id="flourVol"><strong>Approx.</strong> about 8 cups</div>
+        </div>
+        <div class="ingredient">
+          <div class="ingredient-label">Water</div>
+          <div class="ingredient-main">
+            <output class="grams" id="waterOut">700 g</output>
+          </div>
+          <div class="approx" id="waterVol"><strong>Approx.</strong> 700 mL or about 3 cups</div>
+        </div>
+        <div class="ingredient">
+          <div class="ingredient-label">Starter</div>
+          <div class="ingredient-main">
+            <output class="grams" id="starterOut">200 g</output>
+          </div>
+          <div class="approx" id="starterVol"><strong>Approx.</strong> about 3/4 cup</div>
+        </div>
+        <div class="ingredient">
+          <div class="ingredient-label">Salt</div>
+          <div class="ingredient-main">
+            <output class="grams" id="saltOut">20 g</output>
+          </div>
+          <div class="approx" id="saltVol"><strong>Approx.</strong> about 3 1/4 tsp table salt</div>
+        </div>
+      </div>
+
+      <div class="detail-stack">
+        <details class="info printable">
+          <summary>About hydration</summary>
+          <div class="detail-body">
+            <p>Hydration is the added water as a percentage of your starting flour. Lower hydration, around 60-65%, usually feels firmer, easier to shape, and more forgiving. Higher hydration, around 75-85%, can produce a more open crumb but is stickier and asks for gentler handling.</p>
+            <p>For flour volume, this calculator assumes bread flour at about 125 g per US cup. Scooping style and flour brand can move that number, so grams remain the target.</p>
+          </div>
+        </details>
+
+        <details class="info printable">
+          <summary>About starter amount</summary>
+          <div class="detail-body">
+            <p>Starter percentage is inoculation: how much active starter you add compared with the starting flour. A common working range is 10-30%. More starter usually speeds fermentation; less starter usually slows it down.</p>
+            <p>This v1 assumes a 100% hydration starter, so starter contributes both flour and water. That raises the effective total hydration compared with the base hydration setting.</p>
+          </div>
+        </details>
+
+        <details class="info printable">
+          <summary>About salt</summary>
+          <div class="detail-body">
+            <p>Salt is typically about 2% of starting flour. It improves flavor and dough strength, and it can slow fermentation somewhat.</p>
+            <p>Spoon estimates vary by crystal shape: table salt packs more densely than kosher salts. Use the grams as the target and the teaspoon estimate as a backup kitchen guide.</p>
+          </div>
+        </details>
+
+        <details class="advanced printable">
+          <summary>Advanced math</summary>
+          <div class="detail-body">
+            <p>Starter is assumed to be 100% hydration, so half of its weight counts as flour and half counts as water. Effective hydration includes those starter contributions.</p>
+            <div class="advanced-grid">
+              <div class="math-line"><span>Base flour you entered</span><strong id="baseFlourMath">1000 g</strong></div>
+              <div class="math-line"><span>Added water from hydration setting</span><strong id="addedWaterMath">700 g</strong></div>
+              <div class="math-line"><span>Starter flour contribution</span><strong id="starterFlourMath">100 g</strong></div>
+              <div class="math-line"><span>Starter water contribution</span><strong id="starterWaterMath">100 g</strong></div>
+              <div class="math-line"><span>Total flour including starter</span><strong id="totalFlourMath">1100 g</strong></div>
+              <div class="math-line"><span>Total water including starter</span><strong id="totalWaterMath">800 g</strong></div>
+              <div class="math-line"><span>Effective total hydration</span><strong id="effectiveHydrationMath">72.7%</strong></div>
+            </div>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="directions-title">
+    <p class="section-kicker" style="margin-top:1.2rem;">Directions</p>
+    <h2 id="directions-title">Next-step reference</h2>
+    <p class="lede">Cards start collapsed for fast scanning. Open any card for the full method.</p>
+
+    <div class="directions">
+      <details class="recipe-card printable">
+        <summary>
+          <div class="recipe-title-row">
+            <h3>1. Dough Prep &amp; Bulk</h3>
+            <span class="open-indicator" aria-hidden="true"></span>
+          </div>
+          <ul class="quick-list">
+            <li><span><span class="action">Mix</span> to shaggy dough</span></li>
+            <li><span><span class="action">Rest</span> <span class="num">30-60 min</span></span></li>
+            <li><span><span class="num">4-5</span> fold sets over first <span class="num">2 hrs</span></span></li>
+            <li><span>Bulk until <span class="cue">~50% rise</span> (<span class="num">1-4 hrs</span>)</span></li>
+          </ul>
+        </summary>
+        <div class="expanded-content">
+          <div class="phase">
+            <h4>Mix &amp; Autolyse <span class="num">30-60 minutes</span></h4>
+            <div class="phase-body">
+              <div class="step-line"><span><span class="action">Combine</span> water + active starter + flour + salt, then <span class="action">mix</span> to shaggy dough.</span></div>
+              <div class="step-line"><span><span class="action">Cover</span> in a <span class="equipment">bowl</span> and <span class="action">rest</span> <span class="num">30-60 min</span>.</span></div>
+            </div>
+          </div>
+          <div class="phase">
+            <h4>Bulk Fermentation <span class="num">about 3-6 hours total</span></h4>
+            <div class="phase-body">
+              <div class="step-line"><span><span class="action">Transfer</span> to a clean, lightly <span class="equipment">oiled container</span>.</span></div>
+              <div class="step-line"><span><span class="action">Do</span> <span class="num">4-5</span> sets of stretch-and-folds over first <span class="num">2 hours</span>.</span></div>
+              <div class="step-line"><span><span class="action">Rest</span> <span class="num">30 min</span> between each set.</span></div>
+              <div class="step-line"><span>After last set, <span class="action">cover</span> and ferment until <span class="cue">~50% volume increase</span> (<span class="num">1-4 hours</span>, temp-dependent).</span></div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="recipe-card printable">
+        <summary>
+          <div class="recipe-title-row">
+            <h3>2. Shape &amp; Final Proof</h3>
+            <span class="open-indicator" aria-hidden="true"></span>
+          </div>
+          <ul class="quick-list">
+            <li><span><span class="action">Shape</span> tight</span></li>
+            <li><span><span class="action">Choose</span> room or cold proof</span></li>
+            <li><span>Room proof: <span class="num">1-3 hrs</span></span></li>
+            <li><span>Cold proof: <span class="num">12-24 hrs</span></span></li>
+          </ul>
+        </summary>
+        <div class="expanded-content">
+          <div class="phase">
+            <h4>Shape</h4>
+            <div class="phase-body">
+              <div class="step-line"><span><span class="action">Turn</span> dough onto lightly floured surface.</span></div>
+              <div class="step-line"><span><span class="action">Shape</span> into tight ball or loaf, creating surface tension.</span></div>
+            </div>
+          </div>
+          <div class="phase">
+            <h4>Final Proof <span class="cue">choose one</span></h4>
+            <div class="phase-body">
+              <div class="step-line"><span>Room temp: in <span class="equipment">banneton</span>, seam up; <span class="action">proof</span> <span class="num">1-3 hours</span>.</span></div>
+              <div class="step-line"><span>Cold proof (preferred): in <span class="equipment">banneton</span>, seam up; <span class="action">cover</span> and refrigerate <span class="num">12-24 hours</span>.</span></div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="recipe-card printable">
+        <summary>
+          <div class="recipe-title-row">
+            <h3>3. Bake &amp; Cool</h3>
+            <span class="open-indicator" aria-hidden="true"></span>
+          </div>
+          <ul class="quick-list">
+            <li><span><span class="action">Preheat</span> Dutch oven</span></li>
+            <li><span><span class="action">Bake</span> covered, then uncovered</span></li>
+            <li><span>Covered: <span class="num">20-30 min</span></span></li>
+            <li><span>Uncovered: <span class="num">10-15 min</span></span></li>
+            <li><span><span class="action">Cool</span> at least <span class="num">1 hr</span></span></li>
+          </ul>
+        </summary>
+        <div class="expanded-content">
+          <div class="phase">
+            <h4>Preheat</h4>
+            <div class="phase-body">
+              <div class="step-line"><span><span class="equipment">Dutch oven</span> in oven.</span></div>
+              <div class="step-line"><span><span class="action">Preheat</span> to <span class="num">450-550&deg;F</span> (<span class="num">230-290&deg;C</span>) for <span class="num">30-60 min</span>.</span></div>
+            </div>
+          </div>
+          <div class="phase">
+            <h4>Score &amp; Bake</h4>
+            <div class="phase-body">
+              <div class="step-line"><span><span class="action">Turn</span> dough onto <span class="equipment">parchment</span>, smooth side up.</span></div>
+              <div class="step-line"><span><span class="action">Score</span> with razor.</span></div>
+              <div class="step-line"><span><span class="action">Bake</span> in covered <span class="equipment">Dutch oven</span> <span class="num">20-30 min</span>.</span></div>
+              <div class="step-line"><span><span class="action">Uncover</span> and <span class="action">bake</span> additional <span class="num">10-15 min</span>, until crust is <span class="cue">deeply browned and crisp</span>.</span></div>
+            </div>
+          </div>
+          <div class="phase">
+            <h4>Cool</h4>
+            <div class="phase-body">
+              <div class="step-line"><span><span class="action">Remove</span> loaf to <span class="equipment">wire rack</span>.</span></div>
+              <div class="step-line"><span><span class="action">Cool</span> at least <span class="num">1 hour</span> before slicing.</span></div>
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <nav class="bottom-actions" aria-label="Bottom page actions">
+    <button class="button secondary" type="button" data-expand-all>Expand all</button>
+    <button class="button secondary" type="button" data-collapse-all>Collapse all</button>
+    <button class="button primary" type="button" data-open-print>Print</button>
+  </nav>
+</main>
+
+<dialog class="print-dialog" id="printDialog" aria-labelledby="print-title">
+  <div class="dialog-head">
+    <h2 id="print-title">Choose print view</h2>
+    <p>The page will restore your open sections after printing.</p>
+  </div>
+  <div class="dialog-options">
+    <button class="button secondary" type="button" data-print-mode="summary">Print summary only</button>
+    <button class="button secondary" type="button" data-print-mode="full">Print full recipe</button>
+    <button class="button secondary" type="button" data-print-mode="current">Print current view</button>
+  </div>
+  <div class="dialog-close">
+    <button class="button" type="button" id="closePrint">Cancel</button>
+    <p class="print-note">Summary prints the calculator outputs and collapsed direction cards. Full recipe expands every disclosure.</p>
+  </div>
+</dialog>
+
+<script>
+const els = {
+  flour: document.getElementById('flour'),
+  hydration: document.getElementById('hydration'),
+  starter: document.getElementById('starter'),
+  salt: document.getElementById('salt'),
+  saltType: document.getElementById('saltType'),
+  flourCurrent: document.getElementById('flourCurrent'),
+  hydrationCurrent: document.getElementById('hydrationCurrent'),
+  starterCurrent: document.getElementById('starterCurrent'),
+  saltCurrent: document.getElementById('saltCurrent'),
+  flourOut: document.getElementById('flourOut'),
+  waterOut: document.getElementById('waterOut'),
+  starterOut: document.getElementById('starterOut'),
+  saltOut: document.getElementById('saltOut'),
+  flourVol: document.getElementById('flourVol'),
+  waterVol: document.getElementById('waterVol'),
+  starterVol: document.getElementById('starterVol'),
+  saltVol: document.getElementById('saltVol'),
+  baseFlourMath: document.getElementById('baseFlourMath'),
+  addedWaterMath: document.getElementById('addedWaterMath'),
+  starterFlourMath: document.getElementById('starterFlourMath'),
+  starterWaterMath: document.getElementById('starterWaterMath'),
+  totalFlourMath: document.getElementById('totalFlourMath'),
+  totalWaterMath: document.getElementById('totalWaterMath'),
+  effectiveHydrationMath: document.getElementById('effectiveHydrationMath'),
+  printDialog: document.getElementById('printDialog'),
+  themeToggle: document.getElementById('themeToggle'),
+  themeIcon: document.getElementById('themeIcon')
+};
+
+const saltTspGrams = {
+  table: { grams: 6.0, label: 'table salt' },
+  diamond: { grams: 2.8, label: 'Diamond Crystal kosher salt' },
+  morton: { grams: 4.8, label: 'Morton kosher salt' }
+};
+
+function asNumber(input, fallback) {
+  const value = Number.parseFloat(input.value);
+  return Number.isFinite(value) ? value : fallback;
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function roundTo(value, places) {
+  const factor = 10 ** places;
+  return Math.round(value * factor) / factor;
+}
+
+function formatGram(value) {
+  return `${Math.round(value).toLocaleString()} g`;
+}
+
+function formatPercent(value) {
+  return `${roundTo(value, 1).toLocaleString(undefined, { maximumFractionDigits: 1 })}%`;
+}
+
+function fractionLabel(value) {
+  if (value <= 0) return '0';
+  const whole = Math.floor(value);
+  const fraction = value - whole;
+  const eighths = Math.round(fraction * 8);
+  const fractions = {
+    0: '',
+    1: '1/8',
+    2: '1/4',
+    3: '3/8',
+    4: '1/2',
+    5: '5/8',
+    6: '3/4',
+    7: '7/8',
+    8: ''
+  };
+  const adjustedWhole = eighths === 8 ? whole + 1 : whole;
+  const frac = fractions[eighths] || '';
+  if (adjustedWhole === 0) return frac;
+  return frac ? `${adjustedWhole} ${frac}` : `${adjustedWhole}`;
+}
+
+function volumePhrase(value, unit, singularUnit) {
+  const rounded = unit === 'Tbsp' ? Math.round(value * 2) / 2 : Math.round(value * 4) / 4;
+  const label = singularUnit && Math.abs(rounded - 1) < 0.001 ? singularUnit : unit;
+  return `${fractionLabel(rounded)} ${label}`;
+}
+
+function flourVolumeText(grams) {
+  const cups = grams / 125;
+  return `<strong>Approx.</strong> about ${volumePhrase(cups, 'cups', 'cup')} bread flour`;
+}
+
+function waterVolumeText(grams) {
+  const cups = grams / 240;
+  return `<strong>Approx.</strong> ${Math.round(grams).toLocaleString()} mL or about ${volumePhrase(cups, 'cups', 'cup')}`;
+}
+
+function starterVolumeText(grams) {
+  const cups = grams / 240;
+  return `<strong>Approx.</strong> about ${volumePhrase(cups, 'cups', 'cup')} active 100% hydration starter; airy starter can measure larger`;
+}
+
+function saltVolumeText(grams, type) {
+  const salt = saltTspGrams[type] || saltTspGrams.table;
+  const tsp = grams / salt.grams;
+  const display = tsp >= 3 ? `${volumePhrase(tsp / 3, 'Tbsp', 'Tbsp')} (${volumePhrase(tsp, 'tsp', 'tsp')})` : volumePhrase(tsp, 'tsp', 'tsp');
+  return `<strong>Approx.</strong> about ${display} ${salt.label}`;
+}
+
+function updateCalculator() {
+  const flour = Math.max(0, asNumber(els.flour, 1000));
+  const hydration = clamp(asNumber(els.hydration, 70), 60, 85);
+  const starterPct = Math.max(0, asNumber(els.starter, 20));
+  const saltPct = Math.max(0, asNumber(els.salt, 2));
+
+  if (String(hydration) !== els.hydration.value) els.hydration.value = hydration;
+
+  const water = flour * hydration / 100;
+  const starter = flour * starterPct / 100;
+  const salt = flour * saltPct / 100;
+  const starterFlour = starter / 2;
+  const starterWater = starter / 2;
+  const totalFlour = flour + starterFlour;
+  const totalWater = water + starterWater;
+  const effectiveHydration = totalFlour > 0 ? totalWater / totalFlour * 100 : 0;
+
+  els.flourCurrent.textContent = formatGram(flour);
+  els.hydrationCurrent.textContent = formatPercent(hydration);
+  els.starterCurrent.textContent = formatPercent(starterPct);
+  els.saltCurrent.textContent = formatPercent(saltPct);
+
+  els.flourOut.textContent = formatGram(flour);
+  els.waterOut.textContent = formatGram(water);
+  els.starterOut.textContent = formatGram(starter);
+  els.saltOut.textContent = formatGram(salt);
+
+  els.flourVol.innerHTML = flourVolumeText(flour);
+  els.waterVol.innerHTML = waterVolumeText(water);
+  els.starterVol.innerHTML = starterVolumeText(starter);
+  els.saltVol.innerHTML = saltVolumeText(salt, els.saltType.value);
+
+  els.baseFlourMath.textContent = formatGram(flour);
+  els.addedWaterMath.textContent = formatGram(water);
+  els.starterFlourMath.textContent = formatGram(starterFlour);
+  els.starterWaterMath.textContent = formatGram(starterWater);
+  els.totalFlourMath.textContent = formatGram(totalFlour);
+  els.totalWaterMath.textContent = formatGram(totalWater);
+  els.effectiveHydrationMath.textContent = formatPercent(effectiveHydration);
+}
+
+document.querySelectorAll('input, select').forEach((control) => {
+  control.addEventListener('input', updateCalculator);
+  control.addEventListener('change', updateCalculator);
+});
+
+document.querySelectorAll('[data-step]').forEach((button) => {
+  button.addEventListener('click', () => {
+    const target = document.getElementById(button.dataset.step);
+    const delta = Number.parseFloat(button.dataset.delta);
+    const current = asNumber(target, 0);
+    const min = target.min === '' ? -Infinity : Number.parseFloat(target.min);
+    const max = target.max === '' ? Infinity : Number.parseFloat(target.max);
+    target.value = clamp(current + delta, min, max);
+    target.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+});
+
+function allDetails() {
+  return Array.from(document.querySelectorAll('details.printable'));
+}
+
+document.querySelectorAll('[data-expand-all]').forEach((button) => {
+  button.addEventListener('click', () => allDetails().forEach((detail) => { detail.open = true; }));
+});
+
+document.querySelectorAll('[data-collapse-all]').forEach((button) => {
+  button.addEventListener('click', () => allDetails().forEach((detail) => { detail.open = false; }));
+});
+
+function openPrintDialog() {
+  if (typeof els.printDialog.showModal === 'function') {
+    els.printDialog.showModal();
+  } else {
+    window.print();
+  }
+}
+
+document.querySelectorAll('[data-open-print]').forEach((button) => {
+  button.addEventListener('click', openPrintDialog);
+});
+
+document.getElementById('closePrint').addEventListener('click', () => els.printDialog.close());
+
+function preparePrint(mode) {
+  const details = allDetails();
+  const previous = details.map((detail) => detail.open);
+  document.body.dataset.printMode = mode;
+
+  if (mode === 'summary') {
+    details.forEach((detail) => { detail.open = false; });
+  }
+  if (mode === 'full') {
+    details.forEach((detail) => { detail.open = true; });
+  }
+
+  const restore = () => {
+    details.forEach((detail, index) => { detail.open = previous[index]; });
+    delete document.body.dataset.printMode;
+    window.removeEventListener('afterprint', restore);
+  };
+
+  window.addEventListener('afterprint', restore);
+  els.printDialog.close();
+  window.setTimeout(() => window.print(), 50);
+}
+
+document.querySelectorAll('[data-print-mode]').forEach((button) => {
+  button.addEventListener('click', () => preparePrint(button.dataset.printMode));
+});
+
+els.themeToggle.addEventListener('click', () => {
+  const root = document.documentElement;
+  const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+  root.dataset.theme = next;
+  els.themeToggle.setAttribute('aria-label', next === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+  els.themeIcon.setAttribute('d', next === 'dark'
+    ? 'M21 12.6A8.7 8.7 0 1 1 11.4 3 6.8 6.8 0 0 0 21 12.6Z'
+    : 'M12 3v2.2M12 18.8V21M4.6 4.6l1.55 1.55M17.85 17.85l1.55 1.55M3 12h2.2M18.8 12H21M4.6 19.4l1.55-1.55M17.85 6.15 19.4 4.6M12 7.4a4.6 4.6 0 1 0 0 9.2 4.6 4.6 0 0 0 0-9.2Z');
+});
+
+updateCalculator();
+</script>
+</body>
+</html>

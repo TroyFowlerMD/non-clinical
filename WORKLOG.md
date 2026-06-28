@@ -4,6 +4,12 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 
 ---
 
+### 2026-06-28 - Codex desktop - Sourdough workflow app
+- Completed: Added `personal/sourdough-workflow.html` as a self-contained mobile-first sourdough workflow app with baker's math inputs, gram and approximate-volume outputs, starter contribution/effective hydration math, collapsible guidance, light/dark mode, and three print modes.
+- Completed: Linked the new sourdough workflow from the public non-clinical hub `index.html`.
+- In progress: Existing Psych Scheduler live Google Sheet startup and schedule-route guardrail tasks remain unchanged.
+- Blockers/notes: Local in-app browser preview was blocked by `ERR_BLOCKED_BY_CLIENT`, so verification used Edge headless/CDP against the local file for mobile rendering, calculator interaction, default-collapsed directions, print-dialog availability, and overflow checks.
+
 ### 2026-06-10 - Codex desktop - Feedback migration status cleanup and experimental Psych alignment
 - Completed: Confirmed `psych-scheduler-experimental.html` had been the one remaining stale feedback path, migrated it to the shared Vercel endpoint, and verified raw GitHub plus the live GitHub Pages experimental page now match the shared private-GitHub-Issues flow.
 - Completed: Updated `TASKS.md`, `WORKLOG.md`, and `DECISIONS.md` so current schedule-app feedback status no longer describes live activation or `#IT` triage as if the old Google Sheet/FormSubmit inbox were still current.
