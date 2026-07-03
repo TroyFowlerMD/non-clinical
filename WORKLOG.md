@@ -4,6 +4,12 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 
 ---
 
+### 2026-07-02 - Codex desktop - Protected Psych Scheduler theme polish
+- Completed: Cloned the missing `TroyFowlerMD/protected-schedules` source repo into `C:\Users\troyf\Documents\Codex\Projects\protected-schedules` after confirming `non-clinical/psych-scheduler.html` is only a forwarder to the protected Vercel route.
+- Completed: Locally updated protected `psych-scheduler.html` so the Light theme is less bright, Light date inputs stay white/readable, the former Slate theme is labeled Dark, and the Dark/sidebar contrast is improved; the previous darkest theme is labeled Midnight.
+- In progress: Changes are local in the protected source repo and need owner approval before commit/push because pushing updates the live protected schedule host.
+- Blockers/notes: `npm.cmd run check` and inline script parse passed in `protected-schedules`. The repo directory sync also removed stale generated Phillips phone entries from protected generated blocks to match canonical `data/schedule-directory.json`.
+
 ### 2026-06-28 - Codex desktop - Sourdough workflow app
 - Completed: Added `personal/sourdough-workflow.html` as a self-contained mobile-first sourdough workflow app with baker's math inputs, gram and approximate-volume outputs, starter contribution/effective hydration math, collapsible guidance, light/dark mode, and three print modes.
 - Completed: Linked the new sourdough workflow from the public non-clinical hub `index.html`.
