@@ -1,0 +1,155 @@
+name: Apply schedule UI fixes
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-schedule-ui-fixes.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch-schedule-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Apply requested psych schedule fixes
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          changed = []
+
+          def write_if_changed(path: str, text: str):
+              p = Path(path)
+              if not p.exists():
+                  print(f"skip missing {path}")
+                  return
+              old = p.read_text(encoding='utf-8-sig')
+              if old != text:
+                  p.write_text(text, encoding='utf-8')
+                  changed.append(path)
+                  print(f"updated {path}")
+              else:
+                  print(f"no change {path}")
+
+          def add_css_before_style_close(text: str, css: str) -> str:
+              if css.strip() in text:
+                  return text
+              return text.replace('</style>', css + '\n</style>', 1)
+
+          def add_js_before_script_close(text: str, js: str) -> str:
+              if 'updateScheduleStickyOffset' in text:
+                  return text
+              idx = text.rfind('</script>')
+              if idx == -1:
+                  return text
+              return text[:idx] + js + '\n' + text[idx:]
+
+          sticky_css = r'''
+/* Fix: keep sticky My Schedule table headers below the visible schedule controls. */
+.main{--schedule-sticky-offset:0px}
+#dash-table.sticky-ready th,
+#dash-table th,
+.col-table th{
+  top:var(--schedule-sticky-offset,0px)!important;
+}
+'''
+
+          sticky_js = r'''
+(function(){
+  function visibleHeight(selector){
+    const el=document.querySelector(selector);
+    if(!el)return 0;
+    const style=window.getComputedStyle(el);
+    if(style.display==='none'||style.visibility==='hidden')return 0;
+    return Math.ceil(el.getBoundingClientRect().height||0);
+  }
+  window.updateScheduleStickyOffset=function updateScheduleStickyOffset(){
+    const main=document.querySelector('.main')||document.documentElement;
+    const offset=visibleHeight('.data-update-bar')+visibleHeight('.page-controls-bar')+visibleHeight('.global-filter-bar');
+    main.style.setProperty('--schedule-sticky-offset',offset+'px');
+  };
+  window.addEventListener('resize',window.updateScheduleStickyOffset,{passive:true});
+  document.addEventListener('DOMContentLoaded',window.updateScheduleStickyOffset);
+  const observer=new MutationObserver(window.updateScheduleStickyOffset);
+  document.addEventListener('DOMContentLoaded',function(){
+    ['.data-update-bar','.page-controls-bar','.global-filter-bar','.view.active'].forEach(function(selector){
+      const el=document.querySelector(selector);
+      if(el)observer.observe(el,{attributes:true,childList:true,subtree:true});
+    });
+    window.updateScheduleStickyOffset();
+  });
+  setTimeout(window.updateScheduleStickyOffset,0);
+})();
+'''
+
+          for path in ['psych-scheduler-experimental.html']:
+              p = Path(path)
+              if p.exists():
+                  text = p.read_text(encoding='utf-8-sig')
+                  text = add_css_before_style_close(text, sticky_css)
+                  text = add_js_before_script_close(text, sticky_js)
+                  write_if_changed(path, text)
+
+          med_calendar_css = r'''
+/* Fix: allow vertical scrolling while preventing sideways scrolling in the month calendar. */
+html,body{min-height:100%;overflow-x:hidden!important;overflow-y:auto!important}
+.calendar-wrap{max-width:100%;overflow-x:hidden!important;overflow-y:visible!important}
+.calendar-wrap .cal-grid,.cal-grid{width:100%;min-width:0!important;grid-template-columns:repeat(7,minmax(0,1fr))!important}
+.cal-cell{overflow:hidden}
+.cal-name{min-width:0;white-space:normal;overflow-wrap:anywhere;text-overflow:clip}
+'''
+
+          def patch_phone(text: str) -> str:
+              # Add Phillips to provider phone maps used by the daily click-to-call/text logic.
+              text = re.sub(r"(PROVIDER_PHONES=\{[^}]*)(\};)",
+                            lambda m: m.group(1) + ('' if 'Phillips:' in m.group(1) or "Phillips'" in m.group(1) else ",Phillips:'+18125991223'") + m.group(2),
+                            text,
+                            count=1)
+              # If the compact v2 page has a generated directory/contact object but no Phillips entry,
+              # insert a simple provider record near the other medical/provider data.
+              if '"label": "Phillips"' not in text and "label:'Phillips'" not in text:
+                  text = re.sub(r"(const MEDICAL = \[)",
+                                r"\1\n  {\n    \"header\": \"Phillips\",\n    \"label\": \"Phillips\",\n    \"phone\": \"+18125991223\"\n  },",
+                                text,
+                                count=1)
+              return text
+
+          for path in [
+              'jfk-med-staff-schedule-experimental.html',
+              'vercel-jfk/index.html',
+              'vercel-jfk/jfk-med-staff-schedule-experimental-v2.html',
+              'vercel-jfk/non-clinical/jfk-med-staff-schedule-experimental-v2.html',
+          ]:
+              p = Path(path)
+              if not p.exists():
+                  print(f"skip missing {path}")
+                  continue
+              text = p.read_text(encoding='utf-8-sig')
+              text = patch_phone(text)
+              text = add_css_before_style_close(text, med_calendar_css)
+              write_if_changed(path, text)
+
+          if not changed:
+              print('No file content changes needed.')
+
+      - name: Commit patched schedule pages
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add psych-scheduler-experimental.html jfk-med-staff-schedule-experimental.html vercel-jfk/index.html vercel-jfk/jfk-med-staff-schedule-experimental-v2.html vercel-jfk/non-clinical/jfk-med-staff-schedule-experimental-v2.html
+          git commit -m "Fix schedule sticky headers and calendar scrolling"
+          git push
