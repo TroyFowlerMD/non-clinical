@@ -3,8 +3,6 @@ name: Apply schedule UI fixes
 on:
   push:
     branches: [main]
-    paths:
-      - '.github/workflows/apply-schedule-ui-fixes.yml'
   workflow_dispatch:
 
 permissions:
@@ -109,13 +107,10 @@ html,body{min-height:100%;overflow-x:hidden!important;overflow-y:auto!important}
 '''
 
           def patch_phone(text: str) -> str:
-              # Add Phillips to provider phone maps used by the daily click-to-call/text logic.
               text = re.sub(r"(PROVIDER_PHONES=\{[^}]*)(\};)",
                             lambda m: m.group(1) + ('' if 'Phillips:' in m.group(1) or "Phillips'" in m.group(1) else ",Phillips:'+18125991223'") + m.group(2),
                             text,
                             count=1)
-              # If the compact v2 page has a generated directory/contact object but no Phillips entry,
-              # insert a simple provider record near the other medical/provider data.
               if '"label": "Phillips"' not in text and "label:'Phillips'" not in text:
                   text = re.sub(r"(const MEDICAL = \[)",
                                 r"\1\n  {\n    \"header\": \"Phillips\",\n    \"label\": \"Phillips\",\n    \"phone\": \"+18125991223\"\n  },",
