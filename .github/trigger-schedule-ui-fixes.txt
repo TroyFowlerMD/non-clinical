@@ -1,0 +1,6 @@
+Trigger schedule UI fixes workflow.
+
+Requested changes:
+- My Schedule sticky headers below controls.
+- Med staff calendar vertical scrolling with horizontal scrolling locked.
+- Add Phillips +18125991223 for click-to-call/text.
