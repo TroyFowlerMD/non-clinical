@@ -1,7 +1,7 @@
 /* Sourdough Workbench — scoped service worker.
  * Bump CACHE_VERSION whenever the app shell or PWA assets change.
  */
-const CACHE_VERSION = "v3-2026-07-21";
+const CACHE_VERSION = "v4-2026-07-21";
 const CACHE = `sourdough-workbench-${CACHE_VERSION}`;
 const APP_URL = "/non-clinical/personal/sourdough-workflow.html";
 const ASSETS = [
@@ -58,4 +58,16 @@ self.addEventListener("fetch", (event) => {
 
 self.addEventListener("message", (event) => {
   if (event.data === "SKIP_WAITING") self.skipWaiting();
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = event.notification.data?.url || `${APP_URL}#dough-timer`;
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((windows) => {
+      const existing = windows.find((client) => new URL(client.url).pathname === APP_URL);
+      if (existing) return existing.focus().then((client) => client.navigate(target));
+      return clients.openWindow(target);
+    })
+  );
 });

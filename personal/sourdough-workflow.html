@@ -477,6 +477,113 @@
   }
   .section-sub{color:var(--muted);font-size:.92rem;margin:0 0 18px;}
 
+  /* ---------- Dough timer ---------- */
+  .dough-timer{
+    border-color:color-mix(in srgb,var(--accent) 38%,var(--line));
+    position:relative;
+    overflow:hidden;
+  }
+  .dough-timer::before{
+    content:"";
+    position:absolute;
+    inset:0 auto 0 0;
+    width:5px;
+    background:var(--accent);
+  }
+  .timer-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;}
+  .timer-head-copy{flex:1 1 auto;min-width:0;}
+  .timer-head h3{
+    font-family:var(--serif);
+    font-size:1.22rem;
+    font-weight:600;
+    line-height:1.2;
+    margin:0 0 4px;
+  }
+  .timer-head p{color:var(--muted);font-size:.88rem;margin:0;line-height:1.45;}
+  .timer-badge{
+    flex:0 0 auto;
+    border-radius:999px;
+    background:var(--accent-soft);
+    color:var(--accent-ink);
+    font-size:.72rem;
+    font-weight:700;
+    letter-spacing:.035em;
+    padding:5px 9px;
+    text-transform:uppercase;
+  }
+  .timer-start-note{
+    background:var(--accent-soft);
+    border-radius:var(--radius-sm);
+    color:var(--ink);
+    font-size:.9rem;
+    margin:0 0 14px;
+    padding:11px 13px;
+  }
+  .timer-start-note strong{color:var(--accent-ink);}
+  .timer-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+  .timer-actions .btn{justify-content:center;}
+  .timer-actions .btn-danger{color:#A43A2A;}
+  .timer-actions .btn-danger:hover{border-color:#A43A2A;background:rgba(164,58,42,.08);}
+  .timer-readouts{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin:2px 0 14px;
+  }
+  .timer-readout{
+    background:var(--bg);
+    border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    padding:12px;
+  }
+  .timer-readout-label{
+    color:var(--muted);
+    display:block;
+    font-size:.72rem;
+    font-weight:700;
+    letter-spacing:.06em;
+    margin-bottom:3px;
+    text-transform:uppercase;
+  }
+  .timer-readout-value{
+    color:var(--ink);
+    display:block;
+    font-family:var(--serif);
+    font-size:1.45rem;
+    font-variant-numeric:tabular-nums;
+    font-weight:600;
+    letter-spacing:-.02em;
+    line-height:1.15;
+  }
+  .timer-readout-value.next{color:var(--accent-ink);font-size:1.12rem;line-height:1.3;}
+  .timer-status{
+    border-left:3px solid var(--accent);
+    color:var(--ink);
+    font-size:.9rem;
+    line-height:1.5;
+    margin:0 0 14px;
+    padding:8px 0 8px 12px;
+  }
+  .timer-status.overdue{background:var(--accent-soft);border-radius:0 var(--radius-sm) var(--radius-sm) 0;padding-right:10px;}
+  .timer-decision{
+    background:var(--accent-soft);
+    border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    margin:0 0 14px;
+    padding:14px;
+  }
+  .timer-decision strong{display:block;font-family:var(--serif);font-size:1.05rem;margin-bottom:4px;}
+  .timer-decision p{color:var(--muted);font-size:.85rem;margin:0 0 11px;}
+  .timer-edit{
+    border-top:1px dashed var(--line);
+    margin-top:14px;
+    padding-top:12px;
+  }
+  .timer-edit label{display:block;font-size:.82rem;font-weight:600;margin-bottom:6px;}
+  .timer-edit-row{display:flex;gap:8px;align-items:stretch;}
+  .timer-edit-row .num-input{font-size:.9rem;}
+  .timer-permission{color:var(--muted);font-size:.76rem;margin:10px 0 0;line-height:1.45;}
+
   details.step{
     background:var(--surface);
     border:1px solid var(--line);
@@ -689,6 +796,11 @@
     .install-banner{align-items:flex-start;flex-wrap:wrap;}
     .install-copy{flex-basis:calc(100% - 44px);}
     .install-banner .btn{order:3;width:100%;justify-content:center;}
+    .timer-head{flex-wrap:wrap;}
+    .timer-badge{order:-1;}
+    .timer-readouts{grid-template-columns:1fr;}
+    .timer-actions .btn{flex:1 1 145px;}
+    .timer-edit-row{flex-direction:column;}
   }
 
   @media (prefers-reduced-motion:reduce){
@@ -704,7 +816,7 @@
     }
     body{background:#fff;color:#000;font-size:11.5pt;}
     .wrap{max-width:100%;padding:0;}
-    .utility,.modal-backdrop,.step-chev,.disc-chev,.adv-chev,.mini-chev,
+    .utility,.modal-backdrop,.dough-timer,.step-chev,.disc-chev,.adv-chev,.mini-chev,
     details.advanced,details.mini{display:none !important;}
     .card,details.step,details.disc{
       box-shadow:none;
@@ -951,6 +1063,66 @@
   <!-- ===== Directions ===== -->
   <h2 class="section-title">Directions</h2>
   <p class="section-sub">Five phases, from mix to slice. Tap a card to expand the full method.</p>
+
+  <section class="card dough-timer" id="dough-timer" aria-labelledby="timer-title">
+    <div class="timer-head">
+      <div class="timer-head-copy">
+        <h3 id="timer-title">Dough Clock</h3>
+        <p>Tracks total fermentation time and spaces each fold from when the previous fold is completed.</p>
+      </div>
+      <span class="timer-badge" id="timer-badge">Ready</span>
+    </div>
+
+    <div id="timer-idle">
+      <p class="timer-start-note"><strong>Start this timer as soon as mixing is complete</strong> and no dry flour remains. Your first stretch-and-fold reminder will be in <span class="num">60 min</span>.</p>
+      <div class="timer-actions">
+        <button class="btn btn-primary" type="button" id="timer-start">Start dough timer</button>
+      </div>
+      <p class="timer-permission" id="timer-permission-idle">The app will request notification permission when you start. The timer still works on screen if permission is declined.</p>
+    </div>
+
+    <div id="timer-running" hidden>
+      <div class="timer-readouts" aria-live="off">
+        <div class="timer-readout">
+          <span class="timer-readout-label">Total dough time</span>
+          <span class="timer-readout-value" id="timer-elapsed">0:00:00</span>
+        </div>
+        <div class="timer-readout">
+          <span class="timer-readout-label">Next action</span>
+          <span class="timer-readout-value next" id="timer-next">Fold set 1 in 1:00:00</span>
+        </div>
+      </div>
+      <p class="timer-status" id="timer-status" role="status" aria-live="polite">Rest the covered dough. Fold set 1 is scheduled for 60 minutes after mixing.</p>
+
+      <div class="timer-decision" id="timer-decision" hidden>
+        <strong>Four fold sets complete</strong>
+        <p>Bulk fermentation has been running since the starter was incorporated. Choose whether the dough needs one more strengthening set.</p>
+        <div class="timer-actions">
+          <button class="btn btn-primary" type="button" id="timer-fifth">Schedule a 5th fold</button>
+          <button class="btn" type="button" id="timer-bulk">Folds complete—continue bulk</button>
+        </div>
+      </div>
+
+      <div class="timer-actions" id="timer-due-actions" hidden>
+        <button class="btn btn-primary" type="button" id="timer-fold-complete">Fold complete</button>
+        <button class="btn" type="button" id="timer-snooze">Snooze 5 min</button>
+      </div>
+
+      <div class="timer-actions" style="margin-top:12px;">
+        <button class="btn" type="button" id="timer-edit-toggle">Correct start time</button>
+        <button class="btn btn-danger" type="button" id="timer-stop">Stop &amp; reset</button>
+      </div>
+
+      <div class="timer-edit" id="timer-edit" hidden>
+        <label for="timer-start-time">Mixing completed at</label>
+        <div class="timer-edit-row">
+          <input class="num-input" type="datetime-local" id="timer-start-time" />
+          <button class="btn" type="button" id="timer-save-start">Save corrected time</button>
+        </div>
+      </div>
+      <p class="timer-permission" id="timer-permission-running"></p>
+    </div>
+  </section>
 
   <!-- Step 1 -->
   <details class="step" data-dir-card>
@@ -1465,6 +1637,294 @@
   updateDriverUI();
   applyTheme(st.theme === "dark" ? "dark" : "light");
   compute();
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  var TIMER_KEY = "sourdough-dough-clock-v1";
+  var FIRST_FOLD_MS = 60 * 60 * 1000;
+  var FOLD_INTERVAL_MS = 30 * 60 * 1000;
+  var SNOOZE_MS = 5 * 60 * 1000;
+  var state = null;
+  var tickHandle = null;
+  var alarmHandle = null;
+  var audioContext = null;
+
+  var ui = {
+    badge: document.getElementById("timer-badge"),
+    idle: document.getElementById("timer-idle"),
+    running: document.getElementById("timer-running"),
+    start: document.getElementById("timer-start"),
+    elapsed: document.getElementById("timer-elapsed"),
+    next: document.getElementById("timer-next"),
+    status: document.getElementById("timer-status"),
+    dueActions: document.getElementById("timer-due-actions"),
+    foldComplete: document.getElementById("timer-fold-complete"),
+    snooze: document.getElementById("timer-snooze"),
+    decision: document.getElementById("timer-decision"),
+    fifth: document.getElementById("timer-fifth"),
+    bulk: document.getElementById("timer-bulk"),
+    stop: document.getElementById("timer-stop"),
+    editToggle: document.getElementById("timer-edit-toggle"),
+    edit: document.getElementById("timer-edit"),
+    startTime: document.getElementById("timer-start-time"),
+    saveStart: document.getElementById("timer-save-start"),
+    permissionIdle: document.getElementById("timer-permission-idle"),
+    permissionRunning: document.getElementById("timer-permission-running")
+  };
+
+  function load(){
+    try {
+      var parsed = JSON.parse(localStorage.getItem(TIMER_KEY));
+      if (parsed && parsed.active && Number.isFinite(parsed.startedAt)) return parsed;
+    } catch(e){}
+    return null;
+  }
+  function save(){
+    try {
+      if (state) localStorage.setItem(TIMER_KEY, JSON.stringify(state));
+      else localStorage.removeItem(TIMER_KEY);
+    } catch(e){}
+  }
+  function pad(n){ return String(n).padStart(2,"0"); }
+  function duration(ms){
+    var seconds = Math.max(0, Math.floor(ms / 1000));
+    var hours = Math.floor(seconds / 3600);
+    var minutes = Math.floor((seconds % 3600) / 60);
+    var remainder = seconds % 60;
+    return hours + ":" + pad(minutes) + ":" + pad(remainder);
+  }
+  function shortDuration(ms){
+    var minutes = Math.max(0, Math.floor(ms / 60000));
+    if (minutes < 60) return minutes + " min";
+    var hours = Math.floor(minutes / 60);
+    var rem = minutes % 60;
+    return hours + " hr" + (rem ? " " + rem + " min" : "");
+  }
+  function toLocalInput(timestamp){
+    var d = new Date(timestamp - new Date(timestamp).getTimezoneOffset() * 60000);
+    return d.toISOString().slice(0,16);
+  }
+  function currentFold(){ return state && Number.isFinite(state.foldNumber) ? state.foldNumber : 1; }
+  function isDue(now){ return state && state.nextDueAt && now >= state.nextDueAt; }
+
+  function permissionCopy(){
+    if (!("Notification" in window)) return "This browser does not support notifications; on-screen timing remains available.";
+    if (Notification.permission === "granted") return "Notifications are enabled. Reliable screen-off alarms will be added in the Android version.";
+    if (Notification.permission === "denied") return "Notifications are blocked in browser settings; on-screen timing remains available.";
+    return "Notification permission has not been granted; on-screen timing remains available.";
+  }
+  function unlockAudio(){
+    try {
+      var AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      audioContext = audioContext || new AudioCtx();
+      if (audioContext.state === "suspended") audioContext.resume();
+    } catch(e){}
+  }
+  function chime(){
+    if (!audioContext || audioContext.state !== "running" || document.hidden) return;
+    try {
+      [0,0.22,0.44].forEach(function(offset){
+        var osc = audioContext.createOscillator();
+        var gain = audioContext.createGain();
+        osc.type = "sine";
+        osc.frequency.value = 740;
+        gain.gain.setValueAtTime(0.0001,audioContext.currentTime + offset);
+        gain.gain.exponentialRampToValueAtTime(0.2,audioContext.currentTime + offset + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001,audioContext.currentTime + offset + 0.18);
+        osc.connect(gain).connect(audioContext.destination);
+        osc.start(audioContext.currentTime + offset);
+        osc.stop(audioContext.currentTime + offset + 0.2);
+      });
+      if (navigator.vibrate) navigator.vibrate([250,120,250,120,400]);
+    } catch(e){}
+  }
+  function startRepeatingAlarm(){
+    if (alarmHandle) return;
+    chime();
+    alarmHandle = setInterval(chime,12000);
+  }
+  function stopRepeatingAlarm(){
+    if (alarmHandle) clearInterval(alarmHandle);
+    alarmHandle = null;
+    if (navigator.vibrate) navigator.vibrate(0);
+  }
+  function notifyFold(){
+    if (!("Notification" in window) || Notification.permission !== "granted" || !state) return;
+    var key = currentFold() + ":" + state.nextDueAt;
+    if (state.notifiedKey === key) return;
+    state.notifiedKey = key;
+    save();
+    var title = "Stretch-and-fold set " + currentFold();
+    var options = {
+      body:"Your dough is ready. Open Sourdough Workbench to mark the fold complete or snooze it.",
+      icon:"/non-clinical/personal/sourdough-icon-192.png",
+      badge:"/non-clinical/personal/sourdough-icon-192.png",
+      tag:"sourdough-fold-" + currentFold(),
+      renotify:true,
+      requireInteraction:true,
+      vibrate:[250,120,250,120,400],
+      data:{url:"/non-clinical/personal/sourdough-workflow.html#dough-timer"}
+    };
+    if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+      navigator.serviceWorker.ready.then(function(reg){ return reg.showNotification(title,options); }).catch(function(){});
+    } else {
+      try { new Notification(title,options); } catch(e){}
+    }
+  }
+  async function requestNotifications(){
+    if (!("Notification" in window) || Notification.permission !== "default") return;
+    try { await Notification.requestPermission(); } catch(e){}
+  }
+
+  function render(){
+    var now = Date.now();
+    var active = !!(state && state.active);
+    ui.idle.hidden = active;
+    ui.running.hidden = !active;
+    ui.badge.textContent = active ? (state.foldsComplete ? "Bulk" : "Running") : "Ready";
+    ui.permissionIdle.textContent = permissionCopy();
+    ui.permissionRunning.textContent = permissionCopy();
+    if (!active) { stopRepeatingAlarm(); return; }
+
+    ui.elapsed.textContent = duration(now - state.startedAt);
+    ui.decision.hidden = !state.decisionPending;
+    ui.dueActions.hidden = true;
+    ui.status.classList.remove("overdue");
+
+    if (state.foldsComplete) {
+      ui.next.textContent = "Continue bulk fermentation";
+      ui.status.innerHTML = "Folds are complete. Continue bulk until the dough is <span class=\"cue\">smoother, slightly domed, bubbly at the edges, and 30–50% larger</span>.";
+      stopRepeatingAlarm();
+      return;
+    }
+    if (state.decisionPending) {
+      ui.next.textContent = "Choose 5th fold or continue bulk";
+      ui.status.textContent = "Set 4 is complete. The dough clock is still running while you choose the next step.";
+      stopRepeatingAlarm();
+      return;
+    }
+
+    var fold = currentFold();
+    if (isDue(now)) {
+      var overdue = now - state.nextDueAt;
+      ui.next.textContent = "Fold set " + fold + " is ready";
+      ui.status.textContent = "Stretch-and-fold set " + fold + " is ready" + (overdue >= 60000 ? " (overdue by " + shortDuration(overdue) + ")" : "") + ". Complete the fold, then tap Fold complete to begin the next 30-minute interval.";
+      ui.status.classList.add("overdue");
+      ui.dueActions.hidden = false;
+      ui.foldComplete.textContent = "Set " + fold + " complete";
+      notifyFold();
+      startRepeatingAlarm();
+    } else {
+      var remaining = state.nextDueAt - now;
+      ui.next.textContent = "Fold set " + fold + " in " + duration(remaining);
+      ui.status.textContent = fold === 1
+        ? "Rest the covered dough. Fold set 1 is scheduled for 60 minutes after mixing."
+        : "Cover the dough. Fold set " + fold + " is scheduled 30 minutes after the previous set was completed.";
+      stopRepeatingAlarm();
+    }
+  }
+
+  async function startTimer(){
+    unlockAudio();
+    await requestNotifications();
+    var now = Date.now();
+    state = {active:true,startedAt:now,foldNumber:1,nextDueAt:now + FIRST_FOLD_MS,decisionPending:false,foldsComplete:false,notifiedKey:null};
+    save();
+    render();
+  }
+  function completeFold(){
+    if (!state || !isDue(Date.now())) return;
+    stopRepeatingAlarm();
+    var fold = currentFold();
+    if (fold === 4) {
+      state.decisionPending = true;
+      state.nextDueAt = null;
+    } else if (fold === 5) {
+      state.foldsComplete = true;
+      state.nextDueAt = null;
+    } else {
+      state.foldNumber = fold + 1;
+      state.nextDueAt = Date.now() + FOLD_INTERVAL_MS;
+    }
+    state.notifiedKey = null;
+    save();
+    render();
+  }
+  function snooze(){
+    if (!state || !isDue(Date.now())) return;
+    stopRepeatingAlarm();
+    state.nextDueAt = Date.now() + SNOOZE_MS;
+    state.notifiedKey = null;
+    save();
+    render();
+  }
+  function scheduleFifth(){
+    if (!state || !state.decisionPending) return;
+    state.decisionPending = false;
+    state.foldNumber = 5;
+    state.nextDueAt = Date.now() + FOLD_INTERVAL_MS;
+    state.notifiedKey = null;
+    save();
+    render();
+  }
+  function continueBulk(){
+    if (!state || !state.decisionPending) return;
+    state.decisionPending = false;
+    state.foldsComplete = true;
+    state.nextDueAt = null;
+    state.notifiedKey = null;
+    save();
+    render();
+  }
+  function reset(){
+    if (!window.confirm("Stop and reset the current dough timer? This cannot be undone.")) return;
+    stopRepeatingAlarm();
+    state = null;
+    save();
+    ui.edit.hidden = true;
+    render();
+  }
+  function toggleEdit(){
+    ui.edit.hidden = !ui.edit.hidden;
+    if (!ui.edit.hidden && state) {
+      ui.startTime.value = toLocalInput(state.startedAt);
+      ui.startTime.focus();
+    }
+  }
+  function saveCorrectedStart(){
+    if (!state) return;
+    var corrected = new Date(ui.startTime.value).getTime();
+    if (!Number.isFinite(corrected) || corrected > Date.now()) {
+      window.alert("Choose a valid time that is not in the future.");
+      return;
+    }
+    var hadNoCompletedFolds = currentFold() === 1 && !state.decisionPending && !state.foldsComplete;
+    state.startedAt = corrected;
+    if (hadNoCompletedFolds) {
+      state.nextDueAt = corrected + FIRST_FOLD_MS;
+      state.notifiedKey = null;
+    }
+    save();
+    ui.edit.hidden = true;
+    render();
+  }
+
+  ui.start.addEventListener("click",startTimer);
+  ui.foldComplete.addEventListener("click",completeFold);
+  ui.snooze.addEventListener("click",snooze);
+  ui.fifth.addEventListener("click",scheduleFifth);
+  ui.bulk.addEventListener("click",continueBulk);
+  ui.stop.addEventListener("click",reset);
+  ui.editToggle.addEventListener("click",toggleEdit);
+  ui.saveStart.addEventListener("click",saveCorrectedStart);
+  document.addEventListener("visibilitychange",function(){ if (!document.hidden) { unlockAudio(); render(); } });
+
+  state = load();
+  render();
+  tickHandle = setInterval(render,1000);
 })();
 </script>
 <script>
