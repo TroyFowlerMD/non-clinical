@@ -1,0 +1,30 @@
+{
+  "name": "Sourdough Workbench",
+  "short_name": "Sourdough",
+  "description": "Baker's-math calculator and step-by-step sourdough reference with offline access.",
+  "id": "/non-clinical/personal/sourdough-workflow.html",
+  "start_url": "/non-clinical/personal/sourdough-workflow.html",
+  "scope": "/non-clinical/personal/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#FBF7F0",
+  "theme_color": "#B85C38",
+  "categories": ["food", "utilities", "education"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/non-clinical/personal/sourdough-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/non-clinical/personal/sourdough-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
