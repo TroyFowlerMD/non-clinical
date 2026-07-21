@@ -4,7 +4,7 @@
   "description": "Baker's-math calculator and step-by-step sourdough reference with offline access.",
   "id": "/non-clinical/personal/sourdough-workflow.html",
   "start_url": "/non-clinical/personal/sourdough-workflow.html",
-  "scope": "/non-clinical/personal/",
+  "scope": "/non-clinical/personal/sourdough-workflow.html",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
   "background_color": "#FBF7F0",

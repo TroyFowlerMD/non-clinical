@@ -1581,8 +1581,19 @@ window.addEventListener('resize', ()=>{ if(state.players.length) setDynamicColum
 // When a new SW is installed, ask it to skipWaiting, then reload once it takes over
 // so users always see the latest version of the app without manual cache clears.
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/non-clinical/sw.js').then((reg) => {
+  window.addEventListener('load', async () => {
+    // Remove the legacy registration that once claimed all /non-clinical/ pages.
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      const legacyScope = window.location.origin + '/non-clinical/';
+      await Promise.all(registrations.map((registration) => {
+        const worker = registration.active || registration.waiting || registration.installing;
+        const isLegacy = registration.scope === legacyScope && worker && worker.scriptURL.endsWith('/non-clinical/sw.js');
+        return isLegacy ? registration.unregister() : Promise.resolve(false);
+      }));
+    } catch (e) { /* Continue with the app-specific registration. */ }
+
+    navigator.serviceWorker.register('/non-clinical/sw.js', { scope: '/non-clinical/five-crowns.html' }).then((reg) => {
       reg.addEventListener('updatefound', () => {
         const nw = reg.installing;
         if (!nw) return;

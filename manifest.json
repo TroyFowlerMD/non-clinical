@@ -4,7 +4,7 @@
   "description": "Score tracker for the Five Crowns card game with auto dealer rotation and touch-friendly input. Works fully offline after first launch.",
   "id": "/non-clinical/five-crowns.html",
   "start_url": "/non-clinical/five-crowns.html",
-  "scope": "/non-clinical/",
+  "scope": "/non-clinical/five-crowns.html",
   "display": "standalone",
   "display_override": ["standalone", "fullscreen"],
   "orientation": "portrait",

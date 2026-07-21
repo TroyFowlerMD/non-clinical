@@ -2,14 +2,12 @@
  * Strategy: precache-all + cache-first with network-update fallback.
  * Bump CACHE_VERSION any time five-crowns.html or assets change to force update.
  */
-const CACHE_VERSION = 'v7-2026-04-22';
+const CACHE_VERSION = 'v8-2026-07-21';
 const CACHE = `five-crowns-${CACHE_VERSION}`;
 
 // Everything the app needs to run fully offline.
 // Paths are scoped to /non-clinical/ (GitHub Pages project path).
 const ASSETS = [
-  '/non-clinical/',
-  '/non-clinical/index.html',
   '/non-clinical/five-crowns.html',
   '/non-clinical/manifest.json',
   '/non-clinical/icon-192.png',
@@ -17,6 +15,7 @@ const ASSETS = [
   '/non-clinical/icon-maskable-192.png',
   '/non-clinical/icon-maskable-512.png'
 ];
+const ALLOWED_PATHS = new Set(ASSETS);
 
 // ── INSTALL: precache everything, then take over immediately ─────────────
 self.addEventListener('install', (event) => {
@@ -51,6 +50,9 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
   // Only handle same-origin requests. Cross-origin (CDN, analytics) bypass SW.
   if (url.origin !== self.location.origin) return;
+  // A legacy broad registration may remain briefly on existing devices.
+  // Never intercept another app's URL during that transition.
+  if (!ALLOWED_PATHS.has(url.pathname)) return;
 
   event.respondWith(
     caches.match(req).then((cached) => {

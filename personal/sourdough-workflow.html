@@ -1503,8 +1503,20 @@
   if (isStandalone()) hideInstallBanner();
 
   if ("serviceWorker" in navigator) {
-    window.addEventListener("load", function(){
-      navigator.serviceWorker.register("/non-clinical/personal/sourdough-sw.js", {scope:"/non-clinical/personal/"}).then(function(reg){
+    window.addEventListener("load", async function(){
+      // Remove the legacy Five Crowns worker that once controlled the entire
+      // /non-clinical/ site and caused Android to treat this app as Five Crowns.
+      try {
+        var registrations = await navigator.serviceWorker.getRegistrations();
+        var legacyScope = window.location.origin + "/non-clinical/";
+        await Promise.all(registrations.map(function(reg){
+          var worker = reg.active || reg.waiting || reg.installing;
+          var isLegacyFiveCrowns = reg.scope === legacyScope && worker && worker.scriptURL.endsWith("/non-clinical/sw.js");
+          return isLegacyFiveCrowns ? reg.unregister() : Promise.resolve(false);
+        }));
+      } catch(e) { /* Continue with the app-specific registration. */ }
+
+      navigator.serviceWorker.register("/non-clinical/personal/sourdough-sw.js", {scope:"/non-clinical/personal/sourdough-workflow.html"}).then(function(reg){
         reg.addEventListener("updatefound", function(){
           var worker = reg.installing;
           if (!worker) return;
