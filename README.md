@@ -13,6 +13,7 @@ Shared schedule-directory contact data now lives in `data/schedule-directory.jso
 - `AGENTS.md`: Existing repo-specific Codex instructions for Psych Scheduler work.
 - `data/schedule-directory.json`: Canonical shared directory/contact source for Psych Scheduler and JFK Med Staff Schedule.
 - `docs/schedule-app-canonical-routes.md`: Canonical registry for current schedule-app URLs, owning repos, dashboard entrypoints, and legacy-forwarder behavior.
+- `docs/pwa-installable-web-app-pattern.md`: The one canonical, project-agnostic instruction set for making any website an installable PWA.
 - `docs/psych-scheduler.md`: Canonical migrated Psych Scheduler project page.
 - `docs/psych-scheduler-feedback-logging-added.md`: Historical pre-migration note for the retired Apps Script/FormSubmit feedback path.
 - `docs/psych-scheduler-feedback-apps-script-contract.md`: Historical retired Apps Script feedback contract kept only for reference.

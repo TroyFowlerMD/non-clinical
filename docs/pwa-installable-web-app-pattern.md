@@ -1,6 +1,8 @@
-# Installable PWA Pattern for Static GitHub Pages Apps
+# Canonical Installable PWA Instructions
 
-Use this as the canonical website-to-app checklist for static apps in `TroyFowlerMD/non-clinical`. The original working reference is Five Crowns (`five-crowns.html`, `manifest.json`, and `sw.js`). Sourdough Workbench uses a dedicated, app-scoped version under `personal/`.
+This is the only canonical instruction set for turning a website into an installable Progressive Web App (PWA). Use it for all current and future web projects, regardless of the app name, repository, host, or directory.
+
+App-specific HTML, manifests, service workers, icons, and build files are implementations of these instructions—not separate instruction sets. Do not create or maintain app-specific PWA instruction documents; improve this document when the shared pattern changes.
 
 ## Required app files
 
@@ -36,9 +38,9 @@ Use this as the canonical website-to-app checklist for static apps in `TroyFowle
 
 A website cannot automatically open Chrome's native install dialog. Chrome requires a user gesture. The supported pattern is to automatically show an in-app install banner when `beforeinstallprompt` fires, then open the native dialog when the user taps **Install app**.
 
-## Multiple PWAs in this GitHub Pages repository
+## Multiple PWAs on one origin
 
-All project pages under `https://troyfowlermd.github.io/non-clinical/` share one origin. Each independently installable app must therefore have:
+When multiple installable apps share an origin—such as apps within one GitHub Pages project site—each independently installable app must have:
 
 - its own unique manifest `id`
 - its own `start_url`
