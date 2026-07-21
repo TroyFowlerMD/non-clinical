@@ -1,7 +1,7 @@
 /* Sourdough Workbench — scoped service worker.
  * Bump CACHE_VERSION whenever the app shell or PWA assets change.
  */
-const CACHE_VERSION = "v2-2026-07-21";
+const CACHE_VERSION = "v3-2026-07-21";
 const CACHE = `sourdough-workbench-${CACHE_VERSION}`;
 const APP_URL = "/non-clinical/personal/sourdough-workflow.html";
 const ASSETS = [

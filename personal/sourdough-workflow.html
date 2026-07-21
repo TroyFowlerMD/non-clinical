@@ -1508,11 +1508,14 @@
       // /non-clinical/ site and caused Android to treat this app as Five Crowns.
       try {
         var registrations = await navigator.serviceWorker.getRegistrations();
-        var legacyScope = window.location.origin + "/non-clinical/";
+        var legacyFiveCrownsScope = window.location.origin + "/non-clinical/";
+        var legacySourdoughScope = window.location.origin + "/non-clinical/personal/";
         await Promise.all(registrations.map(function(reg){
           var worker = reg.active || reg.waiting || reg.installing;
-          var isLegacyFiveCrowns = reg.scope === legacyScope && worker && worker.scriptURL.endsWith("/non-clinical/sw.js");
-          return isLegacyFiveCrowns ? reg.unregister() : Promise.resolve(false);
+          if (!worker) return Promise.resolve(false);
+          var isLegacyFiveCrowns = reg.scope === legacyFiveCrownsScope && worker.scriptURL.endsWith("/non-clinical/sw.js");
+          var isLegacySourdough = reg.scope === legacySourdoughScope && worker.scriptURL.endsWith("/non-clinical/personal/sourdough-sw.js");
+          return (isLegacyFiveCrowns || isLegacySourdough) ? reg.unregister() : Promise.resolve(false);
         }));
       } catch(e) { /* Continue with the app-specific registration. */ }
 
