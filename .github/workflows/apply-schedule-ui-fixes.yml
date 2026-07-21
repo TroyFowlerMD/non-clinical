@@ -1,8 +1,6 @@
 name: Apply schedule UI fixes
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -52,42 +50,42 @@ jobs:
               return text[:idx] + js + '\n' + text[idx:]
 
           sticky_css = r'''
-/* Fix: keep sticky My Schedule table headers below the visible schedule controls. */
-.main{--schedule-sticky-offset:0px}
-#dash-table.sticky-ready th,
-#dash-table th,
-.col-table th{
-  top:var(--schedule-sticky-offset,0px)!important;
-}
-'''
+          /* Fix: keep sticky My Schedule table headers below the visible schedule controls. */
+          .main{--schedule-sticky-offset:0px}
+          #dash-table.sticky-ready th,
+          #dash-table th,
+          .col-table th{
+            top:var(--schedule-sticky-offset,0px)!important;
+          }
+          '''
 
           sticky_js = r'''
-(function(){
-  function visibleHeight(selector){
-    const el=document.querySelector(selector);
-    if(!el)return 0;
-    const style=window.getComputedStyle(el);
-    if(style.display==='none'||style.visibility==='hidden')return 0;
-    return Math.ceil(el.getBoundingClientRect().height||0);
-  }
-  window.updateScheduleStickyOffset=function updateScheduleStickyOffset(){
-    const main=document.querySelector('.main')||document.documentElement;
-    const offset=visibleHeight('.data-update-bar')+visibleHeight('.page-controls-bar')+visibleHeight('.global-filter-bar');
-    main.style.setProperty('--schedule-sticky-offset',offset+'px');
-  };
-  window.addEventListener('resize',window.updateScheduleStickyOffset,{passive:true});
-  document.addEventListener('DOMContentLoaded',window.updateScheduleStickyOffset);
-  const observer=new MutationObserver(window.updateScheduleStickyOffset);
-  document.addEventListener('DOMContentLoaded',function(){
-    ['.data-update-bar','.page-controls-bar','.global-filter-bar','.view.active'].forEach(function(selector){
-      const el=document.querySelector(selector);
-      if(el)observer.observe(el,{attributes:true,childList:true,subtree:true});
-    });
-    window.updateScheduleStickyOffset();
-  });
-  setTimeout(window.updateScheduleStickyOffset,0);
-})();
-'''
+          (function(){
+            function visibleHeight(selector){
+              const el=document.querySelector(selector);
+              if(!el)return 0;
+              const style=window.getComputedStyle(el);
+              if(style.display==='none'||style.visibility==='hidden')return 0;
+              return Math.ceil(el.getBoundingClientRect().height||0);
+            }
+            window.updateScheduleStickyOffset=function updateScheduleStickyOffset(){
+              const main=document.querySelector('.main')||document.documentElement;
+              const offset=visibleHeight('.data-update-bar')+visibleHeight('.page-controls-bar')+visibleHeight('.global-filter-bar');
+              main.style.setProperty('--schedule-sticky-offset',offset+'px');
+            };
+            window.addEventListener('resize',window.updateScheduleStickyOffset,{passive:true});
+            document.addEventListener('DOMContentLoaded',window.updateScheduleStickyOffset);
+            const observer=new MutationObserver(window.updateScheduleStickyOffset);
+            document.addEventListener('DOMContentLoaded',function(){
+              ['.data-update-bar','.page-controls-bar','.global-filter-bar','.view.active'].forEach(function(selector){
+                const el=document.querySelector(selector);
+                if(el)observer.observe(el,{attributes:true,childList:true,subtree:true});
+              });
+              window.updateScheduleStickyOffset();
+            });
+            setTimeout(window.updateScheduleStickyOffset,0);
+          })();
+          '''
 
           for path in ['psych-scheduler-experimental.html']:
               p = Path(path)
@@ -98,13 +96,13 @@ jobs:
                   write_if_changed(path, text)
 
           med_calendar_css = r'''
-/* Fix: allow vertical scrolling while preventing sideways scrolling in the month calendar. */
-html,body{min-height:100%;overflow-x:hidden!important;overflow-y:auto!important}
-.calendar-wrap{max-width:100%;overflow-x:hidden!important;overflow-y:visible!important}
-.calendar-wrap .cal-grid,.cal-grid{width:100%;min-width:0!important;grid-template-columns:repeat(7,minmax(0,1fr))!important}
-.cal-cell{overflow:hidden}
-.cal-name{min-width:0;white-space:normal;overflow-wrap:anywhere;text-overflow:clip}
-'''
+          /* Fix: allow vertical scrolling while preventing sideways scrolling in the month calendar. */
+          html,body{min-height:100%;overflow-x:hidden!important;overflow-y:auto!important}
+          .calendar-wrap{max-width:100%;overflow-x:hidden!important;overflow-y:visible!important}
+          .calendar-wrap .cal-grid,.cal-grid{width:100%;min-width:0!important;grid-template-columns:repeat(7,minmax(0,1fr))!important}
+          .cal-cell{overflow:hidden}
+          .cal-name{min-width:0;white-space:normal;overflow-wrap:anywhere;text-overflow:clip}
+          '''
 
           def patch_phone(text: str) -> str:
               text = re.sub(r"(PROVIDER_PHONES=\{[^}]*)(\};)",
