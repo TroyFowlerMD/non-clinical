@@ -146,7 +146,59 @@
     margin:0 0 16px;
   }
 
+  details.calc-card{padding:0;overflow:hidden;}
+  details.calc-card > summary{
+    list-style:none;
+    cursor:pointer;
+    padding:20px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  details.calc-card > summary::-webkit-details-marker{display:none;}
+  .calc-heading{flex:1 1 auto;min-width:0;}
+  .calc-heading h2{
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:1.28rem;
+    letter-spacing:-0.01em;
+    margin:0 0 4px;
+  }
+  .calc-heading .card-lead{margin:0;}
+  .calc-chev{width:18px;height:18px;color:var(--muted);transition:transform .25s ease;flex:0 0 auto;}
+  details.calc-card[open] > summary .calc-chev{transform:rotate(90deg);}
+  .calc-body{padding:0 20px 20px;}
+
   /* ---------- Calculator ---------- */
+  .driver-options{margin:0 0 18px;}
+  .driver-options > span{display:block;font-weight:600;font-size:.94rem;margin-bottom:7px;}
+  .driver-toggle{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px;
+    padding:5px;
+    border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    background:var(--bg);
+  }
+  .driver-toggle input{position:absolute;opacity:0;pointer-events:none;}
+  .driver-toggle label{
+    min-height:38px;
+    border-radius:7px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    color:var(--muted);
+    font-weight:600;
+    font-size:.9rem;
+    transition:background .15s ease,color .15s ease,box-shadow .15s ease;
+  }
+  .driver-toggle input:checked + label{background:var(--surface);color:var(--accent-ink);box-shadow:var(--shadow);}
+  .driver-toggle input:focus-visible + label{outline:2.5px solid var(--focus);outline-offset:2px;}
+  .driver-help{font-size:.78rem;color:var(--muted);margin:7px 2px 0;}
+  [hidden]{display:none !important;}
+
   .calc-note{
     background:var(--accent-soft);
     border:1px solid var(--line);
@@ -691,13 +743,29 @@
   </div>
 
   <!-- ===== Calculator ===== -->
-  <section class="card" aria-labelledby="calc-h">
-    <h2 id="calc-h">Baker's Calculator</h2>
-    <p class="card-lead">Enter your flour, and the recipe scales to match.</p>
+  <details class="card calc-card" open data-dir-card>
+    <summary aria-labelledby="calc-h">
+      <div class="calc-heading">
+        <h2 id="calc-h">Baker's Calculator</h2>
+        <p class="card-lead">Scale a recipe from the flour or water weight you know.</p>
+      </div>
+      <svg class="calc-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+    </summary>
+    <div class="calc-body">
 
-    <p class="calc-note">
-      <strong>How it works:</strong> Water %, starter %, and salt % are all calculated from the
-      <strong>starting dry flour amount</strong> you enter below.
+    <div class="driver-options">
+      <span id="driver-label">Main driver</span>
+      <div class="driver-toggle" role="radiogroup" aria-labelledby="driver-label">
+        <input type="radio" name="driver" id="driver-flour" value="flour" checked />
+        <label for="driver-flour">Flour weight</label>
+        <input type="radio" name="driver" id="driver-water" value="water" />
+        <label for="driver-water">Water weight</label>
+      </div>
+      <p class="driver-help">Choose the ingredient weight you already know; the other is calculated from hydration.</p>
+    </div>
+
+    <p class="calc-note" id="calc-note">
+      <strong>Flour-driven:</strong> Water is calculated from the starting dry flour and hydration. Starter and salt are also percentages of that flour.
     </p>
 
     <!-- Flour -->
@@ -709,6 +777,17 @@
         <input class="num-input" type="number" id="flour" inputmode="numeric" min="1" step="10" value="500" aria-describedby="flour-val-err" />
       </div>
       <p class="validation-msg" id="flour-val-err">Enter a flour weight of at least 1 g.</p>
+    </div>
+
+    <!-- Water -->
+    <div class="field" id="water-driver-field" hidden>
+      <div class="field-head">
+        <label for="water">Water <span style="color:var(--muted);font-weight:500;">(g) — main driver</span></label>
+      </div>
+      <div class="input-row">
+        <input class="num-input" type="number" id="water" inputmode="numeric" min="1" step="10" value="350" aria-describedby="water-val-err" />
+      </div>
+      <p class="validation-msg" id="water-val-err">Enter a water weight of at least 1 g.</p>
     </div>
 
     <!-- Hydration -->
@@ -816,7 +895,7 @@
       <div class="adv-body">
         <p class="adv-intro">Assuming a 100% hydration starter (equal parts flour and water), here is how the totals work out.</p>
         <div class="math-rows">
-          <div class="math-row"><span class="mr-label">Base flour (your input)</span><span class="mr-val" id="m-baseflour">500 g</span></div>
+          <div class="math-row"><span class="mr-label">Base flour</span><span class="mr-val" id="m-baseflour">500 g</span></div>
           <div class="math-row"><span class="mr-label">Added water (flour × hydration%)</span><span class="mr-val" id="m-addedwater">350 g</span></div>
           <div class="math-row"><span class="mr-label">Starter total (flour × starter%)</span><span class="mr-val" id="m-startertotal">100 g</span></div>
           <div class="math-row"><span class="mr-label">Starter flour contribution (½ of starter)</span><span class="mr-val" id="m-starterflour">50 g</span></div>
@@ -827,7 +906,8 @@
         </div>
       </div>
     </details>
-  </section>
+    </div>
+  </details>
 
   <!-- ===== Directions ===== -->
   <h2 class="section-title">Directions</h2>
@@ -1045,7 +1125,9 @@
   }
   function saveState(){
     var s = {
+      driver: currentDriver(),
       flour: el.flour.value,
+      water: el.water.value,
       hydration: el.hydration.value,
       starter: el.starter.value,
       salt: el.salt.value,
@@ -1057,11 +1139,28 @@
 
   var el = {
     flour: document.getElementById("flour"),
+    water: document.getElementById("water"),
     hydration: document.getElementById("hydration"),
     starter: document.getElementById("starter"),
     salt: document.getElementById("salt"),
     salttype: document.getElementById("salttype")
   };
+
+  function currentDriver(){
+    var selected = document.querySelector('input[name="driver"]:checked');
+    return selected ? selected.value : "flour";
+  }
+  function inputWeight(n){
+    return String(Math.round(n * 10) / 10);
+  }
+  function updateDriverUI(){
+    var waterDriven = currentDriver() === "water";
+    document.getElementById("water-driver-field").hidden = !waterDriven;
+    el.flour.closest(".field").hidden = waterDriven;
+    document.getElementById("calc-note").innerHTML = waterDriven
+      ? "<strong>Water-driven:</strong> Flour is calculated by dividing the water weight by hydration. Starter and salt are then calculated as percentages of that flour."
+      : "<strong>Flour-driven:</strong> Water is calculated from the starting dry flour and hydration. Starter and salt are also percentages of that flour.";
+  }
 
   /* ---------- Number formatting ---------- */
   function fmt(n){
@@ -1093,7 +1192,9 @@
 
   /* ---------- Core compute ---------- */
   function compute(){
+    var driver = currentDriver();
     var flour = parseFloat(el.flour.value);
+    var water = parseFloat(el.water.value);
     var hyd = parseFloat(el.hydration.value);
     var starterPct = parseFloat(el.starter.value);
     var saltPct = parseFloat(el.salt.value);
@@ -1101,27 +1202,39 @@
 
     // validation
     var fErr = document.getElementById("flour-val-err");
+    var wErr = document.getElementById("water-val-err");
     var hErr = document.getElementById("hydration-err");
     var sErr = document.getElementById("starter-err");
     var saErr = document.getElementById("salt-err");
 
     var validFlour = !isNaN(flour) && flour >= 1;
-    setInvalid(el.flour, fErr, !validFlour);
-    setInvalid(el.hydration, hErr, !isNaN(hyd) && (hyd < 60 || hyd > 85));
-    setInvalid(el.starter, sErr, !isNaN(starterPct) && (starterPct < 5 || starterPct > 50));
-    setInvalid(el.salt, saErr, !isNaN(saltPct) && (saltPct < 0 || saltPct > 4));
+    var validWater = !isNaN(water) && water >= 1;
+    var validHyd = !isNaN(hyd) && hyd >= 60 && hyd <= 85;
+    var validStarter = !isNaN(starterPct) && starterPct >= 5 && starterPct <= 50;
+    var validSalt = !isNaN(saltPct) && saltPct >= 0 && saltPct <= 4;
+    setInvalid(el.flour, fErr, driver === "flour" && !validFlour);
+    setInvalid(el.water, wErr, driver === "water" && !validWater);
+    setInvalid(el.hydration, hErr, !validHyd);
+    setInvalid(el.starter, sErr, !validStarter);
+    setInvalid(el.salt, saErr, !validSalt);
 
     // value displays
     document.getElementById("hydration-val").textContent = (isNaN(hyd)?"–":fmt(hyd)) + "%";
     document.getElementById("starter-val").textContent = (isNaN(starterPct)?"–":fmt(starterPct)) + "%";
     document.getElementById("salt-val").textContent = (isNaN(saltPct)?"–":fmt1(saltPct)) + "%";
 
-    if (!validFlour || isNaN(hyd) || isNaN(starterPct) || isNaN(saltPct)) {
+    if ((driver === "flour" && !validFlour) || (driver === "water" && !validWater) || !validHyd || !validStarter || !validSalt) {
       saveState();
       return;
     }
 
-    var water = flour * hyd / 100;
+    if (driver === "water") {
+      flour = water / (hyd / 100);
+      el.flour.value = inputWeight(flour);
+    } else {
+      water = flour * hyd / 100;
+      el.water.value = inputWeight(water);
+    }
     var starterG = flour * starterPct / 100;
     var saltG = flour * saltPct / 100;
 
@@ -1181,9 +1294,15 @@
   });
 
   /* ---------- Input listeners ---------- */
-  ["flour","hydration","starter","salt","salttype"].forEach(function(k){
+  ["flour","water","hydration","starter","salt","salttype"].forEach(function(k){
     el[k].addEventListener("input", compute);
     el[k].addEventListener("change", compute);
+  });
+  document.querySelectorAll('input[name="driver"]').forEach(function(radio){
+    radio.addEventListener("change", function(){
+      updateDriverUI();
+      compute();
+    });
   });
 
   /* ---------- Expand / Collapse ---------- */
@@ -1273,10 +1392,13 @@
   /* ---------- Init ---------- */
   var st = loadState();
   if (st.flour) el.flour.value = st.flour;
+  if (st.water) el.water.value = st.water;
   if (st.hydration) el.hydration.value = st.hydration;
   if (st.starter) el.starter.value = st.starter;
   if (st.salt) el.salt.value = st.salt;
   if (st.salttype) el.salttype.value = st.salttype;
+  if (st.driver === "water") document.getElementById("driver-water").checked = true;
+  updateDriverUI();
   applyTheme(st.theme === "dark" ? "dark" : "light");
   compute();
 })();
