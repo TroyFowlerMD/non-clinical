@@ -77,6 +77,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 }
 .header-btn:hover{background:var(--btn-hover)}
 
+@media (max-width:480px){
+  #app-header{padding:6px 8px;gap:4px}
+  .header-title .title-main{font-size:0.92rem}
+  .header-title .title-sub{font-size:0.7rem}
+  .header-controls{gap:2px;min-width:0}
+  .header-btn{font-size:0.62rem;padding:5px 6px}
+  .sound-toggle-btn{font-size:0.82rem;padding:4px 5px}
+}
+
+@media (max-width:360px){
+  .header-title .title-main{font-size:0.84rem}
+  .header-title .title-sub{font-size:0.64rem}
+  .header-btn{font-size:0.58rem;padding:4px 5px}
+  #theme-toggle{width:30px;overflow:hidden;font-size:0;padding-left:0;padding-right:0}
+  #theme-toggle::before{content:'☀️';font-size:0.8rem}
+}
+
 /* ===== SETUP ===== */
 #setup-screen{max-width:560px;margin:0 auto;padding:20px 14px}
 .setup-card{background:var(--setup-card);border-radius:16px;padding:22px 20px;box-shadow:var(--shadow)}
