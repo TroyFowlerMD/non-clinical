@@ -5,6 +5,7 @@ Non-clinical TroyMD tools and personal/professional utility pages. The primary a
 Shared schedule-directory contact data now lives in `data/schedule-directory.json`. Regenerate both apps from that source with `node scripts/sync-schedule-directory.mjs` instead of hand-editing duplicated contact blocks.
 
 ## Project Files
+- `dr-troys-killer-burgers/`: Product specification and approved bilingual recipe content for the installable, scalable burger-recipe PWA. See `dr-troys-killer-burgers/README.md`.
 - `volunteer-hub/`: Static site listing 12 vetted volunteer opportunities for a solo 15-year-old in Buncombe County, NC (cards, Leaflet map, comparison table). See `volunteer-hub/README.md`.
 - `CONTEXT.md`: Short session-start briefing for Codex and returning developers.
 - `TASKS.md`: Live working task list seeded from the migrated Notion state.
