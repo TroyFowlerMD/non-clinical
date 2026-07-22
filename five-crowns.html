@@ -41,7 +41,7 @@
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;transition:background 0.3s,color 0.3s}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:auto;transition:background 0.3s,color 0.3s}
 
 /* ===== HEADER ===== */
 #app-header {
@@ -134,7 +134,7 @@ th.player-header.dropped-header {
 #wild-chip{background:rgba(42,168,174,0.10);color:var(--accent2);border:1px solid var(--accent2);font-weight:600}
 
 /* ===== TABLE ===== */
-#table-wrapper{position:relative;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:6px 4px 0}
+#table-wrapper{position:relative;overflow:visible;padding:6px 4px 0}
 
 #race-overlay{position:absolute;inset:0;z-index:2;pointer-events:none}
 .race-column-fill{position:absolute;background:var(--race-fill);border-radius:4px 4px 0 0;pointer-events:none}
@@ -150,7 +150,7 @@ th.player-header.dropped-header {
 #score-table thead th{
   padding:5px 2px;font-weight:700;font-size:0.74rem;letter-spacing:0.2px;
   text-align:center;border:1px solid var(--cell-border);color:var(--text-dim);
-  text-transform:uppercase;position:sticky;top:0;z-index:10;background:var(--header-bg);
+  text-transform:uppercase;position:sticky;top:var(--table-sticky-top,56px);z-index:10;background:var(--header-bg);
   overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
 }
 #score-table thead th.player-header{
@@ -744,6 +744,7 @@ function buildTable() {
 // ============================================================
 function setDynamicColumnWidths() {
   const n = state.players.length;
+  updateStickyHeaderOffset();
   // Dealer=60px, Round=32px, remaining split equally
   // We set this via a <style> tag so table-layout:fixed works
   let style = document.getElementById('dynamic-col-style');
@@ -768,6 +769,13 @@ function setDynamicColumnWidths() {
   css += `td.score-cell .score-display { font-size: ${n >= 6 ? '0.94' : n >= 4 ? '1rem' : '1.08rem'}; }\n`;
 
   style.textContent = css;
+}
+
+function updateStickyHeaderOffset() {
+  const header = document.getElementById('app-header');
+  if (header) {
+    document.documentElement.style.setProperty('--table-sticky-top', `${header.getBoundingClientRect().height}px`);
+  }
 }
 
 // ============================================================
@@ -1625,6 +1633,7 @@ function showToast(msg){
 // RESIZE
 // ============================================================
 window.addEventListener('resize', ()=>{
+  updateStickyHeaderOffset();
   if (state.players.length) {
     setDynamicColumnWidths();
     updateRaceShading();
