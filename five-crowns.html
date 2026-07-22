@@ -150,7 +150,7 @@ th.player-header.dropped-header {
 #score-table thead th{
   padding:5px 2px;font-weight:700;font-size:0.74rem;letter-spacing:0.2px;
   text-align:center;border:1px solid var(--cell-border);color:var(--text-dim);
-  text-transform:uppercase;position:sticky;top:var(--table-sticky-top,56px);z-index:10;background:var(--header-bg);
+  text-transform:uppercase;position:sticky;top:0;z-index:10;background:var(--header-bg);
   overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
 }
 #score-table thead th.player-header{
@@ -744,7 +744,6 @@ function buildTable() {
 // ============================================================
 function setDynamicColumnWidths() {
   const n = state.players.length;
-  updateStickyHeaderOffset();
   // Dealer=60px, Round=32px, remaining split equally
   // We set this via a <style> tag so table-layout:fixed works
   let style = document.getElementById('dynamic-col-style');
@@ -769,13 +768,6 @@ function setDynamicColumnWidths() {
   css += `td.score-cell .score-display { font-size: ${n >= 6 ? '0.94' : n >= 4 ? '1rem' : '1.08rem'}; }\n`;
 
   style.textContent = css;
-}
-
-function updateStickyHeaderOffset() {
-  const header = document.getElementById('app-header');
-  if (header) {
-    document.documentElement.style.setProperty('--table-sticky-top', `${header.getBoundingClientRect().height}px`);
-  }
 }
 
 // ============================================================
@@ -1633,7 +1625,6 @@ function showToast(msg){
 // RESIZE
 // ============================================================
 window.addEventListener('resize', ()=>{
-  updateStickyHeaderOffset();
   if (state.players.length) {
     setDynamicColumnWidths();
     updateRaceShading();
