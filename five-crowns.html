@@ -22,7 +22,7 @@
   --dealer-badge:#8b63e0;--wild-badge:#2aa8ae;
   --setup-card:#16161f;--modal-bg:rgba(0,0,0,0.28);--modal-surface:#18181f;
   --green-flash:#27ae60;--shadow:0 4px 24px rgba(0,0,0,0.75);
-  --player-header:#c8ccd8;
+  --player-header:#c8ccd8;--race-fill:rgba(139,99,224,0.28);
 }
 [data-theme="light"] {
   --bg:#f0f4f8;--surface:#ffffff;--surface2:#e4eaf5;
@@ -36,12 +36,12 @@
   --dealer-badge:#2563eb;--wild-badge:#0891b2;
   --setup-card:#ffffff;--modal-bg:rgba(0,0,0,0.45);--modal-surface:#ffffff;
   --green-flash:#16a34a;--shadow:0 4px 20px rgba(0,0,0,0.12);
-  --player-header:#ffffff;
+  --player-header:#ffffff;--race-fill:rgba(37,99,235,0.20);
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background 0.3s,color 0.3s}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;transition:background 0.3s,color 0.3s}
 
 /* ===== HEADER ===== */
 #app-header {
@@ -125,7 +125,7 @@ th.player-header.dropped-header {
 .setup-add-player-btn:hover{border-color:var(--accent);color:var(--accent)}
 
 /* ===== SCORE SCREEN ===== */
-#score-screen{display:none;padding:0 0 70px 0}
+#score-screen{display:none;padding:0}
 
 #game-info-bar{background:var(--surface);padding:6px 10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--cell-border)}
 .info-chip{background:var(--surface2);border-radius:20px;padding:3px 10px;font-size:0.73rem;color:var(--text-dim)}
@@ -134,9 +134,12 @@ th.player-header.dropped-header {
 #wild-chip{background:rgba(42,168,174,0.10);color:var(--accent2);border:1px solid var(--accent2);font-weight:600}
 
 /* ===== TABLE ===== */
-#table-wrapper{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:6px 4px}
+#table-wrapper{position:relative;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:6px 4px 0}
 
-#score-table{border-collapse:collapse;width:100%;table-layout:fixed;font-size:0.8rem}
+#race-overlay{position:absolute;inset:0;z-index:2;pointer-events:none}
+.race-column-fill{position:absolute;background:var(--race-fill);border-radius:4px 4px 0 0;pointer-events:none}
+
+#score-table{position:relative;z-index:1;border-collapse:collapse;width:100%;table-layout:fixed;font-size:0.86rem}
 
 /* Fixed narrow cols for dealer/round */
 .col-dealer{width:60px}
@@ -145,22 +148,22 @@ th.player-header.dropped-header {
 
 #score-table thead tr{background:var(--header-bg)}
 #score-table thead th{
-  padding:5px 2px;font-weight:700;font-size:0.68rem;letter-spacing:0.2px;
+  padding:5px 2px;font-weight:700;font-size:0.74rem;letter-spacing:0.2px;
   text-align:center;border:1px solid var(--cell-border);color:var(--text-dim);
-  text-transform:uppercase;position:sticky;top:0;z-index:10;background:var(--header-bg);
+  text-transform:uppercase;position:sticky;top:var(--table-sticky-top,56px);z-index:10;background:var(--header-bg);
   overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
 }
 #score-table thead th.player-header{
-  color:var(--player-header);font-size:0.75rem;text-transform:none;font-weight:700;
+  color:var(--player-header);font-size:0.84rem;text-transform:none;font-weight:700;
 }
 #score-table thead th.player-header.is-first-dealer{color:var(--dealer-badge)}
 
 #score-table tbody tr{transition:background 0.12s}
 #score-table tbody td{border:1px solid var(--cell-border);text-align:center;vertical-align:middle;padding:0;overflow:hidden}
 
-td.dealer-cell{background:var(--dealer-col);padding:2px 3px;font-size:0.68rem;font-weight:600;color:var(--dealer-badge);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-td.round-cell{background:var(--round-col);padding:2px 1px;font-weight:700;font-size:0.74rem;color:var(--text-dim);white-space:nowrap}
-td.round-cell .wild-indicator{display:block;font-size:0.56rem;font-weight:400;color:var(--wild-badge);margin-top:1px}
+td.dealer-cell{background:var(--dealer-col);padding:2px 3px;font-size:0.75rem;font-weight:600;color:var(--dealer-badge);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+td.round-cell{background:var(--round-col);padding:2px 1px;font-weight:700;font-size:0.84rem;color:var(--text-dim);white-space:nowrap}
+td.round-cell .wild-indicator{display:block;font-size:0.68rem;font-weight:500;color:var(--wild-badge);margin-top:1px}
 
 /* Score cells — height scales with player count */
 td.score-cell{background:var(--cell-bg);cursor:pointer;height:40px;position:relative}
@@ -175,7 +178,7 @@ td.score-cell.numpad-active {
   z-index:2;
 }
 
-td.score-cell .score-display{display:flex;align-items:center;justify-content:center;height:100%;width:100%;font-size:0.95rem;font-weight:600;color:var(--text);padding:2px}
+td.score-cell .score-display{position:relative;z-index:3;display:flex;align-items:center;justify-content:center;height:100%;width:100%;font-size:1.08rem;font-weight:700;color:var(--text);padding:2px}
 td.score-cell.zero-score .score-display{color:var(--green-flash)}
 td.score-cell.locked .score-display{color:var(--text-dim);font-size:0.7rem}
 td.score-cell.typing .score-display{color:var(--accent)}
@@ -183,13 +186,13 @@ td.score-cell.typing .score-display{color:var(--accent)}
 /* Current round row inset ring on all unlocked cells */
 .current-round-row td.score-cell:not(.locked):not(.numpad-active){box-shadow:inset 0 0 0 1.5px var(--accent);opacity:0.85}
 
-tr.totals-row td{background:var(--total-row)!important;padding:8px 3px;font-weight:700;font-size:1rem;color:var(--accent2);height:56px;vertical-align:middle}
+tr.totals-row td{background:var(--total-row)!important;padding:8px 3px;font-weight:700;font-size:1.08rem;color:var(--accent2);height:56px;vertical-align:middle}
 tr.totals-row td.label-cell{font-size:0.72rem;text-transform:uppercase;color:var(--text-dim);letter-spacing:0.3px}
-tr.rank-row td{background:var(--rank-row)!important;padding:8px 3px;font-weight:700;font-size:0.92rem;height:56px;vertical-align:middle}
+tr.rank-row td{background:var(--rank-row)!important;padding:8px 3px;font-weight:700;font-size:1rem;height:56px;vertical-align:middle}
 tr.rank-row td.label-cell{font-size:0.72rem;text-transform:uppercase;color:var(--text-dim);letter-spacing:0.3px}
 .rank-cell-inner{display:flex;align-items:center;justify-content:center;gap:4px}
-.rank-medal{font-size:1.25rem;line-height:1}
-.rank-num{font-size:0.95rem;font-weight:800;color:var(--text)}
+.rank-medal{font-size:1.35rem;line-height:1}
+.rank-num{font-size:1.05rem;font-weight:800;color:var(--text)}
 .rank-num.rank-1{color:#f5c842}.rank-num.rank-2{color:#b0b8c8}.rank-num.rank-3{color:#cd7f32}.rank-num.rank-other{color:var(--text-dim)}
 
 /* ===== NUMPAD (no display — score shows live in cell) ===== */
@@ -363,6 +366,7 @@ hr.rules-divider{border:none;border-top:1px solid var(--cell-border);margin:12px
     <p id="winner-sub"></p>
   </div>
   <div id="table-wrapper">
+    <div id="race-overlay" aria-hidden="true"></div>
     <table id="score-table">
       <thead><tr id="table-header-row"></tr></thead>
       <tbody id="table-body"></tbody>
@@ -740,6 +744,7 @@ function buildTable() {
 // ============================================================
 function setDynamicColumnWidths() {
   const n = state.players.length;
+  updateStickyHeaderOffset();
   // Dealer=60px, Round=32px, remaining split equally
   // We set this via a <style> tag so table-layout:fixed works
   let style = document.getElementById('dynamic-col-style');
@@ -761,9 +766,16 @@ function setDynamicColumnWidths() {
   const targetRows = 14;
   const rowH = Math.max(28, Math.floor(window.innerHeight * 0.75 / targetRows));
   css += `td.score-cell { height: ${rowH}px; }\n`;
-  css += `td.score-cell .score-display { font-size: ${n >= 6 ? '0.78' : '0.9'}rem; }\n`;
+  css += `td.score-cell .score-display { font-size: ${n >= 6 ? '0.94' : n >= 4 ? '1rem' : '1.08rem'}; }\n`;
 
   style.textContent = css;
+}
+
+function updateStickyHeaderOffset() {
+  const header = document.getElementById('app-header');
+  if (header) {
+    document.documentElement.style.setProperty('--table-sticky-top', `${header.getBoundingClientRect().height}px`);
+  }
 }
 
 // ============================================================
@@ -848,7 +860,75 @@ function refreshTableDisplay() {
     el.innerHTML=''; el.appendChild(inner);
   });
 
+  updateRaceShading();
   updateInfoBar();
+}
+
+// ============================================================
+// RACE-STYLE PROGRESS SHADING
+// ============================================================
+function updateRaceShading() {
+  const overlay = document.getElementById('race-overlay');
+  const wrapper = document.getElementById('table-wrapper');
+  if (!overlay || !wrapper || !state.players.length) return;
+  overlay.innerHTML = '';
+
+  // Use the latest fully completed round so partial entry does not make the
+  // race track jump around while players are still entering a round.
+  let completedRound = -1;
+  for (let ri = 0; ri < ROUNDS.length; ri++) {
+    const complete = state.players.every((p, pi) => p.dropped || state.scores[ri][pi] !== null);
+    if (complete) completedRound = ri;
+    else break;
+  }
+  if (completedRound < 0) return;
+
+  const active = state.players
+    .map((p, pi) => ({ p, pi }))
+    .filter(x => !x.p.dropped);
+  if (!active.length) return;
+
+  const cumulative = active.map(({ pi }) => ROUNDS
+    .slice(0, completedRound + 1)
+    .reduce((sum, _, ri) => {
+      const value = state.scores[ri][pi];
+      return sum + (value !== null ? value : 0);
+    }, 0));
+  const best = Math.min(...cumulative);
+  const worst = Math.max(...cumulative);
+  const spread = worst - best;
+  const progress = completedRound / (ROUNDS.length - 1);
+
+  // About half the track after the first completed round, about two-thirds
+  // by the later middle rounds, and full length at the final round.
+  const envelope = progress < 0.6
+    ? 0.50 + (0.67 - 0.50) * (progress / 0.6)
+    : 0.67 + (1 - 0.67) * ((progress - 0.6) / 0.4);
+
+  const wrapperRect = wrapper.getBoundingClientRect();
+  const firstCell = document.getElementById('cell-0-0');
+  const lastCell = document.getElementById(`cell-${ROUNDS.length - 1}-0`);
+  if (!firstCell || !lastCell) return;
+  const firstRect = firstCell.getBoundingClientRect();
+  const lastRect = lastCell.getBoundingClientRect();
+  const trackTop = firstRect.top - wrapperRect.top + wrapper.scrollTop;
+  const trackHeight = lastRect.bottom - firstRect.top;
+
+  active.forEach(({ pi }, index) => {
+    const cell = document.getElementById(`cell-0-${pi}`);
+    if (!cell) return;
+    const rect = cell.getBoundingClientRect();
+    const depth = spread === 0
+      ? (worst > 0 ? envelope * 0.5 : 0)
+      : envelope * ((cumulative[index] - best) / spread);
+    const fill = document.createElement('div');
+    fill.className = 'race-column-fill';
+    fill.style.left = `${rect.left - wrapperRect.left + wrapper.scrollLeft}px`;
+    fill.style.top = `${trackTop}px`;
+    fill.style.width = `${rect.width}px`;
+    fill.style.height = `${trackHeight * depth}px`;
+    overlay.appendChild(fill);
+  });
 }
 
 // ============================================================
@@ -1552,7 +1632,13 @@ function showToast(msg){
 // ============================================================
 // RESIZE
 // ============================================================
-window.addEventListener('resize', ()=>{ if(state.players.length) setDynamicColumnWidths(); });
+window.addEventListener('resize', ()=>{
+  updateStickyHeaderOffset();
+  if (state.players.length) {
+    setDynamicColumnWidths();
+    updateRaceShading();
+  }
+});
 
 // ============================================================
 // INIT
