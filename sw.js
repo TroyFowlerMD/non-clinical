@@ -2,7 +2,7 @@
  * Strategy: precache-all + cache-first with network-update fallback.
  * Bump CACHE_VERSION any time five-crowns.html or assets change to force update.
  */
-const CACHE_VERSION = 'v8-2026-07-21';
+const CACHE_VERSION = 'v9-2026-07-22';
 const CACHE = `five-crowns-${CACHE_VERSION}`;
 
 // Everything the app needs to run fully offline.
