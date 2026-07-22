@@ -4,6 +4,13 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 
 ---
 
+### 2026-07-22 - Codex desktop - Dr. Troy's Killer Burgers PWA
+- Completed: Built `dr-troys-killer-burgers/` as a bilingual TypeScript/static recipe PWA with persisted English/Spanish language, scale, custom amount, chile, and print settings; full/half/quarter/custom scaling; selected-chile ingredient rendering; substitution notes; print-only recipe sheets with a locally generated canonical QR code; scoped manifest/service worker; generated WebP/AVIF hero variants and PWA icons from the supplied artwork; and Vercel project configuration.
+- Completed: Verified `npm.cmd run check`, `npm.cmd run verify:browser`, and `npm.cmd audit --audit-level=high`; browser verification covered phone/tablet/desktop screenshots, language persistence, chile persistence, print PDF canonical URL/no-localhost checks, and offline reload.
+- Completed: Committed and pushed the implementation to GitHub on `main` at `5f31cce`.
+- In progress: Production Vercel deployment for the preferred `drtroyskillerburgers` slug remains pending.
+- Blockers/notes: The local Vercel CLI reports an invalid stored token, and the connected Vercel deploy tool has no root-directory/project-slug argument, so it was not safe to deploy the existing `non-clinical` project as a substitute. `https://drtroyskillerburgers.vercel.app/` currently returns HTTP 404.
+
 ### 2026-07-02 - Codex desktop - Protected Psych Scheduler theme polish
 - Completed: Cloned the missing `TroyFowlerMD/protected-schedules` source repo into `C:\Users\troyf\Documents\Codex\Projects\protected-schedules` after confirming `non-clinical/psych-scheduler.html` is only a forwarder to the protected Vercel route.
 - Completed: Locally updated protected `psych-scheduler.html` so the Light theme is less bright, Light date inputs stay white/readable, the former Slate theme is labeled Dark, and the Dark/sidebar contrast is improved; the previous darkest theme is labeled Midnight.

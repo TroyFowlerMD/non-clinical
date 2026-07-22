@@ -7,6 +7,7 @@
 - [!] Blocked - include reason in parentheses
 
 ## Active Tasks
+- [!] Deploy `drtroyskillerburgers` to Vercel production after Vercel CLI auth/project creation is available. (Blocked: local Vercel CLI reports an invalid stored token, and the connected Vercel tool cannot safely target the new subfolder/project slug.)
 - [~] Keep Psych Scheduler default startup tied to the live Google Sheet while preserving paste/Excel fallback behavior.
 - [~] Keep `docs/schedule-app-canonical-routes.md` current whenever schedule-app URLs, hosts, or repo ownership change.
 
@@ -16,6 +17,7 @@
 - [ ] If the JFK Med Staff Schedule Vercel hostname changes later, update the canonical registry, live entrypoints, and legacy forwarder in one publish.
 
 ## Completed (last 30 days)
+- [x] Built `dr-troys-killer-burgers/` as a bilingual static recipe PWA with scaling, generated hero assets/icons/QR code, print/PDF styling, offline caching, install prompt support, Vercel config, and local browser verification.
 - [x] Added a mobile-first `personal/sourdough-workflow.html` single-page sourdough calculator/reference and linked it from the non-clinical hub.
 - [x] Added `dog-whistle-android/` as a native Android APK project with GitHub Actions debug-build automation, then verified a successful GitHub Actions artifact build for sideload testing.
 - [x] Replaced the old Psych/JFK feedback intake code paths with one shared Vercel endpoint and private GitHub Issues workflow, plus updated `#IT`/operator docs to use `TroyFowlerMD/non-clinical-feedback`.

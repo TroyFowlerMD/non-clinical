@@ -4,6 +4,12 @@ This file records durable architectural, workflow, safety, and publishing decisi
 
 ---
 
+### 2026-07-22 - Build Dr. Troy's Killer Burgers As A Dedicated Static Vercel PWA
+Context: The burger recipe app needs to be installable, offline-capable, printable, bilingual, and deployable separately at the preferred `drtroyskillerburgers` Vercel slug while using the supplied hero artwork.
+Decision: Keep the app in `dr-troys-killer-burgers/` as a dedicated static TypeScript build that outputs `dist/` for Vercel, with generated assets under `assets/generated/`, a relative app-scoped manifest/service worker, and the canonical production URL centralized in recipe code and QR generation.
+Rationale: A folder-scoped static build is enough for the recipe app, avoids adding a backend or framework runtime, keeps PWA scope narrow if served under another origin, and lets Vercel use this folder as the project root.
+Consequences: If the production URL changes, update `CANONICAL_URL`, manifest metadata, and QR generation together, rerun `npm run check`, and regenerate assets before deploying. The Vercel project root should be `dr-troys-killer-burgers/`, not the repo root or the existing `non-clinical` Vercel project.
+
 ### 2026-06-10 - Use Private GitHub Issues As The Shared Feedback Inbox
 Context: Both schedule apps had drifted into a mixed feedback setup using Apps Script, FormSubmit, email confirmation rules, and a Google Sheet `Feedback` tab. The owner wanted one shared mechanism, private by default, with a simpler future `#IT` triage workflow.
 Decision: Route Psych Scheduler and JFK Med Staff Schedule feedback through one shared Vercel endpoint at `vercel-jfk/api/feedback.js`, then create private issues in `TroyFowlerMD/non-clinical-feedback`. Keep the Google Apps Script bridge for schedule-data reads only, not as the feedback inbox.

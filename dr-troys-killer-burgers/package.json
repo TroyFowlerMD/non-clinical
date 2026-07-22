@@ -1,0 +1,24 @@
+{
+  "name": "drtroyskillerburgers",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Installable bilingual recipe PWA for Dr. Troy's Killer Burger Patties.",
+  "scripts": {
+    "build": "node scripts/generate-assets.mjs && node scripts/clean-dist.mjs && tsc -p tsconfig.json && node scripts/copy-static.mjs",
+    "check": "npm run typecheck && npm run lint && npm run build && node scripts/validate-calculations.mjs",
+    "lint": "node scripts/lint.mjs",
+    "serve": "node scripts/serve-dist.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "verify:browser": "node scripts/verify-browser.mjs"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^24.15.0",
+    "qrcode": "^1.5.4",
+    "sharp": "^0.35.3",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
