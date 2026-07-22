@@ -1,8 +1,12 @@
 .codex-local/
 .gradle/
+node_modules/
 build/
 **/build/
 local.properties
 .idea/
 captures/
 *.iml
+.codex-remote-attachments/
+dr-troys-killer-burgers/dist/
+dr-troys-killer-burgers/verification/

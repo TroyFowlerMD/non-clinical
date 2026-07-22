@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#f3efe6">
+    <meta name="description" content="A bilingual, scalable recipe app for Dr. Troy's Killer Burger Patties.">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Killer Burgers">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta property="og:title" content="Dr. Troy's Killer Burgers">
+    <meta property="og:description" content="Bilingual scaling recipe for bacon-loaded double burger patties.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://drtroyskillerburgers.vercel.app/">
+    <meta property="og:image" content="https://drtroyskillerburgers.vercel.app/assets/hero-1280.jpg">
+    <link rel="canonical" href="https://drtroyskillerburgers.vercel.app/">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+    <link rel="preload" as="image" href="assets/hero-1280.webp" imagesrcset="assets/hero-640.webp 640w, assets/hero-960.webp 960w, assets/hero-1280.webp 1280w" imagesizes="100vw">
+    <link rel="stylesheet" href="styles.css">
+    <title>Dr. Troy's Killer Burger Patties</title>
+  </head>
+  <body>
+    <div class="screen-app">
+      <header class="hero" aria-labelledby="hero-title">
+        <picture>
+          <source type="image/avif" srcset="assets/hero-640.avif 640w, assets/hero-960.avif 960w, assets/hero-1280.avif 1280w" sizes="100vw">
+          <source type="image/webp" srcset="assets/hero-640.webp 640w, assets/hero-960.webp 960w, assets/hero-1280.webp 1280w" sizes="100vw">
+          <img src="assets/hero-1280.jpg" width="1280" height="548" alt="Dr. Troy presenting a double cheeseburger at a grill.">
+        </picture>
+        <div class="hero-copy">
+          <p id="hero-kicker"></p>
+          <h1 id="hero-title"></h1>
+          <p id="hero-subtitle"></p>
+        </div>
+      </header>
+
+      <main class="app-shell">
+        <section class="toolbar" aria-label="Recipe controls">
+          <div class="control-group">
+            <span class="control-label" data-ui="languageLabel">Language</span>
+            <div class="segmented" role="group" aria-label="Language">
+              <button type="button" data-lang="en">English</button>
+              <button type="button" data-lang="es">Español</button>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <span class="control-label" data-ui="scaleLabel">Scale</span>
+            <div class="segmented" role="group" aria-label="Recipe scale">
+              <button type="button" data-scale="full">Full</button>
+              <button type="button" data-scale="half">1/2</button>
+              <button type="button" data-scale="quarter">1/4</button>
+              <button type="button" data-scale="custom">Custom</button>
+            </div>
+          </div>
+
+          <div class="control-group custom-controls" id="custom-controls" hidden>
+            <label>
+              <span class="control-label" data-ui="customByLabel">Custom by</span>
+              <select data-field="custom-mode">
+                <option value="beef">Ground beef</option>
+                <option value="patties">Patties</option>
+              </select>
+            </label>
+            <label class="number-input">
+              <input data-field="custom-value" type="number" inputmode="decimal" min="0.25" step="0.25">
+              <span id="custom-unit"></span>
+            </label>
+          </div>
+
+          <div class="control-group">
+            <label>
+              <span class="control-label" data-ui="chileLabel">Chile</span>
+              <select data-field="chile">
+                <option value="canned">Canned mild green chiles</option>
+                <option value="fresh">Fresh mild green peppers</option>
+                <option value="jalapeno">Jalapeño, smaller amount</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="control-group print-controls">
+            <label>
+              <span class="control-label" data-ui="printLabel">Print</span>
+              <select data-field="print-mode">
+                <option value="en">English</option>
+                <option value="es">Español</option>
+                <option value="both">Both</option>
+              </select>
+            </label>
+            <button id="print-button" type="button" class="primary-action" data-ui="printButton">Print / PDF</button>
+          </div>
+        </section>
+
+        <aside id="install-banner" class="install-banner" hidden>
+          <span data-ui="installText">Install this recipe app for offline use.</span>
+          <div>
+            <button id="install-button" type="button" class="primary-action" data-ui="installButton">Install app</button>
+            <button id="dismiss-install" type="button" class="ghost-action" aria-label="Dismiss install suggestion" data-ui="dismissButton">Dismiss</button>
+          </div>
+        </aside>
+
+        <section class="summary-strip" aria-label="Current recipe scale">
+          <div>
+            <span data-ui="summaryScaleLabel">Scale</span>
+            <strong data-summary-scale></strong>
+          </div>
+          <div>
+            <span data-ui="summaryYieldLabel">Yield</span>
+            <strong data-summary-yield></strong>
+          </div>
+          <div>
+            <span data-ui="summaryChileLabel">Chile</span>
+            <strong data-summary-chile></strong>
+          </div>
+        </section>
+
+        <article class="recipe-card">
+          <p class="double-note" id="double-note">Two thin patties per burger are recommended.</p>
+          <section aria-labelledby="ingredients-heading">
+            <h2 id="ingredients-heading">Ingredients</h2>
+            <div id="ingredients-root"></div>
+          </section>
+          <section aria-labelledby="instructions-heading">
+            <h2 id="instructions-heading">Instructions</h2>
+            <div id="instructions-root"></div>
+          </section>
+          <section id="substitutions-root" class="substitutions" aria-label="Substitution notes"></section>
+        </article>
+      </main>
+    </div>
+
+    <div id="print-root" class="print-only" aria-hidden="true"></div>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

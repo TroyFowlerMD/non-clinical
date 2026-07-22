@@ -77,6 +77,17 @@ Provide a dedicated print view that looks like a professionally formatted Word r
 - Preferred production URL: `https://drtroyskillerburgers.vercel.app` if available.
 - Keep the canonical URL configurable so metadata and the print QR code use the stable production URL.
 
+## Implementation notes
+
+- Vercel project root should be this folder: `dr-troys-killer-burgers/`.
+- Canonical URL is centralized as `https://drtroyskillerburgers.vercel.app/` in the app metadata, print QR code generation, and recipe code.
+- Local commands:
+  - `npm install`
+  - `npm run check`
+  - `npm run verify:browser`
+  - `npm run serve`
+- Generated deployment output is `dist/`; source files and generated app assets are committed outside `dist/`.
+
 ## Out of scope
 
 No accounts, backend, analytics, nutrition data, ratings, timers, notifications, freezing instructions, test-patty step, or food-temperature guidance.
