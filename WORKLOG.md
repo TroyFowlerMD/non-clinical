@@ -222,3 +222,8 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 - Completed: Added `.github/workflows/build-dog-whistle-apk.yml`, fixed the Material theme dependency, pushed `main`, and verified a successful GitHub Actions run that uploaded the `dog-whistle-debug-apk` artifact for commit `4df18a7`.
 - In progress: Real-device testing still needs to confirm speaker behavior at 19 kHz, vibration feel, and whether the accessibility volume-button mode behaves acceptably on the target phone.
 - Blockers/notes: Stock Android still does not provide a true per-app above-device-max speaker override; the shipped build uses normal media max plus in-app whistle gain within platform limits.
+
+### 2026-07-24 - Codex Cloud - Website-feedback issue #23 source-location handoff
+- Completed: Reconciled the ticket against the canonical schedule-route registry and confirmed that this repository's `psych-scheduler.html` is only a legacy forwarder to the protected production scheduler.
+- In progress: Issue #23 requires a narrow production-source change: soften the daily-schedule button blue and render Resident/Fellow titles in parentheses beside names.
+- Blockers/notes: The active source is owned by the separate `TroyFowlerMD/protected-schedules` repository, which is not present in this workspace. The non-clinical experimental page is not the production target and was intentionally left unchanged. Live-host verification was also unavailable because DNS resolution for the protected Vercel host failed in this environment.
