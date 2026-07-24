@@ -150,6 +150,13 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
     - In progress: ...
     - Blockers/notes: ...
 
+### 2026-07-24 - Codex Work Mode - Centralized website feedback intake
+- Completed: Redirected the public experimental Psych Scheduler and all legacy JFK Med Staff feedback clients to `https://all-website-feedback.vercel.app/api/feedback`.
+- Completed: Updated active repo instructions and documentation so `TroyFowlerMD/website-feedback` is the sole GitHub Issues inbox for website feedback, IT requests, and website suggestions.
+- Completed: Renamed the active workflow guide to `docs/website-feedback-github-issues.md` and recorded the superseding architectural decision.
+- In progress: The protected JFK Med Staff client requires the matching direct GitHub update and production verification before the obsolete repository can be deleted.
+- Blockers/notes: The schedule-directory check currently fails because the production Psych Scheduler source has moved to `protected-schedules` and the legacy local `psych-scheduler.html` no longer contains the generated directory markers; this task did not alter directory data.
+
 ### 2026-05-19 - Codex desktop - Repository maintenance sweep
 - Completed: Fast-forward pulled `origin/main` and confirmed the working tree was clean before maintenance logging.
 - Completed: Smoke-checked the live Psych Scheduler URL; it returned HTTP 200 with expected schedule/provider text.

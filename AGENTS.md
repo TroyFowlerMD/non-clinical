@@ -32,7 +32,7 @@
 - docs/psych-scheduler-column-toggles-backup-call-buttons-auto-deselect.md
 - docs/psych-scheduler-feedback-apps-script-contract.md
 - docs/psych-scheduler-feedback-logging-added.md
-- docs/non-clinical-feedback-github-issues.md
+- docs/website-feedback-github-issues.md
 - docs/psych-scheduler-it-request-inbox.md
 - docs/psych-scheduler-post-call-staffing-bug-fixed.md
 - docs/reverted-post-call-classification-fix.md
@@ -76,7 +76,7 @@ Append entries to WORKLOG.md using this shape:
 ## Command Aliases
 - If Dr. Fowler says `start`, `#start`, `start <repo>`, or `#start <repo>` while working in this repo, immediately run the Required Startup Routine. Do not simply acknowledge or repeat the command.
 - If Dr. Fowler says `done`, `#done`, `finish`, `shutdown`, `done <repo>`, or `#done <repo>` while working in this repo, immediately run the Required Shutdown Routine. Do not simply acknowledge or repeat the command.
-- If Dr. Fowler says `#IT`, `IT`, `#it`, `check IT`, `scheduler IT`, or asks to check scheduler feedback/requests, immediately read `docs/psych-scheduler-it-request-inbox.md` and `docs/non-clinical-feedback-github-issues.md`, inspect the private GitHub Issues inbox in `TroyFowlerMD/non-clinical-feedback`, report active non-test requests, and propose likely actions before asking for implementation approval.
+- If Dr. Fowler says `#IT`, `IT`, `#it`, `check IT`, `scheduler IT`, or asks to check website feedback, IT requests, suggestions, or scheduler feedback, immediately read `docs/psych-scheduler-it-request-inbox.md` and `docs/website-feedback-github-issues.md`, then inspect the private GitHub Issues inbox in `TroyFowlerMD/website-feedback`. Treat it as the sole GitHub Issues intake repo for all supported sites. Report active non-test requests and a concise action plan. Unless Dr. Fowler explicitly requests review/planning only, continue through implementation, testing, commit, push, production deployment, live verification, issue documentation, and closure when the request and target are clear.
 - In a general or multi-repo chat, if the command names this repo, switch context to this repo before running the routine. If the target repo is ambiguous, ask one concise clarifying question.
 - Treat `#start`, `#done`, and `#IT` as stronger visual command markers, but keep the plain-language variants supported.
 
@@ -108,7 +108,7 @@ Append entries to WORKLOG.md using this shape:
 - If changing visible UI, check mobile-friendly behavior.
 - If live Google Sheet or Apps Script access cannot be verified, state that clearly in WORKLOG.md and the shutdown summary.
 - If live GitHub Issues feedback creation cannot be verified because the private repo, token, or Vercel env vars are missing, state that clearly in WORKLOG.md and the shutdown summary.
-- If Dr. Fowler asks to check Psych Scheduler feedback, IT requests, website requests, or active scheduler requests, or uses the `#IT` command, read `docs/psych-scheduler-it-request-inbox.md` first and use the private GitHub Issues repo `TroyFowlerMD/non-clinical-feedback` as the request inbox.
+- If Dr. Fowler asks to check website feedback, IT requests, website suggestions, Psych Scheduler feedback, or active scheduler requests, or uses the `#IT` command, read `docs/psych-scheduler-it-request-inbox.md` first and use only the private GitHub Issues repo `TroyFowlerMD/website-feedback` as the request inbox.
 - When a scheduler feedback request is completed or triaged, update the GitHub issue labels/comments and close the issue after live verification; do not treat the old Google Sheet `Feedback` tab as the operational inbox.
 - For Psych Scheduler Apps Script work, use `scripts/clasp.cmd` from the repo root so Codex does not depend on Windows PATH finding the global `clasp` shim.
 

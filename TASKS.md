@@ -20,7 +20,7 @@
 - [x] Built `dr-troys-killer-burgers/` as a bilingual static recipe PWA with scaling, generated hero assets/icons/QR code, print/PDF styling, offline caching, install prompt support, Vercel config, and local browser verification.
 - [x] Added a mobile-first `personal/sourdough-workflow.html` single-page sourdough calculator/reference and linked it from the non-clinical hub.
 - [x] Added `dog-whistle-android/` as a native Android APK project with GitHub Actions debug-build automation, then verified a successful GitHub Actions artifact build for sideload testing.
-- [x] Replaced the old Psych/JFK feedback intake code paths with one shared Vercel endpoint and private GitHub Issues workflow, plus updated `#IT`/operator docs to use `TroyFowlerMD/non-clinical-feedback`.
+- [x] Consolidated all supported website feedback and IT-request intake on `TroyFowlerMD/website-feedback`, including Psych Scheduler, JFK Med Staff, and the public experimental Psych page.
 - [x] Aligned `psych-scheduler-experimental.html` with the shared Vercel feedback endpoint so both live Psych pages now submit to the private GitHub Issues inbox.
 - [x] Added one canonical shared schedule-directory source at `data/schedule-directory.json`, generated directory blocks into both apps, added the Psych directory view, and synced the JFK alias HTML files from the canonical Vercel file.
 - [x] Repointed Psych Scheduler and non-clinical hub med-staff entrypoints to `https://non-clinical-lac.vercel.app/`, replaced the old GitHub Pages med-staff page with a forwarder, and added a canonical schedule-route registry.

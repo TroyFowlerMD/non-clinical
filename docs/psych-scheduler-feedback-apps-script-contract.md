@@ -3,7 +3,7 @@
 
 # Psych Scheduler Feedback Apps Script Contract
 
-Historical note: this document describes the retired pre-2026-06-10 feedback path. The live feedback intake now uses `vercel-jfk/api/feedback.js` and the private GitHub Issues repo `TroyFowlerMD/non-clinical-feedback`. Keep this file only as historical reference for older sessions and past deployments.
+Historical note: this document describes the retired pre-2026-06-10 feedback path. The live feedback intake now uses `https://all-website-feedback.vercel.app/api/feedback` and the private GitHub Issues repo `TroyFowlerMD/website-feedback`. Keep this file only as historical reference for older sessions and past deployments.
 
 Current implementation note: the live feedback handler now lives in the clasp-managed shared Apps Script bridge at `apps-script/psych-scheduler-feedback/Code.js`. It logs requests to the `Feedback` tab in `Medical Staff Schedule ANALYSIS SHEET` and still serves `Sheet1` schedule reads. Use this document as the response-contract reference, not as the full source of truth for the deployed script.
 

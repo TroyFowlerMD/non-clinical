@@ -10,8 +10,8 @@ Required Vercel environment variables:
 - `JFK_AUTH_SECRET`: random signing secret for the auth cookie.
 - `JFK_AUTH_COOKIE_DAYS`: cookie lifetime in days. Use `365` for the current
   staff-friendly default.
-- `GITHUB_FEEDBACK_TOKEN`: fine-grained PAT with issue access to `TroyFowlerMD/non-clinical-feedback`.
-- `GITHUB_FEEDBACK_REPO`: repo slug for the private feedback inbox. Default target is `TroyFowlerMD/non-clinical-feedback`.
+- `GITHUB_FEEDBACK_TOKEN`: fine-grained PAT with issue and contents access to `TroyFowlerMD/website-feedback`.
+- `GITHUB_FEEDBACK_REPO`: repo slug for the private feedback inbox. The only supported target is `TroyFowlerMD/website-feedback`.
 - `GITHUB_FEEDBACK_ASSIGNEE`: optional default GitHub username to assign on new feedback issues.
 - `FEEDBACK_ALLOW_LOCALHOST`: optional `1` to allow `http://localhost:3000` during local testing.
 

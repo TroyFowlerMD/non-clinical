@@ -18,7 +18,7 @@ Shared schedule-directory contact data now lives in `data/schedule-directory.jso
 - `docs/psych-scheduler.md`: Canonical migrated Psych Scheduler project page.
 - `docs/psych-scheduler-feedback-logging-added.md`: Historical pre-migration note for the retired Apps Script/FormSubmit feedback path.
 - `docs/psych-scheduler-feedback-apps-script-contract.md`: Historical retired Apps Script feedback contract kept only for reference.
-- `docs/non-clinical-feedback-github-issues.md`: Current private GitHub Issues workflow for shared schedule-app feedback.
+- `docs/website-feedback-github-issues.md`: Current private GitHub Issues workflow for centralized feedback from all supported websites.
 - `docs/psych-scheduler-it-request-inbox.md`: Current `#IT` / scheduler-request triage workflow.
 - `docs/psych-scheduler-column-toggles-backup-call-buttons-auto-deselect.md`: Provider-column and Backup Call column-toggle change log.
 - `docs/excel-drag-and-drop-ingestion-added-to-psych-scheduler.md`: Initial Excel ingestion implementation note.

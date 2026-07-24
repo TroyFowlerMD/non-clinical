@@ -1,21 +1,22 @@
-<!-- last-reviewed: 2026-06-10 -->
+<!-- last-reviewed: 2026-07-24 -->
 <!-- source: codex -->
 
 # Psych Scheduler IT Request Inbox
 
-Psych Scheduler and JFK Med Staff Schedule feedback now lands in the private GitHub repo `TroyFowlerMD/non-clinical-feedback`. The old Google Sheet `Feedback` tab and FormSubmit path are retired as the active request inbox.
+Psych Scheduler and JFK Med Staff Schedule feedback lands in the private GitHub repo `TroyFowlerMD/website-feedback`. This is the sole GitHub Issues intake repo for website feedback, IT requests, and website suggestions from all supported sites. The old `TroyFowlerMD/non-clinical-feedback` repo, Google Sheet `Feedback` tab, and FormSubmit path are retired.
 
 ## Current `#IT` Workflow
 
 When Dr. Fowler says `#IT`, `IT`, `#it`, `check IT`, `scheduler IT`, or asks to check scheduler feedback, website requests, or active scheduler requests:
 
-1. Open/read the private repo `TroyFowlerMD/non-clinical-feedback`.
+1. Open/read the private repo `TroyFowlerMD/website-feedback`.
 2. Treat issues as active when they are open and labeled `status:new`, `status:in-progress`, or `status:waiting`.
 3. Ignore explicit verification or test issues created only for endpoint checks.
 4. Report active requests first with issue number, title, source label, status label, and a short plain-language summary.
 5. Propose a concrete action for each active request: likely affected file/system, whether it is a direct fix or needs clarification, suggested priority, and the next command/action Codex should take.
-6. Do not edit files, deploy, relabel, or close issues until Dr. Fowler approves the proposed action plan or explicitly asks for implementation.
-7. After approved implementation, add a comment with the commit/PR/deployment evidence, update labels as needed, and close the issue only after live verification.
+6. Unless Dr. Fowler explicitly asks for planning/review only, proceed through implementation without waiting for another approval when the request and target are clear.
+7. Test the change, commit and push it, complete the production deployment, verify the live behavior, add implementation/deployment evidence to the originating issue, and close it when resolved.
+8. Ask only when the request, target, material design choice, or required authority is genuinely unclear.
 
 ## Expected `#IT` Response Shape
 
@@ -39,13 +40,12 @@ End with a short "Recommended next action" section. If no active requests exist,
 
 ## Shared Feedback Intake
 
-Both schedule apps now submit to the shared Vercel endpoint at `https://non-clinical-lac.vercel.app/api/feedback`.
+Both schedule apps submit to the central Vercel endpoint at `https://all-website-feedback.vercel.app/api/feedback`.
 
-- Psych Scheduler calls that endpoint cross-origin from GitHub Pages.
-- JFK Med Staff Schedule calls the same endpoint same-origin from Vercel.
+- Psych Scheduler and JFK Med Staff Schedule call that endpoint cross-origin from their current hosts.
 - The endpoint creates one private GitHub issue per accepted submission.
 
-See `docs/non-clinical-feedback-github-issues.md` for the full issue format, labels, protections, and operator workflow.
+See `docs/website-feedback-github-issues.md` for the full issue format, labels, protections, and operator workflow.
 
 ## Apps Script Scope
 

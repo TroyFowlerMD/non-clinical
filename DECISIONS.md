@@ -4,6 +4,12 @@ This file records durable architectural, workflow, safety, and publishing decisi
 
 ---
 
+### 2026-07-24 - Use Website Feedback As The Sole GitHub Issues Inbox
+Context: Website feedback was split between `TroyFowlerMD/non-clinical-feedback` and the newer central `TroyFowlerMD/website-feedback` repo, allowing the protected JFK Med Staff site and older public clients to keep creating issues in the obsolete inbox.
+Decision: Route every supported website's feedback, IT request, and website suggestion to `https://all-website-feedback.vercel.app/api/feedback`, with `TroyFowlerMD/website-feedback` as the sole GitHub Issues inbox. Retire `TroyFowlerMD/non-clinical-feedback`.
+Rationale: One intake endpoint and one issue repository prevents missed tickets, duplicate triage, and conflicting operating instructions.
+Consequences: New site clients must use the central endpoint; `#IT` and equivalent requests must inspect only `TroyFowlerMD/website-feedback`; the older 2026-06-10 shared-inbox decision below is superseded.
+
 ### 2026-07-22 - Build Dr. Troy's Killer Burgers As A Dedicated Static Vercel PWA
 Context: The burger recipe app needs to be installable, offline-capable, printable, bilingual, and deployable separately at the preferred `drtroyskillerburgers` Vercel slug while using the supplied hero artwork.
 Decision: Keep the app in `dr-troys-killer-burgers/` as a dedicated static TypeScript build that outputs `dist/` for Vercel, with generated assets under `assets/generated/`, a relative app-scoped manifest/service worker, and the canonical production URL centralized in recipe code and QR generation.
@@ -32,7 +38,7 @@ Consequences: Future schedule-app work should start by reading the registry, ver
 Context: Before the 2026-06-10 shared feedback migration, Dr. Fowler wanted a short command that made Codex go straight to the then-current Psych Scheduler feedback inbox and propose actions without rediscovering the sheet workflow.
 Decision: At that time, treat `#IT` and plain-language IT variants as command aliases for reading `Medical Staff Schedule ANALYSIS SHEET` > `Feedback`, reporting active non-test rows, and proposing concrete actions before implementation.
 Rationale: A command alias reduces setup friction and keeps scheduler request triage consistent across Codex sessions and workstations.
-Consequences: Historical only. This sheet-based `#IT` workflow was superseded on 2026-06-10 by the private GitHub Issues inbox decision above. Current `#IT` triage should read `docs/psych-scheduler-it-request-inbox.md`, inspect `TroyFowlerMD/non-clinical-feedback`, and wait for approval before editing files or closing issues.
+Consequences: Historical only. This sheet-based `#IT` workflow was superseded on 2026-06-10 and again by the 2026-07-24 central website-feedback decision above. Current `#IT` triage should read `docs/psych-scheduler-it-request-inbox.md` and inspect `TroyFowlerMD/website-feedback`.
 
 ### 2026-05-22 - Distinguish Psych Scheduler Data Sources In The Production Badge
 Context: The production scheduler can load from the live Google Sheet, pasted TSV, or Excel upload, but the existing top data bar could continue showing Google Sheet freshness after manual data replacement.
@@ -44,7 +50,7 @@ Consequences: Future production source-display changes should update the shared 
 Context: Before the 2026-06-10 shared feedback migration, Dr. Fowler wanted future Codex sessions to check active scheduler feedback/IT requests, report them, suggest fixes, and ask clarifying questions when needed.
 Decision: At that time, use the existing `Medical Staff Schedule ANALYSIS SHEET` as the request inbox by adding a separate `Feedback` tab, while leaving schedule reads on `Sheet1`. Keep the Apps Script source in this repo under `apps-script/psych-scheduler-feedback/` and use clasp for future edits/deploys.
 Rationale: This keeps the request workflow tied to the scheduler's existing Google infrastructure without adding a separate backend or changing the schedule-loading path.
-Consequences: Historical only. The sheet-based request inbox was superseded on 2026-06-10 by the shared Vercel-to-private-GitHub-Issues flow. Current scheduler request triage should use `docs/psych-scheduler-it-request-inbox.md` plus `TroyFowlerMD/non-clinical-feedback` as the operational inbox. The Apps Script project still remains relevant for schedule-data reads, so `DRIVE_EXEC_URL` stability and workstation clasp setup guidance still matter for that narrower scope.
+Consequences: Historical only. The sheet-based request inbox was superseded on 2026-06-10 and again by the 2026-07-24 central website-feedback decision. Current scheduler request triage should use `docs/psych-scheduler-it-request-inbox.md` plus `TroyFowlerMD/website-feedback` as the operational inbox. The Apps Script project still remains relevant for schedule-data reads, so `DRIVE_EXEC_URL` stability and workstation clasp setup guidance still matter for that narrower scope.
 
 ### 2026-05-21 - Keep My Schedule Provider Assignments In A Left-Side Block
 Context: My Schedule users can remove and re-add the selected-provider assignment column and individual provider schedule columns. Re-added columns could move to the far right, away from the day/date and selected-provider context.

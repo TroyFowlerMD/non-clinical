@@ -1,15 +1,15 @@
-# Shared Feedback GitHub Issues Workflow
+# Central Website Feedback GitHub Issues Workflow
 
-Feedback intake for both schedule apps now goes to the private GitHub repo `TroyFowlerMD/non-clinical-feedback`.
+All website feedback, IT requests, website suggestions, and equivalent GitHub-directed requests go to the private repo `TroyFowlerMD/website-feedback`. It is the sole GitHub Issues intake repo for every supported site.
 
-Apps using this inbox:
+Current apps using this inbox include:
 
 - `Psych Scheduler`
 - `JFK Med Staff Schedule`
 
 ## How New Feedback Arrives
 
-Both apps submit to the shared Vercel endpoint at `https://non-clinical-lac.vercel.app/api/feedback`.
+Supported sites submit to the central Vercel endpoint at `https://all-website-feedback.vercel.app/api/feedback`.
 
 That endpoint:
 
@@ -79,11 +79,11 @@ Recommended triage flow:
 
 When Dr. Fowler says `#IT`, `IT`, `#it`, `check IT`, `scheduler IT`, or asks to check scheduler feedback:
 
-1. Read the private repo `TroyFowlerMD/non-clinical-feedback`.
+1. Read the private repo `TroyFowlerMD/website-feedback`.
 2. Report active open issues, prioritizing `label:status:new`.
 3. Ignore obvious verification issues only if they are clearly described as tests.
-4. Propose the likely target file/system and next action before implementation.
-5. Do not edit files or close issues until Dr. Fowler approves the plan or explicitly asks for implementation.
+4. Propose the likely target file/system and next action.
+5. Unless Dr. Fowler explicitly requests review/planning only, continue through implementation, testing, commit, push, production deployment, live verification, issue documentation, and closure when the request and target are clear.
 
 ## Runtime Configuration
 
@@ -94,7 +94,11 @@ Vercel env vars required by the shared endpoint:
 - `GITHUB_FEEDBACK_ASSIGNEE` optional
 - `FEEDBACK_ALLOW_LOCALHOST` optional for local-only testing
 
-The current default repo slug in code is `TroyFowlerMD/non-clinical-feedback`.
+The only supported repo slug is `TroyFowlerMD/website-feedback`.
+
+## Retired Repository
+
+`TroyFowlerMD/non-clinical-feedback` is retired. Do not send new requests there, use it as an alternate inbox, or restore it in runtime configuration. Historical issues were consolidated into `TroyFowlerMD/website-feedback`.
 
 ## Retired Paths
 

@@ -7,7 +7,7 @@
 Personal non-clinical scheduling tool for the psych team at JFK ADATC. Pulls the medical staff schedule from a Google Sheet via Apps Script or falls back to Excel TSV paste. Presents psych-only views: daily staffing, backup call risk, PTO evaluator, provider profile switcher (Patil, German, Anderson, Fowler, Carter, Ondreyka, Smith, Cooley), calendar, and date-range filter. Contained in the `TroyFowlerMD/non-clinical` repo alongside other non-clinical personal tools. This repo/hub is linked from the TroyMD personal dashboard.
 
 ## Current Status
-Current deployed production file is `psych-scheduler.html` on `main`. Core v3.1 scheduling features remain intact: live Google Sheets pull, TSV/Excel paste fallback, provider profile switcher, date-range filter, PTO/backup call risk views, mobile nav (hamburger/overlay), XLSX ingestion, theme toggle, and font-size controls. Maintenance layer: sidebar `Send Feedback` now submits to the shared Vercel endpoint at `https://non-clinical-lac.vercel.app/api/feedback`, which creates private issues in `TroyFowlerMD/non-clinical-feedback`.
+Current deployed production file is `psych-scheduler.html` on `main`. Core v3.1 scheduling features remain intact: live Google Sheets pull, TSV/Excel paste fallback, provider profile switcher, date-range filter, PTO/backup call risk views, mobile nav (hamburger/overlay), XLSX ingestion, theme toggle, and font-size controls. Maintenance layer: sidebar `Send Feedback` submits to the central endpoint at `https://all-website-feedback.vercel.app/api/feedback`, which creates private issues in `TroyFowlerMD/website-feedback`.
 
 Shared directory layer: production `psych-scheduler.html` now includes a full Directory view backed by generated data from `data/schedule-directory.json`. The same canonical contact source also feeds the JFK Med Staff Schedule Vercel app, with `scripts/sync-schedule-directory.mjs` regenerating both apps' inline directory blocks and keeping the JFK alias HTML files synced to canonical `vercel-jfk/index.html`.
 
@@ -48,7 +48,7 @@ These surrounding repo/hub updates are still local only and have not been commit
 - **UI:** Single self-contained HTML file. No server, no build tools, no framework, no localStorage (sandboxed-iframe constraint). All state in memory. External dependency: Google Fonts (Inter + JetBrains Mono).
 - **Shared directory source:** `data/schedule-directory.json` is the single editable contact/directory source for Psych Scheduler and JFK Med Staff Schedule. `scripts/sync-schedule-directory.mjs` rewrites generated blocks inside both apps; neither app fetches directory JSON at runtime.
 - **Apps Script bridge:** Deployed Google Apps Script Web App at URL hardcoded as `DRIVE_EXEC_URL` in the HTML. Returns JSON `{headers, rows, sheetName, fetchedAt, rowCount}` for `Sheet1`. Feedback logging to the old `Feedback` tab is retired.
-- **Shared feedback endpoint:** `vercel-jfk/api/feedback.js` accepts Psych Scheduler and JFK Med Staff Schedule feedback, then creates private issues in `TroyFowlerMD/non-clinical-feedback`.
+- **Central feedback endpoint:** `https://all-website-feedback.vercel.app/api/feedback` accepts Psych Scheduler and JFK Med Staff Schedule feedback, then creates private issues in `TroyFowlerMD/website-feedback`.
 - **Google Sheets backend:** Source spreadsheet `Medical Staff Schedule ANALYSIS SHEET`, tab `Sheet1`, columns A-AD. `Sheet1` remains the schedule source. The old `Feedback` tab is no longer the operational request inbox.
 - **Fallback ingestion:** Excel TSV paste via `parseTSVRobust()` (quoted-field, multiline Excel cells).
 
@@ -67,14 +67,14 @@ These surrounding repo/hub updates are still local only and have not been commit
 - No localStorage; all state in memory - sandboxed-iframe constraint. Do not introduce localStorage without replacing the access model.
 - Apps Script CORS resolved by deployment access set to "Anyone" for schedule-data reads - do not change without simultaneously replacing the access model.
 - `DRIVE_EXEC_URL` is hardcoded in the HTML; update it whenever Apps Script is redeployed to a new URL.
-- Feedback submission should use `FEEDBACK_API_URL = 'https://non-clinical-lac.vercel.app/api/feedback'`; do not restore FormSubmit or the old Apps Script feedback POST path as an active intake without an explicit decision update.
+- Feedback submission should use `FEEDBACK_API_URL = 'https://all-website-feedback.vercel.app/api/feedback'`; do not restore FormSubmit, the old Apps Script feedback POST path, or a site-specific GitHub Issues inbox as active intake without an explicit decision update.
 - Preserve `parseTSVRobust()` and `parseAndLoad()` verbatim during surgical patches - these were fragile historically.
 
 ## Open Questions / Decisions Pending
 - **Parser hardening** - ongoing concern for full-sheet variation and stale-data edge cases.
 - **Stale-data badge / data-source polish** - `Live.Sheet1` vs Pasted badge and stale-data timestamp were v3 polish items; confirm current state.
 - **Apps Script redeployment cadence** - no documented policy for when/how to redeploy when Sheet structure changes.
-- **Private feedback repo / Vercel secret verification** - if `TroyFowlerMD/non-clinical-feedback` access or the Vercel feedback env vars are missing, live end-to-end issue creation stays blocked until those external prerequisites are confirmed.
+- **Private feedback repo / Vercel secret verification** - if `TroyFowlerMD/website-feedback` access or the central Vercel feedback env vars are missing, live end-to-end issue creation stays blocked until those external prerequisites are confirmed.
 
 ## Reversals & Lessons
 - **Paste-only to live Google Sheet** - original tool was paste-only; Apps Script Web App added in v2-16. API key alternative rejected to avoid public key exposure in client-side HTML.

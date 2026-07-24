@@ -185,7 +185,7 @@ function githubHeaders(token) {
   return {
     Accept: 'application/vnd.github+json',
     Authorization: `Bearer ${token}`,
-    'User-Agent': 'non-clinical-feedback-bot',
+    'User-Agent': 'website-feedback-service',
     'X-GitHub-Api-Version': '2022-11-28',
     'Content-Type': 'application/json'
   };
@@ -309,7 +309,7 @@ export default async function handler(req, res) {
   }
 
   const token = String(process.env.GITHUB_FEEDBACK_TOKEN || '').trim();
-  const repoSlug = String(process.env.GITHUB_FEEDBACK_REPO || 'TroyFowlerMD/non-clinical-feedback').trim();
+  const repoSlug = String(process.env.GITHUB_FEEDBACK_REPO || 'TroyFowlerMD/website-feedback').trim();
   const assignee = trimField(process.env.GITHUB_FEEDBACK_ASSIGNEE, 80);
   if (!token || !repoSlug) {
     setJson(res, 500, { ok: false, error: 'feedback_not_configured' }, origin);
