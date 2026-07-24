@@ -4,6 +4,11 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 
 ---
 
+### 2026-07-24 - Codex Cloud - Website-feedback issue #22 harmless verification
+- Completed: Added the authorized non-rendered HTML comment for website-feedback issue #22 near the top of the legacy Psych Scheduler forwarder source.
+- In progress: No runtime work remains for this ticket; the protected Psych Scheduler production application remains unchanged.
+- Blockers/notes: This controlled automation verification changes no visible content, data, routing, or deployment configuration. The untracked `.codex-ticket.md` is user-provided intake context and was left untouched.
+
 ### 2026-07-22 - Codex desktop - Dr. Troy's Killer Burgers PWA
 - Completed: Built `dr-troys-killer-burgers/` as a bilingual TypeScript/static recipe PWA with persisted English/Spanish language, scale, custom amount, chile, and print settings; full/half/quarter/custom scaling; selected-chile ingredient rendering; substitution notes; print-only recipe sheets with a locally generated canonical QR code; scoped manifest/service worker; generated WebP/AVIF hero variants and PWA icons from the supplied artwork; and Vercel project configuration.
 - Completed: Verified `npm.cmd run check`, `npm.cmd run verify:browser`, and `npm.cmd audit --audit-level=high`; browser verification covered phone/tablet/desktop screenshots, language persistence, chile persistence, print PDF canonical URL/no-localhost checks, and offline reload.
