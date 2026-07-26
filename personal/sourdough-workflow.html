@@ -1107,6 +1107,7 @@
       <p class="timer-start-note">Start the dough timer after mixing is complete.</p>
       <div class="timer-actions">
         <button class="btn btn-primary" type="button" id="timer-start">Start dough timer</button>
+        <button class="btn" type="button" id="timer-test-alert" hidden>Test locked-phone alert</button>
       </div>
       <p class="timer-permission" id="timer-permission-idle">The app will request notification permission when you start. The timer still works on screen if permission is declined.</p>
     </div>
@@ -1822,11 +1823,13 @@
   var tickHandle = null;
   var alarmHandle = null;
   var audioContext = null;
+  var nativeAlarmStatus = "";
 
   var ui = {
     idle: document.getElementById("timer-idle"),
     running: document.getElementById("timer-running"),
     start: document.getElementById("timer-start"),
+    testAlert: document.getElementById("timer-test-alert"),
     elapsed: document.getElementById("timer-elapsed"),
     next: document.getElementById("timer-next"),
     status: document.getElementById("timer-status"),
@@ -1870,7 +1873,13 @@
     var plugin = nativeAlarmPlugin();
     if (!plugin) return;
     if (state && state.active && state.nextDueAt && !state.foldsComplete && !state.decisionPending) {
-      plugin.schedule({ triggerAt: state.nextDueAt, foldNumber: currentFold() }).catch(function(){});
+      plugin.schedule({ triggerAt: state.nextDueAt, foldNumber: currentFold() }).then(function(){
+        nativeAlarmStatus = "Android locked-phone alert is scheduled.";
+        render();
+      }).catch(function(error){
+        nativeAlarmStatus = (error && error.message) || "Android could not schedule this alert.";
+        render();
+      });
     } else {
       plugin.cancel().catch(function(){});
     }
@@ -1898,7 +1907,7 @@
   function isDue(now){ return state && state.nextDueAt && now >= state.nextDueAt; }
 
   function permissionCopy(){
-    if (nativeAlarmPlugin()) return "Android app: allow Notifications and Alarms & reminders for locked-phone fold alerts.";
+    if (nativeAlarmPlugin()) return nativeAlarmStatus || "Android app: allow Notifications and Alarms & reminders, then use Test locked-phone alert before starting dough.";
     if (!("Notification" in window)) return "This browser does not support notifications; on-screen timing remains available.";
     if (Notification.permission === "granted") return "Notifications are enabled while this page is open. Install the Android app for locked-phone fold alerts.";
     if (Notification.permission === "denied") return "Notifications are blocked in browser settings; on-screen timing remains available.";
@@ -2039,6 +2048,17 @@
     save();
     render();
   }
+  function testNativeAlarm(){
+    var plugin = nativeAlarmPlugin();
+    if (!plugin) return;
+    plugin.test().then(function(){
+      nativeAlarmStatus = "Test alert is scheduled for 15 seconds from now. Lock the phone now.";
+      render();
+    }).catch(function(error){
+      nativeAlarmStatus = (error && error.message) || "Android could not schedule the test alert.";
+      render();
+    });
+  }
   function completeFold(){
     if (!state || !isDue(Date.now())) return;
     stopRepeatingAlarm();
@@ -2117,6 +2137,7 @@
   }
 
   ui.start.addEventListener("click",startTimer);
+  ui.testAlert.addEventListener("click",testNativeAlarm);
   ui.foldComplete.addEventListener("click",completeFold);
   ui.snooze.addEventListener("click",snooze);
   ui.fifth.addEventListener("click",scheduleFifth);
@@ -2127,6 +2148,7 @@
   document.addEventListener("visibilitychange",function(){ if (!document.hidden) { unlockAudio(); render(); } });
 
   state = load();
+  ui.testAlert.hidden = !nativeAlarmPlugin();
   render();
   tickHandle = setInterval(render,1000);
 })();
