@@ -4,11 +4,6 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 
 ---
 
-### 2026-07-26 - Codex desktop - Sourdough shared feedback inbox
-- Completed: Added matching top and bottom `Feedback / IT Request` controls to `personal/sourdough-workflow.html`, with a mobile-friendly request modal, optional compressed PNG/JPG/WebP screenshots, and failure-safe typed-message behavior.
-- Completed: Registered `sourdough-workbench` with the shared `all-website-feedback` endpoint so requests create labeled issues in the private `TroyFowlerMD/website-feedback` inbox; authorized tickets route back to `TroyFowlerMD/non-clinical` and the public Sourdough GitHub Pages URL.
-- Blockers/notes: The feedback workflow's `CODEX_REPO_TOKEN` must include `TroyFowlerMD/non-clinical` before future automated ticket fixes can check out and publish that repository. Local syntax and endpoint-contract checks passed; local rendered-browser access was blocked by the browser URL policy.
-
 ### 2026-07-22 - Codex desktop - Dr. Troy's Killer Burgers PWA
 - Completed: Built `dr-troys-killer-burgers/` as a bilingual TypeScript/static recipe PWA with persisted English/Spanish language, scale, custom amount, chile, and print settings; full/half/quarter/custom scaling; selected-chile ingredient rendering; substitution notes; print-only recipe sheets with a locally generated canonical QR code; scoped manifest/service worker; generated WebP/AVIF hero variants and PWA icons from the supplied artwork; and Vercel project configuration.
 - Completed: Verified `npm.cmd run check`, `npm.cmd run verify:browser`, and `npm.cmd audit --audit-level=high`; browser verification covered phone/tablet/desktop screenshots, language persistence, chile persistence, print PDF canonical URL/no-localhost checks, and offline reload.
