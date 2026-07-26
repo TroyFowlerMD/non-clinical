@@ -777,6 +777,24 @@
   .print-choice .pc-title{font-weight:600;font-size:.95rem;color:var(--ink);}
   .print-choice .pc-desc{font-size:.8rem;color:var(--muted);}
   .modal-foot{display:flex;justify-content:flex-end;margin-top:6px;}
+  .feedback-modal{max-width:500px;}
+  .feedback-form{display:grid;gap:13px;}
+  .feedback-form label{display:grid;gap:5px;font-size:.86rem;font-weight:600;color:var(--ink);}
+  .feedback-form input,.feedback-form textarea{
+    width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);
+    border-radius:var(--radius-sm);padding:10px 11px;
+  }
+  .feedback-form textarea{min-height:112px;resize:vertical;line-height:1.45;}
+  .feedback-form input:focus,.feedback-form textarea:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .feedback-help{font-size:.78rem;color:var(--muted);font-weight:400;line-height:1.4;}
+  .feedback-files{display:grid;gap:7px;}
+  .feedback-file{display:flex;align-items:center;gap:8px;padding:7px 9px;background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-sm);font-size:.8rem;}
+  .feedback-file img{width:36px;height:28px;object-fit:cover;border-radius:3px;}
+  .feedback-file span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
+  .feedback-file button{font:inherit;color:var(--accent-ink);background:none;border:0;padding:4px;cursor:pointer;}
+  .feedback-msg{min-height:1.25em;margin:0;font-size:.84rem;line-height:1.4;}
+  .feedback-msg.error{color:#A43A2A;}.feedback-msg.success{color:#27713F;}.feedback-msg.warning{color:#805A00;}
+  .feedback-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:2px;}
 
   footer.colophon{
     margin-top:30px;
@@ -876,6 +894,10 @@
     <button class="btn" type="button" data-print-open>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
       Print
+    </button>
+    <button class="btn" type="button" data-feedback-open>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7A8.38 8.38 0 0 1 4 11.5a8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z"/></svg>
+      Feedback / IT Request
     </button>
     <span class="util-spacer"></span>
     <button class="btn icon-only" type="button" data-theme-toggle aria-label="Toggle dark mode" title="Toggle dark mode">
@@ -1286,6 +1308,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
       Print
     </button>
+    <button class="btn" type="button" data-feedback-open>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7A8.38 8.38 0 0 1 4 11.5a8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z"/></svg>
+      Feedback / IT Request
+    </button>
   </div>
 
   <footer class="colophon">
@@ -1293,6 +1319,33 @@
     Volumes are approximate — weigh your ingredients for repeatable results.
   </footer>
 
+</div>
+
+<!-- ===== Feedback / IT request modal ===== -->
+<div class="modal-backdrop" id="feedback-modal" role="dialog" aria-modal="true" aria-labelledby="feedback-modal-title" aria-hidden="true">
+  <div class="modal feedback-modal">
+    <h2 id="feedback-modal-title">Feedback / IT Request</h2>
+    <p class="modal-sub">Send a request to the shared TroyMD website-feedback inbox.</p>
+    <form class="feedback-form" id="feedback-form">
+      <label>Name
+        <input id="feedback-name" name="name" autocomplete="name" required maxlength="120">
+      </label>
+      <label>Request or feedback
+        <textarea id="feedback-message" name="message" required maxlength="6000" placeholder="What would you like changed or fixed?"></textarea>
+      </label>
+      <label>Screenshot (optional)
+        <input id="feedback-files" type="file" accept="image/png,image/jpeg,image/webp" multiple>
+        <span class="feedback-help">PNG, JPG, or WebP; up to three screenshots. Please do not include passwords or payment details.</span>
+      </label>
+      <div class="feedback-files" id="feedback-attachment-list" aria-live="polite"></div>
+      <p class="feedback-msg" id="feedback-status" role="status"></p>
+      <input id="feedback-company" name="company" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+      <div class="feedback-actions">
+        <button class="btn" type="button" data-feedback-close>Cancel</button>
+        <button class="btn btn-primary" id="feedback-submit" type="submit">Send request</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- ===== Print modal ===== -->
@@ -1623,6 +1676,116 @@
         setTimeout(restore, 300);
       }, 60);
     });
+  });
+
+  /* ---------- Feedback / IT request ---------- */
+  var FEEDBACK_API_URL = "https://all-website-feedback.vercel.app/api/feedback";
+  var feedbackAttachments = [];
+  var feedbackLastFocused = null;
+  var FEEDBACK_MAX_ATTACHMENTS = 3;
+  var FEEDBACK_MAX_BYTES = 1500000;
+
+  function feedbackMessage(kind, message){
+    var status = document.getElementById("feedback-status");
+    status.className = "feedback-msg" + (kind ? " " + kind : "");
+    status.textContent = message || "";
+  }
+  function feedbackDataUrl(file){
+    return new Promise(function(resolve, reject){
+      var reader = new FileReader();
+      reader.onload = function(){ resolve(String(reader.result || "")); };
+      reader.onerror = function(){ reject(new Error("read_failed")); };
+      reader.readAsDataURL(file);
+    });
+  }
+  function compressFeedbackImage(file){
+    return new Promise(function(resolve, reject){
+      var url = URL.createObjectURL(file), image = new Image();
+      image.onload = function(){
+        try {
+          var scale = Math.min(1, 1600 / Math.max(image.width, image.height));
+          var canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, Math.round(image.width * scale));
+          canvas.height = Math.max(1, Math.round(image.height * scale));
+          canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob(function(blob){
+            URL.revokeObjectURL(url);
+            if(!blob){ reject(new Error("compress_failed")); return; }
+            resolve(new File([blob], (file.name || "screenshot").replace(/\.[^.]+$/, "") + ".jpg", {type:"image/jpeg"}));
+          }, "image/jpeg", .82);
+        } catch(error) { URL.revokeObjectURL(url); reject(error); }
+      };
+      image.onerror = function(){ URL.revokeObjectURL(url); reject(new Error("invalid_image")); };
+      image.src = url;
+    });
+  }
+  function prepareFeedbackAttachment(file){
+    if(!file || ["image/png", "image/jpeg", "image/webp"].indexOf(file.type) < 0) return Promise.reject(new Error("unsupported_type"));
+    var prepared = file.size > FEEDBACK_MAX_BYTES ? compressFeedbackImage(file) : Promise.resolve(file);
+    return prepared.then(function(image){
+      if(image.size > FEEDBACK_MAX_BYTES) throw new Error("too_large");
+      return feedbackDataUrl(image).then(function(dataUrl){ return {name:image.name || "screenshot", type:image.type, data:dataUrl.split(",")[1] || ""}; });
+    });
+  }
+  function renderFeedbackAttachments(){
+    var list = document.getElementById("feedback-attachment-list");
+    list.innerHTML = "";
+    feedbackAttachments.forEach(function(attachment, index){
+      var row = document.createElement("div"), image = document.createElement("img"), name = document.createElement("span"), remove = document.createElement("button");
+      row.className = "feedback-file";
+      image.src = "data:" + attachment.type + ";base64," + attachment.data;
+      image.alt = "Screenshot " + (index + 1);
+      name.textContent = attachment.name;
+      remove.type = "button"; remove.textContent = "Remove";
+      remove.onclick = function(){ feedbackAttachments.splice(index, 1); renderFeedbackAttachments(); };
+      row.append(image, name, remove); list.appendChild(row);
+    });
+  }
+  function addFeedbackFiles(files){
+    Array.prototype.slice.call(files || []).reduce(function(sequence, file){
+      return sequence.then(function(){
+        if(feedbackAttachments.length >= FEEDBACK_MAX_ATTACHMENTS){ feedbackMessage("error", "You can add up to 3 screenshots."); return; }
+        return prepareFeedbackAttachment(file).then(function(attachment){ feedbackAttachments.push(attachment); }).catch(function(error){
+          feedbackMessage("error", error.message === "unsupported_type" ? "Use a PNG, JPG, or WebP image." : "That screenshot is too large to attach.");
+        });
+      });
+    }, Promise.resolve()).then(renderFeedbackAttachments);
+  }
+  function openFeedbackModal(){
+    var modal = document.getElementById("feedback-modal");
+    feedbackLastFocused = document.activeElement;
+    feedbackMessage("", ""); renderFeedbackAttachments();
+    modal.classList.add("open"); modal.setAttribute("aria-hidden", "false");
+    document.getElementById("feedback-name").focus();
+  }
+  function closeFeedbackModal(){
+    var modal = document.getElementById("feedback-modal");
+    modal.classList.remove("open"); modal.setAttribute("aria-hidden", "true");
+    if(feedbackLastFocused) feedbackLastFocused.focus();
+  }
+  document.querySelectorAll("[data-feedback-open]").forEach(function(button){ button.addEventListener("click", openFeedbackModal); });
+  document.querySelectorAll("[data-feedback-close]").forEach(function(button){ button.addEventListener("click", closeFeedbackModal); });
+  document.getElementById("feedback-modal").addEventListener("click", function(event){ if(event.target === this) closeFeedbackModal(); });
+  document.getElementById("feedback-files").addEventListener("change", function(){ addFeedbackFiles(this.files); this.value = ""; });
+  document.addEventListener("keydown", function(event){ if(event.key === "Escape" && document.getElementById("feedback-modal").classList.contains("open")) closeFeedbackModal(); });
+  document.getElementById("feedback-form").addEventListener("submit", function(event){
+    event.preventDefault();
+    var name = document.getElementById("feedback-name").value.trim();
+    var message = document.getElementById("feedback-message").value.trim();
+    var button = document.getElementById("feedback-submit");
+    if(!name || !message){ feedbackMessage("error", "Please add your name and request."); return; }
+    button.disabled = true; button.textContent = "Sending..."; feedbackMessage("", "");
+    fetch(FEEDBACK_API_URL, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({
+      appId:"sourdough-workbench", name:name, message:message, attachments:feedbackAttachments,
+      pageTitle:document.title || "", pageUrl:window.location.href, source:"sourdough-workbench-feedback-modal",
+      userAgent:navigator.userAgent || "", submissionId:(window.crypto && crypto.randomUUID ? crypto.randomUUID() : "fb-" + Date.now()),
+      company:document.getElementById("feedback-company").value.trim()
+    })}).then(function(response){ return response.json().then(function(data){ if(!response.ok || data.ok === false) throw new Error(data.error || "submit_failed"); return data; }); }).then(function(result){
+      button.disabled = false; button.textContent = "Send request";
+      if(result.attachmentWarning){ feedbackMessage("warning", "Your request was submitted, but the screenshot could not be attached."); return; }
+      document.getElementById("feedback-form").reset(); feedbackAttachments.length = 0; renderFeedbackAttachments();
+      feedbackMessage("success", "Thanks — your feedback / IT request was submitted.");
+    }).catch(function(){ button.disabled = false; button.textContent = "Send request"; feedbackMessage("error", "Sorry — I could not submit this request right now. Please try again."); });
   });
 
   /* ---------- Init ---------- */
