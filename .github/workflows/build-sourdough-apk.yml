@@ -84,7 +84,7 @@ jobs:
           EOF_MAIN
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           sed -i '/<application/i\    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />\n    <uses-permission android:name="android.permission.INTERNET" />' "$MANIFEST"
-          sed -i '/<application/a\        <receiver android:name=".SourdoughAlarmReceiver" android:exported="false" />' "$MANIFEST"
+          sed -i '/<\/application>/i\        <receiver android:name=".SourdoughAlarmReceiver" android:exported="false" />' "$MANIFEST"
 
       - name: Write local.properties
         working-directory: sourdough-android/android
