@@ -95,6 +95,9 @@
     font-size:.98rem;
     max-width:46ch;
   }
+  .timer-overview{display:flex;gap:10px;align-items:center;margin:14px 0 2px;padding:10px 12px;background:var(--accent-soft);border:1px solid var(--line);border-radius:var(--radius-sm);font-size:.82rem;}
+  .timer-overview strong{font-family:var(--serif);font-size:1rem;white-space:nowrap;}
+  .timer-overview span{color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
   /* ---------- Utility row ---------- */
   .utility{
@@ -583,6 +586,7 @@
   .timer-edit-row{display:flex;gap:8px;align-items:stretch;}
   .timer-edit-row .num-input{font-size:.9rem;}
   .timer-permission{color:var(--muted);font-size:.76rem;margin:10px 0 0;line-height:1.45;}
+  .step-timer{display:inline-flex;align-items:center;margin-left:auto;border-radius:999px;background:var(--accent-soft);color:var(--accent-ink);font-size:.76rem;font-weight:700;padding:5px 8px;white-space:nowrap;}
 
   details.step{
     background:var(--surface);
@@ -819,6 +823,10 @@
     .timer-readouts{grid-template-columns:1fr;}
     .timer-actions .btn{flex:1 1 145px;}
     .timer-edit-row{flex-direction:column;}
+    .utility{flex-wrap:nowrap;gap:6px;}
+    .utility .btn:not(.icon-only){font-size:0;padding:0;width:var(--tap);flex:0 0 var(--tap);justify-content:center;}
+    .utility .btn svg{width:19px;height:19px;}
+    .utility .util-spacer{display:none;}
   }
 
   @media (prefers-reduced-motion:reduce){
@@ -877,9 +885,12 @@
     </svg>
     <div class="titleblock">
       <h1>Sourdough Workbench</h1>
-      <p class="sub">A baker's-math calculator and step-by-step reference for naturally leavened bread.</p>
     </div>
   </header>
+  <div class="timer-overview" id="timer-overview" hidden aria-live="polite">
+    <strong id="timer-overview-elapsed">0:00:00</strong>
+    <span id="timer-overview-next">Dough timer</span>
+  </div>
 
   <!-- ===== Utility row (top) ===== -->
   <div class="utility" role="toolbar" aria-label="Page actions">
@@ -1084,19 +1095,16 @@
 
   <!-- ===== Directions ===== -->
   <h2 class="section-title">Directions</h2>
-  <p class="section-sub">Five phases, from mix to slice. Tap a card to expand the full method.</p>
 
   <section class="card dough-timer" id="dough-timer" aria-labelledby="timer-title">
     <div class="timer-head">
       <div class="timer-head-copy">
         <h3 id="timer-title">Dough Clock</h3>
-        <p>Tracks total fermentation time and spaces each fold from when the previous fold is completed.</p>
       </div>
-      <span class="timer-badge" id="timer-badge">Ready</span>
     </div>
 
     <div id="timer-idle">
-      <p class="timer-start-note"><strong>Start this timer as soon as mixing is complete</strong> and no dry flour remains. Your first stretch-and-fold reminder will be in <span class="num">60 min</span>.</p>
+      <p class="timer-start-note">Start the dough timer after mixing is complete.</p>
       <div class="timer-actions">
         <button class="btn btn-primary" type="button" id="timer-start">Start dough timer</button>
       </div>
@@ -1173,6 +1181,7 @@
       <div class="step-titlerow">
         <span class="step-index">2</span>
         <span class="step-title">Strengthen the Dough</span>
+        <span class="step-timer" data-timer-step="2" hidden></span>
         <svg class="step-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
       <ul class="summary-list">
@@ -1195,6 +1204,7 @@
       <div class="step-titlerow">
         <span class="step-index">3</span>
         <span class="step-title">Finish Bulk Fermentation</span>
+        <span class="step-timer" data-timer-step="3" hidden></span>
         <svg class="step-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
       <ul class="summary-list">
@@ -1263,7 +1273,6 @@
 
   <!-- ===== Disclosures ===== -->
   <h2 class="section-title">Reference &amp; Assumptions</h2>
-  <p class="section-sub">The thinking behind the numbers.</p>
 
   <details class="disc" data-dir-card>
     <summary><svg class="disc-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>About hydration</summary>
@@ -1315,7 +1324,7 @@
   </div>
 
   <footer class="colophon">
-    Sourdough Workbench · A reference for the experienced baker.<br>
+    Sourdough Workbench · A reference for bakers of all levels.<br>
     Volumes are approximate — weigh your ingredients for repeatable results.
   </footer>
 
@@ -1815,7 +1824,6 @@
   var audioContext = null;
 
   var ui = {
-    badge: document.getElementById("timer-badge"),
     idle: document.getElementById("timer-idle"),
     running: document.getElementById("timer-running"),
     start: document.getElementById("timer-start"),
@@ -1834,7 +1842,11 @@
     startTime: document.getElementById("timer-start-time"),
     saveStart: document.getElementById("timer-save-start"),
     permissionIdle: document.getElementById("timer-permission-idle"),
-    permissionRunning: document.getElementById("timer-permission-running")
+    permissionRunning: document.getElementById("timer-permission-running"),
+    overview: document.getElementById("timer-overview"),
+    overviewElapsed: document.getElementById("timer-overview-elapsed"),
+    overviewNext: document.getElementById("timer-overview-next"),
+    stepTimers: document.querySelectorAll("[data-timer-step]")
   };
 
   function load(){
@@ -1947,7 +1959,8 @@
     var active = !!(state && state.active);
     ui.idle.hidden = active;
     ui.running.hidden = !active;
-    ui.badge.textContent = active ? (state.foldsComplete ? "Bulk" : "Running") : "Ready";
+    ui.overview.hidden = !active;
+    ui.stepTimers.forEach(function(step){ step.hidden = true; });
     ui.permissionIdle.textContent = permissionCopy();
     ui.permissionRunning.textContent = permissionCopy();
     if (!active) { stopRepeatingAlarm(); return; }
@@ -1961,12 +1974,14 @@
       ui.next.textContent = "Continue bulk fermentation";
       ui.status.innerHTML = "Folds are complete. Continue bulk until the dough is <span class=\"cue\">smoother, slightly domed, bubbly at the edges, and 30–50% larger</span>.";
       stopRepeatingAlarm();
+      mirrorTimerDisplays(3);
       return;
     }
     if (state.decisionPending) {
       ui.next.textContent = "Choose 5th fold or continue bulk";
       ui.status.textContent = "Set 4 is complete. The dough clock is still running while you choose the next step.";
       stopRepeatingAlarm();
+      mirrorTimerDisplays(2);
       return;
     }
 
@@ -1988,6 +2003,18 @@
         : "Cover the dough. Fold set " + fold + " is scheduled 30 minutes after the previous set was completed.";
       stopRepeatingAlarm();
     }
+    mirrorTimerDisplays(2);
+  }
+
+  function mirrorTimerDisplays(stepNumber){
+    ui.overviewElapsed.textContent = ui.elapsed.textContent;
+    ui.overviewNext.textContent = ui.next.textContent;
+    ui.stepTimers.forEach(function(step){
+      if (Number(step.getAttribute("data-timer-step")) === stepNumber) {
+        step.hidden = false;
+        step.textContent = ui.next.textContent;
+      }
+    });
   }
 
   async function startTimer(){
