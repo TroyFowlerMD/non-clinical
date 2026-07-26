@@ -7,8 +7,8 @@ import android.content.Intent;
 import android.os.Build;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
+import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
-import com.getcapacitor.annotation.PluginMethod;
 
 @CapacitorPlugin(name = "SourdoughAlarm")
 public class SourdoughAlarmPlugin extends Plugin {
