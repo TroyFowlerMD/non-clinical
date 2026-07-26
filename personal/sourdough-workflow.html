@@ -1861,6 +1861,19 @@
       if (state) localStorage.setItem(TIMER_KEY, JSON.stringify(state));
       else localStorage.removeItem(TIMER_KEY);
     } catch(e){}
+    syncNativeAlarm();
+  }
+  function nativeAlarmPlugin(){
+    return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SourdoughAlarm;
+  }
+  function syncNativeAlarm(){
+    var plugin = nativeAlarmPlugin();
+    if (!plugin) return;
+    if (state && state.active && state.nextDueAt && !state.foldsComplete && !state.decisionPending) {
+      plugin.schedule({ triggerAt: state.nextDueAt, foldNumber: currentFold() }).catch(function(){});
+    } else {
+      plugin.cancel().catch(function(){});
+    }
   }
   function pad(n){ return String(n).padStart(2,"0"); }
   function duration(ms){
@@ -1885,8 +1898,9 @@
   function isDue(now){ return state && state.nextDueAt && now >= state.nextDueAt; }
 
   function permissionCopy(){
+    if (nativeAlarmPlugin()) return "Android app: allow Notifications and Alarms & reminders for locked-phone fold alerts.";
     if (!("Notification" in window)) return "This browser does not support notifications; on-screen timing remains available.";
-    if (Notification.permission === "granted") return "Notifications are enabled. Reliable screen-off alarms will be added in the Android version.";
+    if (Notification.permission === "granted") return "Notifications are enabled while this page is open. Install the Android app for locked-phone fold alerts.";
     if (Notification.permission === "denied") return "Notifications are blocked in browser settings; on-screen timing remains available.";
     return "Notification permission has not been granted; on-screen timing remains available.";
   }

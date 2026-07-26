@@ -1,0 +1,109 @@
+name: Build Sourdough Workbench APK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'personal/sourdough-workflow.html'
+      - 'personal/sourdough-manifest.json'
+      - 'personal/sourdough-sw.js'
+      - 'personal/sourdough-icon-192.png'
+      - 'personal/sourdough-icon-512.png'
+      - 'sourdough-android/**'
+      - '.github/workflows/build-sourdough-apk.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build native alarm debug APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
+
+      - name: Sync the Sourdough app into the Android wrapper
+        working-directory: sourdough-android
+        run: |
+          mkdir -p www
+          cp ../personal/sourdough-workflow.html www/index.html
+          cp ../personal/sourdough-manifest.json www/sourdough-manifest.json
+          cp ../personal/sourdough-sw.js www/sourdough-sw.js
+          cp ../personal/sourdough-icon-192.png www/sourdough-icon-192.png
+          cp ../personal/sourdough-icon-512.png www/sourdough-icon-512.png
+          sed -i 's|/non-clinical/personal/sourdough-manifest.json|sourdough-manifest.json|g; s|/non-clinical/personal/sourdough-icon-192.png|sourdough-icon-192.png|g; s|/non-clinical/personal/sourdough-sw.js|sourdough-sw.js|g; s|/non-clinical/personal/sourdough-workflow.html|index.html|g' www/index.html
+
+      - name: Install Capacitor dependencies
+        working-directory: sourdough-android
+        run: npm install --no-audit --no-fund
+
+      - name: Add and sync the Android platform
+        working-directory: sourdough-android
+        run: |
+          if [ ! -d android ]; then
+            npx cap add android
+          else
+            npx cap sync android
+          fi
+
+      - name: Add native locked-phone alarm support
+        working-directory: sourdough-android
+        run: |
+          APP_DIR="android/app/src/main/java/com/troyfowlermd/sourdoughworkbench"
+          mkdir -p "$APP_DIR"
+          cp native/SourdoughAlarmPlugin.java "$APP_DIR/"
+          cp native/SourdoughAlarmReceiver.java "$APP_DIR/"
+          cat > "$APP_DIR/MainActivity.java" <<'EOF_MAIN'
+          package com.troyfowlermd.sourdoughworkbench;
+
+          import android.os.Bundle;
+          import com.getcapacitor.BridgeActivity;
+
+          public class MainActivity extends BridgeActivity {
+            @Override public void onCreate(Bundle savedInstanceState) {
+              registerPlugin(SourdoughAlarmPlugin.class);
+              super.onCreate(savedInstanceState);
+            }
+          }
+          EOF_MAIN
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          sed -i '/<application/i\    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />\n    <uses-permission android:name="android.permission.INTERNET" />' "$MANIFEST"
+          sed -i '/<application/a\        <receiver android:name=".SourdoughAlarmReceiver" android:exported="false" />' "$MANIFEST"
+
+      - name: Write local.properties
+        working-directory: sourdough-android/android
+        run: echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+
+      - name: Build debug APK
+        working-directory: sourdough-android/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Package APK artifact
+        run: |
+          mkdir -p dist
+          cp sourdough-android/android/app/build/outputs/apk/debug/app-debug.apk dist/sourdough-workbench-debug.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sourdough-workbench-apk
+          path: dist/sourdough-workbench-debug.apk
+          retention-days: 90
