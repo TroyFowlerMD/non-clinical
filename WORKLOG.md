@@ -227,3 +227,8 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 - Completed: Reconciled the ticket against the canonical schedule-route registry and confirmed that this repository's `psych-scheduler.html` is only a legacy forwarder to the protected production scheduler.
 - In progress: Issue #23 requires a narrow production-source change: soften the daily-schedule button blue and render Resident/Fellow titles in parentheses beside names.
 - Blockers/notes: The active source is owned by the separate `TroyFowlerMD/protected-schedules` repository, which is not present in this workspace. The non-clinical experimental page is not the production target and was intentionally left unchanged. Live-host verification was also unavailable because DNS resolution for the protected Vercel host failed in this environment.
+
+### 2026-07-26 - Codex Cloud - Website-feedback issue #24 Sourdough Workbench reconciliation
+- Completed: Reconciled the ticket against `personal/sourdough-workflow.html`, its scoped service worker, and recent Sourdough commits. The persistent dough timer, timer restoration, PWA registration, notification permission request, and service-worker notification click handling are already present.
+- In progress: No implementation change was made.
+- Blockers/notes: The supplied ticket contains no attached screenshot, so the red-circled text, handwritten replacement text, and blue-circled one-row area cannot be identified safely. A static browser PWA cannot guarantee a scheduled alert once its browser/app process is terminated or the device locks; that requires a push/scheduled-notification backend or native platform capability. Static JavaScript parsing passed for the page and service worker.
