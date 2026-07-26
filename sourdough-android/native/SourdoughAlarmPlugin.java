@@ -32,7 +32,7 @@ public class SourdoughAlarmPlugin extends Plugin {
       alarms.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pending);
       call.resolve();
     } catch (SecurityException exception) {
-      call.reject("Android could not schedule the alarm. Allow Alarms & reminders, then start the timer again.", exception);
+      call.reject("Android could not schedule the alarm. Allow Alarms & reminders, then start the timer again.");
     }
   }
 
