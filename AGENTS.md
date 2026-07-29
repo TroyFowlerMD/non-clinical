@@ -140,3 +140,50 @@ Reusable Codex prompt templates live in the portfolio hub, not in this repo:
 - Android widget prompt: https://github.com/TroyFowlerMD/my-dashboard/blob/master/templates/codex/android-widget-prompt.md
 - Codex session opener: https://github.com/TroyFowlerMD/my-dashboard/blob/master/templates/codex/codex-session-openers.md
 - Cache refinement prompt: https://github.com/TroyFowlerMD/my-dashboard/blob/master/templates/codex/cache-refinement-prompt.md
+
+## Standing Agent Policy Bootstrap (Deduplicated)
+
+> Single source of truth for standing AI-agent behavior in this repo. For project context and documentation inventory, see README.md.
+
+### Hard rules
+- Never merge to the default branch without a green CI run on the working branch.
+- Keep diffs minimal. No version bumps, no dependency upgrades, and no refactors outside the task scope unless explicitly requested.
+- Use Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`, `ci:`).
+- Match existing code style in touched files.
+- If introducing Kotlin to a Java module, ensure `kotlinOptions { jvmTarget }` matches the existing Java `compileOptions` target.
+- If a task requires touching a file listed under "Protected files," stop and ask for explicit confirmation before editing it.
+
+### Protected files (do not modify unless explicitly requested)
+- `psych-scheduler.html`
+- `five-crowns.html`
+- `manifest.json`
+- `android-build/package.json` (especially `scripts` and dependency pins)
+- `android-build/capacitor.config.json`
+- `apps-script/psych-scheduler-feedback/appsscript.json`
+- `.github/workflows/build-apk.yml`
+- `.github/workflows/build-psych-apk.yml`
+
+### CI workflows
+- `.github/workflows/build-apk.yml` - "Build Five Crowns APK" - triggers: `push` to `main` (path-filtered) and `workflow_dispatch`.
+- `.github/workflows/build-psych-apk.yml` - "Build Psych Scheduler APK" - triggers: `push` to `main` (path-filtered) and `workflow_dispatch`.
+- Both workflows must be green before merge when the diff touches their triggered paths.
+
+### Branch and PR conventions
+- See existing section "Codex Cloud Publish Preference" for baseline PR activation workflow.
+- Agent-specific additions: branch prefix `codex/`, open as DRAFT until CI is green, and include a link to the relevant CI run in the PR description.
+- One logical change per PR.
+- PR structure: see `.github/PULL_REQUEST_TEMPLATE.md`.
+
+### Toolchain
+- Node.js 20 in CI (`actions/setup-node@v4` with `node-version: '20'`).
+- JDK 21 in CI (`actions/setup-java@v4`, Temurin).
+- Android SDK packages in CI: platform-tools, `platforms;android-34`, `build-tools;34.0.0`.
+- Capacitor Android toolchain pinned in `android-build/package.json` (`@capacitor/android`, `@capacitor/cli`, `@capacitor/core` at `6.1.2`).
+
+### Definition of done
+A task is done only when all apply:
+- [ ] CI workflow(s) pass green on the working branch
+- [ ] Diff touches only files required by the task
+- [ ] No changes to protected files (or explicit confirmation was given)
+- [ ] Commits follow Conventional Commits
+- [ ] PR description summarizes what changed and links the CI run
