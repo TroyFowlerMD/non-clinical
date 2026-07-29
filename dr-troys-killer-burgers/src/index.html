@@ -18,6 +18,7 @@
     <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
     <link rel="preload" as="image" href="assets/hero-1280.webp" imagesrcset="assets/hero-640.webp 640w, assets/hero-960.webp 960w, assets/hero-1280.webp 1280w" imagesizes="100vw">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="overrides.css">
     <title>Dr. Troy's Killer Burger Patties</title>
   </head>
   <body>
@@ -69,10 +70,10 @@
             </label>
           </div>
 
-          <div class="control-group">
+          <div class="control-group" hidden aria-hidden="true">
             <label>
               <span class="control-label" data-ui="chileLabel">Chile</span>
-              <select data-field="chile">
+              <select data-field="chile" tabindex="-1">
                 <option value="canned">Canned mild green chiles</option>
                 <option value="fresh">Fresh mild green peppers</option>
                 <option value="jalapeno">Jalapeño, smaller amount</option>
@@ -110,7 +111,7 @@
             <span data-ui="summaryYieldLabel">Yield</span>
             <strong data-summary-yield></strong>
           </div>
-          <div>
+          <div hidden aria-hidden="true">
             <span data-ui="summaryChileLabel">Chile</span>
             <strong data-summary-chile></strong>
           </div>
@@ -133,5 +134,6 @@
 
     <div id="print-root" class="print-only" aria-hidden="true"></div>
     <script type="module" src="app.js"></script>
+    <script type="module" src="overrides.js"></script>
   </body>
 </html>
