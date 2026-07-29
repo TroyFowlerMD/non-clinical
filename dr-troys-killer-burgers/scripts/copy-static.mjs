@@ -9,7 +9,14 @@ async function copyFile(from, to) {
   await fs.copyFile(from, to);
 }
 
-for (const file of ["index.html", "styles.css", "sw.js", "manifest.webmanifest"]) {
+for (const file of [
+  "index.html",
+  "styles.css",
+  "overrides.css",
+  "overrides.js",
+  "sw.js",
+  "manifest.webmanifest"
+]) {
   await copyFile(path.join(root, "src", file), path.join(dist, file));
 }
 
