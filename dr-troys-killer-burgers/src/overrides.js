@@ -208,10 +208,4 @@ document.addEventListener("change", refresh, true);
 document.addEventListener("input", refresh, true);
 window.addEventListener("beforeprint", renderPrintRoot);
 
-const observer = new MutationObserver(() => {
-  if (!applying) refresh();
-});
-const ingredientsRoot = document.querySelector("#ingredients-root");
-if (ingredientsRoot) observer.observe(ingredientsRoot, { childList: true });
-
 refresh();
