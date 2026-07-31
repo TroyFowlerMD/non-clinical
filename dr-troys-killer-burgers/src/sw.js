@@ -1,4 +1,4 @@
-const CACHE_NAME = "dr-troys-killer-burgers-v5";
+const CACHE_NAME = "dr-troys-killer-burgers-v6";
 const APP_SHELL = [
   "./",
   "index.html",
@@ -20,7 +20,8 @@ const APP_SHELL = [
   "assets/icon-maskable-192.png",
   "assets/icon-maskable-512.png",
   "assets/apple-touch-icon.png",
-  "assets/qr-canonical.svg"
+  "assets/qr-canonical.svg",
+  "assets/qr-canonical.png"
 ];
 
 self.addEventListener("install", (event) => {

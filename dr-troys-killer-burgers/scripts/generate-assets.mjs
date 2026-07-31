@@ -69,6 +69,7 @@ const qrSvg = await QRCode.toString(canonicalUrl, {
 });
 
 await fs.writeFile(path.join(outputDir, "qr-canonical.svg"), qrSvg, "utf8");
+await sharp(Buffer.from(qrSvg)).resize(256, 256).png().toFile(path.join(outputDir, "qr-canonical.png"));
 
 const metadata = await sharp(sourceHero).metadata();
 console.log(

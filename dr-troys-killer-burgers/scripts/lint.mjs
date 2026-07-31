@@ -15,6 +15,7 @@ const manifest = JSON.parse(await fs.readFile(manifestPath, "utf8"));
 const serviceWorker = await fs.readFile(path.join(root, "src", "sw.js"), "utf8");
 const html = await fs.readFile(path.join(root, "src", "index.html"), "utf8");
 const app = await fs.readFile(path.join(root, "src", "app.ts"), "utf8");
+const overrides = await fs.readFile(path.join(root, "src", "overrides.js"), "utf8");
 
 assert(manifest.name === "Dr. Troy's Killer Burgers", "Manifest name is incorrect.");
 assert(manifest.id === canonicalUrl, "Manifest id must use the canonical production URL.");
@@ -37,6 +38,6 @@ assert(html.includes("<meta name=\"apple-mobile-web-app-capable\" content=\"yes\
 assert(app.includes("beforeinstallprompt"), "App must handle beforeinstallprompt.");
 assert(app.includes("appinstalled"), "App must handle appinstalled.");
 assert(app.includes("localStorage"), "App state must persist locally.");
-assert(app.includes("qr-canonical.svg"), "Print view must use the generated canonical QR code.");
+assert(overrides.includes("qr-canonical.png"), "Print view must use the generated raster canonical QR code.");
 
 console.log("Static lint checks passed.");
