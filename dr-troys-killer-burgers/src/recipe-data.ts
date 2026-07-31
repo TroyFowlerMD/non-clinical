@@ -54,8 +54,8 @@ export const BASE_RECIPE = {
 export const COPY: Record<Language, RecipeCopy> = {
   en: {
     title: "Dr. Troy's Killer Burger Patties",
-    kicker: "Large-batch recipe | U.S. and metric measurements",
-    subtitle: "Rich, bacon-loaded patties cooked thin over high heat and served as double burgers.",
+    kicker: "",
+    subtitle: "",
     yieldLead: "Estimated yield",
     ingredientHeading: "Ingredients",
     instructionHeading: "Instructions",
@@ -119,8 +119,8 @@ export const COPY: Record<Language, RecipeCopy> = {
   },
   es: {
     title: "Hamburguesas Asesinas del Dr. Troy",
-    kicker: "Receta grande | Medidas estadounidenses y métricas",
-    subtitle: "Tortas con bastante tocino para cocinarse delgadas a fuego alto y servirse como hamburguesas dobles.",
+    kicker: "",
+    subtitle: "",
     yieldLead: "Rendimiento aproximado",
     ingredientHeading: "Ingredientes",
     instructionHeading: "Preparación",
