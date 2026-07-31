@@ -88,7 +88,7 @@ function renderScreenIngredients() {
   const sections = allSections(language, factor);
   const chooseOne = language === "es"
     ? "Elija UNA de las siguientes opciones de chile; no use las tres."
-    : "Choose ONE of the following chile options; do not use all three.";
+    : "Choose ONE chile option. Lines labeled as alternatives replace the first option.";
   const alternative = language === "es" ? "Alternativa" : "Alternative";
 
   root.innerHTML = sections.map((section) => {
@@ -181,7 +181,7 @@ function renderPrintRecipe(language, factor) {
         </section>
       </div>
       <footer class="template-print-footer">
-        <img src="assets/qr-canonical.svg" width="64" height="64" alt="QR code for the live recipe app">
+        <img src="assets/qr-canonical.png" width="64" height="64" alt="QR code for the live recipe app">
         <span>${escapeHtml(scanText)}<br>${escapeHtml(CANONICAL_URL)}</span>
       </footer>
     </article>`;

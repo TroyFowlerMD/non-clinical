@@ -44,7 +44,7 @@ button {
 
 .screen-app {
   min-height: 100vh;
-  width: min(100%, 1360px);
+  width: min(100%, 1120px);
   margin-inline: auto;
 }
 
