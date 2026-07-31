@@ -1,4 +1,4 @@
-const CACHE_NAME = "dr-troys-killer-burgers-v3";
+const CACHE_NAME = "dr-troys-killer-burgers-v4";
 const APP_SHELL = [
   "./",
   "index.html",
