@@ -1,9 +1,9 @@
-const CACHE_NAME = "dr-troys-killer-burgers-v4";
+const CACHE_NAME = "dr-troys-killer-burgers-v5";
 const APP_SHELL = [
   "./",
   "index.html",
   "styles.css",
-  "overrides.css",
+  "overrides.css?v=5",
   "app.js",
   "overrides.js",
   "recipe-data.js",

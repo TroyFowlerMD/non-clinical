@@ -44,6 +44,8 @@ button {
 
 .screen-app {
   min-height: 100vh;
+  width: min(100%, 1360px);
+  margin-inline: auto;
 }
 
 .hero {
