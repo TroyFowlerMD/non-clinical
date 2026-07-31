@@ -104,6 +104,8 @@
     z-index: 2;
     margin: 0;
     max-width: 4.7in;
+    padding: 0.04in 0.08in;
+    background: rgba(255,255,255,.78);
     font-size: 23pt;
     line-height: 1.02;
     font-weight: 900;

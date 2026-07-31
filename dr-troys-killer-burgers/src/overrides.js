@@ -158,7 +158,7 @@ function renderPrintSubstitutions(language, factor) {
 
 function renderPrintRecipe(language, factor) {
   const copy = COPY[language];
-  const title = language === "en" ? "Doctor Troy's Killer Burger Patties" : copy.title;
+  const title = language === "en" ? "Doctor Troy’s Killer Burger Patties" : copy.title;
   const yieldLabel = language === "en" ? "Full recipe makes" : "La receta completa rinde";
   const scanText = language === "en" ? "Scan to view on phone" : "Escanee para ver en el teléfono";
 

@@ -31,7 +31,7 @@ assert(
   "Manifest needs a 512x512 maskable icon."
 );
 assert(serviceWorker.includes("addEventListener(\"fetch\""), "Service worker needs a fetch handler.");
-assert(serviceWorker.includes("dr-troys-killer-burgers-v1"), "Service worker cache name must be app-specific.");
+assert(/dr-troys-killer-burgers-v\d+/.test(serviceWorker), "Service worker cache name must be app-specific.");
 assert(html.includes("<link rel=\"manifest\" href=\"manifest.webmanifest\">"), "HTML must link the manifest.");
 assert(html.includes("<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">"), "Missing Apple standalone metadata.");
 assert(app.includes("beforeinstallprompt"), "App must handle beforeinstallprompt.");

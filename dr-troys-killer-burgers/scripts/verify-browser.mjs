@@ -6,6 +6,7 @@ import puppeteer from "puppeteer-core";
 const root = process.cwd();
 const screenshotsDir = path.join(root, "verification");
 await fs.mkdir(screenshotsDir, { recursive: true });
+const pause = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 const port = 4173;
 const server = spawn(process.execPath, ["scripts/serve-dist.mjs"], {
@@ -66,6 +67,9 @@ try {
     { name: "desktop", width: 1440, height: 960 }
   ];
 
+  await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: "networkidle0" });
+  await page.evaluate(() => localStorage.clear());
+
   for (const viewport of viewports) {
     await page.setViewport(viewport);
     await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: "networkidle0" });
@@ -107,13 +111,15 @@ try {
   await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: "networkidle0" });
   await page.click("[data-lang='es']");
   await page.click("[data-scale='half']");
-  await page.select("[data-field='chile']", "jalapeno");
   await page.reload({ waitUntil: "networkidle0" });
 
   const persisted = await page.evaluate(() => ({
     title: document.querySelector("h1")?.textContent || "",
     scale: document.querySelector("[data-summary-scale]")?.textContent || "",
-    chile: document.querySelector("[data-field='chile']")?.value || ""
+    chileVisible: (() => {
+      const node = document.querySelector("[data-field='chile']");
+      return Boolean(node && getComputedStyle(node.closest(".control-group") || node).display !== "none" && node.getClientRects().length);
+    })()
   }));
 
   if (!persisted.title.includes("Hamburguesas")) {
@@ -122,18 +128,34 @@ try {
   if (!persisted.scale.includes("1/2")) {
     throw new Error("Half scale preference did not persist.");
   }
-  if (persisted.chile !== "jalapeno") {
-    throw new Error("Chile option did not persist.");
+  if (persisted.chileVisible) {
+    throw new Error("Chile selector is still visible on the webpage.");
   }
 
+  await page.evaluate(() => localStorage.setItem("drTroyKillerBurgers:v1", JSON.stringify({
+    language: "en",
+    scaleMode: "full",
+    customMode: "beef",
+    customBeefLb: 5,
+    customPatties: 36,
+    printMode: "en"
+  })));
+  await page.reload({ waitUntil: "networkidle0" });
+  await pause(250);
   await page.emulateMediaType("print");
-  const pdfPath = path.join(screenshotsDir, "print-both.pdf");
-  await page.select("[data-field='print-mode']", "both");
+  const pdfPath = path.join(screenshotsDir, "english-full.pdf");
+  await page.select("[data-field='print-mode']", "en");
+  await pause(250);
   await page.pdf({
     path: pdfPath,
     format: "Letter",
-    printBackground: false,
+    printBackground: true,
     margin: { top: "0.5in", right: "0.45in", bottom: "0.5in", left: "0.45in" }
+  });
+
+  await page.screenshot({
+    path: path.join(screenshotsDir, "english-full.png"),
+    fullPage: true
   });
 
   const printText = await page.evaluate(() => document.querySelector("#print-root")?.textContent || "");
@@ -142,6 +164,53 @@ try {
   }
   if (printText.includes("localhost") || printText.includes("127.0.0.1")) {
     throw new Error("Print view must never include local preview URLs.");
+  }
+  for (const expected of [
+    "Doctor Troy’s Killer Burger Patties",
+    "Full recipe makes",
+    "Ingredients",
+    "Instructions",
+    "Substitutions",
+    "Choose ONE chile option",
+    "Alternative 1",
+    "Alternative 2",
+    "Crumb options",
+    "Montreal-style seasoning substitute"
+  ]) {
+    if (!printText.includes(expected)) {
+      throw new Error(`Print view is missing expected content: ${expected}`);
+    }
+  }
+
+  const printLayout = await page.evaluate(() => {
+    const article = document.querySelector(".print-recipe");
+    const header = document.querySelector(".template-print-header");
+    const image = document.querySelector(".template-print-header img");
+    const columns = document.querySelector(".template-print-columns");
+    const substitution = document.querySelector(".template-substitutions");
+    return {
+      articleCount: document.querySelectorAll(".print-recipe").length,
+      headerHeight: header?.getBoundingClientRect().height || 0,
+      imageLoaded: Boolean(image && image.complete && image.naturalWidth > 0),
+      imageObjectFit: image ? getComputedStyle(image).objectFit : "",
+      imageRenderedWidth: image?.getBoundingClientRect().width || 0,
+      imageRenderedHeight: image?.getBoundingClientRect().height || 0,
+      imageNaturalRatio: image && image.naturalWidth ? image.naturalHeight / image.naturalWidth : 0,
+      columns: columns ? getComputedStyle(columns).gridTemplateColumns : "",
+      substitutionColumn: substitution?.closest(".template-print-column") === document.querySelector(".template-print-column"),
+      articleHeight: article?.getBoundingClientRect().height || 0,
+      pageHeight: 11 * 96
+    };
+  });
+  if (printLayout.articleCount !== 1) throw new Error("English full-batch print should be one page.");
+  if (!printLayout.imageLoaded || printLayout.imageObjectFit !== "contain") {
+    throw new Error("Print header image is missing or configured to crop.");
+  }
+  if (Math.abs(printLayout.imageRenderedHeight / printLayout.imageRenderedWidth - printLayout.imageNaturalRatio) > 0.01) {
+    throw new Error("Print header image is not rendered at its full aspect ratio.");
+  }
+  if (!printLayout.columns || !printLayout.substitutionColumn) {
+    throw new Error("Print columns or left-column substitutions are incorrect.");
   }
 
   await page.emulateMediaType("screen");
