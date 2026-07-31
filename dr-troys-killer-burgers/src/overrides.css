@@ -81,49 +81,55 @@
   .template-print-header {
     position: relative;
     width: 100%;
-    margin: 0 0 0.18in;
-    background: #f4f4f2;
-    overflow: visible;
+    height: 1.72in;
+    margin: 0 0 0.12in;
+    background: #d8d8d6;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
     break-inside: avoid;
     page-break-inside: avoid;
   }
 
   .template-print-header img {
     display: block;
-    width: 100%;
-    height: auto;
-    max-height: none;
+    width: auto;
+    height: 1.48in;
+    max-width: 100%;
+    margin-left: auto;
+    align-self: center;
     object-fit: contain;
-    object-position: center;
+    object-position: right center;
   }
 
   .template-print-title {
     position: absolute;
-    left: 0.30in;
-    top: 0.22in;
+    left: 0.22in;
+    top: 0.16in;
     z-index: 2;
     margin: 0;
-    max-width: 4.7in;
-    padding: 0.04in 0.08in;
-    background: rgba(255,255,255,.78);
-    font-size: 23pt;
-    line-height: 1.02;
+    max-width: 3.18in;
+    padding: 0;
+    background: transparent;
+    font-size: 18pt;
+    line-height: 1.04;
     font-weight: 900;
     letter-spacing: -0.6pt;
     color: #050505;
-    text-shadow: 0 1px 0 rgba(255,255,255,.75);
+    text-shadow: none;
   }
 
   .template-yield-box {
     position: absolute;
-    left: 0.26in;
-    bottom: 0.28in;
+    left: 0.22in;
+    bottom: 0.16in;
     z-index: 2;
-    max-width: 3.35in;
-    padding: 0.09in 0.13in;
-    background: rgba(255,255,255,.88);
-    font-size: 10.5pt;
-    line-height: 1.35;
+    max-width: 3.16in;
+    padding: 0;
+    background: transparent;
+    font-size: 8.8pt;
+    line-height: 1.18;
+    color: #111;
   }
 
   .template-yield-box strong { font-weight: 800; }
@@ -140,30 +146,30 @@
   }
 
   .template-print-column h2 {
-    margin: 0 0 0.06in;
-    font-size: 14pt;
+    margin: 0 0 0.04in;
+    font-size: 12.5pt;
     line-height: 1.1;
   }
 
   .template-print-column h3 {
-    margin: 0.10in 0 0.03in;
-    font-size: 10.8pt;
+    margin: 0.07in 0 0.02in;
+    font-size: 9.4pt;
     line-height: 1.15;
   }
 
   .template-print-column p {
-    margin: 0.03in 0 0.07in;
-    line-height: 1.34;
+    margin: 0.02in 0 0.05in;
+    line-height: 1.17;
   }
 
   .template-print-list {
-    margin: 0.02in 0 0.08in;
-    padding-left: 0.20in;
+    margin: 0.01in 0 0.05in;
+    padding-left: 0.18in;
   }
 
   .template-print-list li {
-    margin: 0 0 0.035in;
-    line-height: 1.30;
+    margin: 0 0 0.018in;
+    line-height: 1.12;
   }
 
   .template-print-section,
@@ -188,7 +194,7 @@
   }
 
   .template-substitution {
-    margin-top: 0.08in;
+    margin-top: 0.05in;
   }
 
   .template-print-footer {
@@ -196,8 +202,8 @@
     justify-content: flex-end;
     align-items: center;
     gap: 0.08in;
-    margin-top: 0.13in;
-    font-size: 7.5pt;
+    margin-top: 0.08in;
+    font-size: 7pt;
   }
 
   .template-print-footer img {
