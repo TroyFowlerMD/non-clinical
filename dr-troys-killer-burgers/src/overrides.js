@@ -203,7 +203,10 @@ function refresh() {
   }, 0);
 }
 
-document.addEventListener("click", refresh, true);
+document.addEventListener("click", (event) => {
+  if (event.target instanceof Element && event.target.closest("details.inline-substitution")) return;
+  refresh();
+}, true);
 document.addEventListener("change", refresh, true);
 document.addEventListener("input", refresh, true);
 window.addEventListener("beforeprint", renderPrintRoot);

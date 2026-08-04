@@ -22,16 +22,48 @@
 }
 
 .inline-substitution {
+  display: block;
   margin: 0.45rem 0 0.15rem;
+  padding: 0;
   border: 1px solid var(--line, #d8d2c7);
   border-radius: 0.65rem;
   background: rgba(255,255,255,0.55);
+  overflow: hidden;
 }
 
 .inline-substitution summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   cursor: pointer;
   padding: 0.6rem 0.75rem;
   font-weight: 700;
+  list-style: none;
+}
+
+.inline-substitution summary::-webkit-details-marker {
+  display: none;
+}
+
+.inline-substitution summary::after {
+  content: "+";
+  flex: 0 0 auto;
+  margin-left: 1rem;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.inline-substitution[open] summary::after {
+  content: "−";
+}
+
+.inline-substitution:not([open]) .substitution-body {
+  display: none;
+}
+
+.inline-substitution[open] .substitution-body {
+  display: block;
+  border-top: 1px solid var(--line, #d8d2c7);
 }
 
 .inline-substitution .substitution-body {

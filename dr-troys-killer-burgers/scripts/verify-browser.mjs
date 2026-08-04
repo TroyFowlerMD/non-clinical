@@ -132,6 +132,26 @@ try {
     throw new Error("Chile selector is still visible on the webpage.");
   }
 
+  const substitutionCount = await page.evaluate(() => document.querySelectorAll("#ingredients-root details.inline-substitution").length);
+  if (substitutionCount !== 2) {
+    throw new Error("Expected exactly two substitution cards.");
+  }
+  const initialCards = await page.evaluate(() => [...document.querySelectorAll("#ingredients-root details.inline-substitution")].map((card) => card.open));
+  if (initialCards.some(Boolean)) {
+    throw new Error("Substitution cards must be collapsed by default.");
+  }
+  const substitutionSummaries = await page.$$("#ingredients-root details.inline-substitution summary");
+  await substitutionSummaries[0].click();
+  const firstOpen = await page.evaluate(() => document.querySelector("#ingredients-root details.inline-substitution")?.open === true);
+  if (!firstOpen) {
+    throw new Error("Montreal seasoning substitution card did not expand.");
+  }
+  await substitutionSummaries[1].click();
+  const cardsOpen = await page.evaluate(() => [...document.querySelectorAll("#ingredients-root details.inline-substitution")].map((card) => card.open));
+  if (!cardsOpen.every(Boolean)) {
+    throw new Error("Crumb substitution card did not expand.");
+  }
+
   await page.evaluate(() => localStorage.setItem("drTroyKillerBurgers:v1", JSON.stringify({
     language: "en",
     scaleMode: "full",

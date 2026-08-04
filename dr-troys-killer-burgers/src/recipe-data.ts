@@ -53,7 +53,7 @@ export const BASE_RECIPE = {
 
 export const COPY: Record<Language, RecipeCopy> = {
   en: {
-    title: "Dr. Troy's Killer Burger Patties",
+    title: "Doctor Troy's Killer Burger Patties",
     kicker: "",
     subtitle: "",
     yieldLead: "Estimated yield",
