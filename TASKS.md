@@ -50,6 +50,7 @@
 - [x] Consolidated duplicate Psych Scheduler Notion project pages.
 
 ## Backlog
+- [x] Updated `five-crowns.html` with an Undo control, a closed-by-default menu drawer for game controls and reset, outside-click dismissal, and a complete English/Spanish interface toggle.
 - [ ] Re-diagnose post-call classification logic before any future global reclassification attempt; previous attempt broke the page and was reverted.
 - [ ] Continue parser hardening for full-sheet variation and stale-data edge cases.
 - [ ] Audit whether Asana/maintenance-request tracking still matches the current GitHub source of truth.

@@ -6,6 +6,7 @@
 <title>Five Crowns Scorekeeper</title>
 <link rel="manifest" href="/non-clinical/manifest.json">
 <meta name="theme-color" content="#2563eb">
+<meta name="google" content="notranslate">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Five Crowns">
 <style>
@@ -70,6 +71,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .header-controls {
   display:flex;gap:5px;align-items:center;flex-shrink:0;flex-wrap:nowrap;
 }
+.header-primary-controls{display:flex;gap:6px;align-items:center}
+.icon-btn{width:38px;height:38px;display:grid;place-items:center;padding:0;font-size:1.15rem}
+#app-drawer{position:fixed;z-index:700;top:0;right:0;width:min(34vw,360px);height:100dvh;background:var(--surface);box-shadow:-12px 0 32px rgba(0,0,0,.42);padding:18px 14px;transform:translateX(105%);transition:transform .22s ease;overflow-y:auto}
+#app-drawer.open{transform:translateX(0)}
+#drawer-scrim{display:none;position:fixed;z-index:650;inset:0;background:rgba(0,0,0,.38)}
+#drawer-scrim.open{display:block}
+.drawer-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;color:var(--accent)}
+.drawer-heading h2{font-size:1.05rem}.drawer-list{display:flex;flex-direction:column;gap:9px}.drawer-btn{width:100%;text-align:left;border:1px solid var(--cell-border);border-radius:10px;background:var(--btn-bg);color:var(--text);padding:12px;font:inherit;font-size:.92rem;cursor:pointer}.drawer-btn:hover{background:var(--btn-hover)}.drawer-btn.danger{color:#e76c6c}
+@media(max-width:600px){#app-drawer{width:48vw;padding:14px 9px}.drawer-btn{font-size:.78rem;padding:10px 7px}.drawer-heading h2{font-size:.9rem}}
 .header-btn {
   background:var(--btn-bg);border:none;border-radius:8px;color:var(--text);
   cursor:pointer;font-size:0.72rem;padding:6px 9px;transition:background 0.2s;
@@ -339,31 +349,42 @@ hr.rules-divider{border:none;border-top:1px solid var(--cell-border);margin:12px
 .lb-empty{font-size:0.82rem;color:var(--text-dim);text-align:center;padding:10px}
 </style>
 </head>
-<body>
+<body translate="no">
 
 <!-- HEADER -->
 <header id="app-header">
   <div class="header-title">
     <span class="title-main">♛ Five Crowns</span>
-    <span class="title-sub">Scorekeeper</span>
+    <span class="title-sub" id="app-subtitle">Scorekeeper</span>
   </div>
-  <div class="header-controls">
-    <button class="header-btn" id="rules-btn">📖 Rules</button>
-    <button class="sound-toggle-btn" id="sound-toggle-btn" title="Sound">🔊</button>
-    <button class="header-btn" id="leaderboard-btn" style="display:none;">🏆</button>
-    <button id="theme-toggle" class="header-btn">🔮 Midnight</button>
-    <button class="header-btn" id="reorder-btn-header" style="display:none;">✏️ Edit</button>
+  <div class="header-primary-controls">
+    <button class="header-btn" id="language-toggle" aria-label="Switch to Spanish">Español</button>
+    <button class="header-btn icon-btn" id="drawer-open-btn" aria-label="Open menu">☰</button>
   </div>
 </header>
+
+<div id="drawer-scrim"></div>
+<aside id="app-drawer" aria-label="Game menu" aria-hidden="true">
+  <div class="drawer-heading"><h2 id="drawer-title">Game menu</h2><button class="header-btn icon-btn" id="drawer-close-btn" aria-label="Close menu">×</button></div>
+  <div class="drawer-list">
+    <button class="drawer-btn" id="undo-btn">↶ Undo last score</button>
+    <button class="drawer-btn" id="rules-btn">📖 Rules</button>
+    <button class="drawer-btn" id="sound-toggle-btn">🔊 Sound: On</button>
+    <button class="drawer-btn" id="leaderboard-btn" style="display:none;">🏆 Records</button>
+    <button class="drawer-btn" id="theme-toggle">🔮 Midnight</button>
+    <button class="drawer-btn" id="reorder-btn-header" style="display:none;">✏️ Edit players</button>
+    <button class="drawer-btn danger" id="reset-btn" style="display:none;">Reset game</button>
+  </div>
+</aside>
 
 <!-- SETUP SCREEN -->
 <div id="setup-screen">
   <div class="setup-card">
-    <h2>New Game Setup</h2>
-    <p>Enter players <strong>in turn order</strong>. The <strong>first player listed is the starting dealer</strong> and will deal the 3s round. Dealer rotates left each round automatically.</p>
+    <h2 id="setup-title">New Game Setup</h2>
+    <p id="setup-description">Enter players <strong>in turn order</strong>. The <strong>first player listed is the starting dealer</strong> and will deal the 3s round. Dealer rotates left each round automatically.</p>
     <div class="dealer-note">
       <span>🃏</span>
-      <span>Player 1 = Starting Dealer · add in clockwise seating order · drag ⠿ to reorder</span>
+      <span id="dealer-note-text">Player 1 = Starting Dealer · add in clockwise seating order · drag ⠿ to reorder</span>
     </div>
     <div id="players-list"></div>
     <button id="start-game-btn" disabled>Start Game</button>
@@ -390,15 +411,10 @@ hr.rules-divider{border:none;border-top:1px solid var(--cell-border);margin:12px
   </div>
 </div>
 
-<!-- FAB -->
-<div id="fab-area">
-  <button class="fab secondary" id="reset-btn" title="New Game" style="display:none;">↺</button>
-</div>
-
 <!-- LEADERBOARD MODAL -->
 <div id="leaderboard-modal" role="dialog" aria-modal="true">
   <div id="leaderboard-container">
-    <h3>🏆 All-Time Records</h3>
+    <h3 id="leaderboard-heading">🏆 All-Time Records</h3>
     <div id="leaderboard-content"></div>
     <button class="rules-close-btn" id="leaderboard-close-btn">Close</button>
     <button class="rules-close-btn" id="leaderboard-clear-btn" style="background:transparent;color:var(--text-dim);font-size:0.8rem;margin-top:4px">Clear Records</button>
@@ -408,7 +424,7 @@ hr.rules-divider{border:none;border-top:1px solid var(--cell-border);margin:12px
 <div id="numpad-modal" role="dialog" aria-modal="true">
   <div id="numpad-container">
     <div id="numpad-title">
-      <strong id="numpad-player-name">—</strong> · Round <strong id="numpad-round-label">—</strong>
+      <strong id="numpad-player-name">—</strong> · <span id="numpad-round-prefix">Round</span> <strong id="numpad-round-label">—</strong>
       <br><span id="numpad-hint" style="font-size:0.7rem;opacity:0.6">Score shows in cell · ⌫ to edit · hold to select all</span>
     </div>
     <div id="numpad-grid">
@@ -424,7 +440,7 @@ hr.rules-divider{border:none;border-top:1px solid var(--cell-border);margin:12px
       <button class="numpad-key key-del" data-val="del">⌫</button>
       <button class="numpad-key" data-val="0">0</button>
       <button class="numpad-key key-cancel" data-val="cancel">✕</button>
-      <button class="numpad-key key-confirm" data-val="confirm">Confirm ✓</button>
+      <button class="numpad-key key-confirm" id="confirm-score-btn" data-val="confirm">Confirm ✓</button>
     </div>
   </div>
 </div>
@@ -432,8 +448,8 @@ hr.rules-divider{border:none;border-top:1px solid var(--cell-border);margin:12px
 <!-- RESET CHOICE MODAL -->
 <div id="reset-choice-modal" role="dialog" aria-modal="true">
   <div id="reset-choice-box">
-    <h3>New Game</h3>
-    <p>Keep the same players or change them?</p>
+    <h3 id="reset-modal-title">New Game</h3>
+    <p id="reset-modal-description">Keep the same players or change them?</p>
     <div class="reset-choice-btns">
       <button class="btn-same-players" id="btn-same-players">Same Players ✓</button>
       <button class="btn-change-players" id="btn-change-players">Change Players</button>
@@ -450,7 +466,7 @@ hr.rules-divider{border:none;border-top:1px solid var(--cell-border);margin:12px
     <div id="reorder-list"></div>
     <div id="reorder-add-row" style="display:none;">
       <span class="add-icon">＋</span>
-      <span>Add player</span>
+      <span id="reorder-add-label">Add player</span>
     </div>
     <button id="reorder-apply-btn">Apply Order</button>
     <button id="reorder-cancel-btn">Cancel</button>
@@ -519,6 +535,7 @@ hr.rules-divider{border:none;border-top:1px solid var(--cell-border);margin:12px
 // ============================================================
 const ROUNDS = ['3','4','5','6','7','8','9','10','J','Q','K'];
 const WILD_LABELS = {'3':'3s Wild','4':'4s Wild','5':'5s Wild','6':'6s Wild','7':'7s Wild','8':'8s Wild','9':'9s Wild','10':'10s Wild','J':'Jacks Wild','Q':'Queens Wild','K':'Kings Wild'};
+const WILD_LABELS_ES = {'3':'3 comodines','4':'4 comodines','5':'5 comodines','6':'6 comodines','7':'7 comodines','8':'8 comodines','9':'9 comodines','10':'10 comodines','J':'Jotas comodines','Q':'Reinas comodines','K':'Reyes comodines'};
 const MEDAL = {1:'🥇',2:'🥈',3:'🥉'};
 const MAX_PLAYERS = 7;
 
@@ -526,8 +543,49 @@ const MAX_PLAYERS = 7;
 // STATE
 // ============================================================
 let state = { players:[], scores:{}, currentRound:0, gameOver:false };
+let scoreHistory = [];
 let setupSlots = ['','','','','','',''];
 let numSetupSlots = 2;
+let language = 'en';
+
+const COPY = {
+  en: {
+    subtitle:'Scorekeeper', menu:'Game menu', openMenu:'Open menu', closeMenu:'Close menu',
+    undo:'↶ Undo last score', noUndo:'Nothing to undo', undoDone:'Last score undone',
+    rules:'📖 Rules', soundOn:'🔊 Sound: On', soundOff:'🔇 Sound: Off', records:'🏆 Records',
+    midnight:'🔮 Midnight', light:'☀️ Light', editPlayers:'✏️ Edit players', reset:'Reset game',
+    setupTitle:'New Game Setup', setupDescription:'Enter players <strong>in turn order</strong>. The <strong>first player listed is the starting dealer</strong> and will deal the 3s round. Dealer rotates left each round automatically.',
+    dealerNote:'Player 1 = Starting Dealer · add in clockwise seating order · drag ⠿ to reorder', start:'Start Game',
+    dealer:'Dealer', roundShort:'Rnd', round:'Round', wild:'Wild', players:'Players',
+    addPlayer:'＋ Add Player', removePlayer:'Remove player', needPlayers:'Need at least 2 players', validScore:'Enter a valid score',
+    numpadHint:'Score shows in cell · ⌫ to edit · hold to select all', confirm:'Confirm ✓', replaceScore:'Type to replace entire score',
+    resetTitle:'New Game', resetDescription:'Keep the same players or change them?', samePlayers:'Same Players ✓', changePlayers:'Change Players', cancel:'Cancel',
+    scoresCleared:'Scores cleared — same players', playersUpdated:'Players updated',
+    leaderboard:'🏆 All-Time Records', close:'Close', clearRecords:'Clear Records', clearConfirm:'Clear all leaderboard records?',
+    noRecord:'No record yet', lowestFinal:'🥇 Lowest Final', highestFinal:'💀 Highest Final', highestHand:'🃏 Highest Single Hand', points:'pts',
+    rulesHtml:`<h3>♛ How to Play Five Crowns</h3><div class="rules-section"><h4>Starting the Game</h4><p>Choose a dealer. The dealer shuffles both decks together and deals <strong>3 cards</strong> to each player for Round 1. Each subsequent round, one more card is dealt — so Round 2 deals 4, Round 3 deals 5, up to Round 11 (Kings) which deals 13. Play begins with the player to the dealer's left and goes clockwise. The dealer role passes left each round.</p></div><hr class="rules-divider"><div class="rules-section"><h4>Taking a Turn</h4><p>On your turn: draw one card from either the top of the draw pile or the top of the discard pile. Then discard one card. You always end your turn with the same number of cards you were dealt.</p></div><hr class="rules-divider"><div class="rules-section"><h4>Books &amp; Runs</h4><ul><li><strong>Book:</strong> 3 or more cards <strong>of the same value</strong> (any suits)</li><li><strong>Run:</strong> 3 or more consecutive cards <strong>of the same suit</strong></li><li>Wild cards and Jokers can substitute for any card in a book or run</li><li>You cannot play on another player's books or runs</li></ul></div><hr class="rules-divider"><div class="rules-section"><h4>Going Out</h4><p>When your entire hand can be arranged into books and/or runs, you may <strong>go out</strong>: lay down all your cards in books and/or runs — using exactly the number of cards you were dealt — then discard your last card. After someone goes out, every other player gets <strong>one more turn</strong> to improve their hand before scoring. Any cards that cannot be played into a book or run count against the player's score.</p></div><hr class="rules-divider"><div class="rules-section"><h4>Wild Cards</h4><p>The wild card changes each round based on how many cards are dealt: Round 1 deals 3 cards, so <strong>3s are wild</strong>. Round 2 deals 4 cards, so <strong>4s are wild</strong>. This continues through Round 11, which deals 13 cards and makes <strong>Kings wild</strong>. Jokers are always wild in every round.</p></div><hr class="rules-divider"><div class="rules-section"><h4>Scoring</h4><ul><li>All cards played in completed books or runs do <strong>not</strong> count against your score</li><li>Remaining cards count against you:</li><li>Number cards = face value &nbsp;|&nbsp; J = 11 &nbsp;|&nbsp; Q = 12 &nbsp;|&nbsp; K = 13</li><li>Wild cards (the round's wild) = <strong>20 pts each</strong></li><li>Jokers = <strong>50 pts each</strong></li></ul><p style="margin-top:6px;">After 11 rounds, the player with the <strong>lowest total score wins</strong>. In a tie, players share the victory or play a 6-card tiebreaker.</p></div><button class="rules-close-btn" id="rules-close-btn">Got it — Close Rules</button>`,
+    rulesClose:'Got it — Close Rules'
+  },
+  es: {
+    subtitle:'Anotador', menu:'Menú del juego', openMenu:'Abrir menú', closeMenu:'Cerrar menú',
+    undo:'↶ Deshacer última puntuación', noUndo:'No hay puntuación que deshacer', undoDone:'Se deshizo la última puntuación',
+    rules:'📖 Reglas', soundOn:'🔊 Sonido: activado', soundOff:'🔇 Sonido: desactivado', records:'🏆 Récords',
+    midnight:'🔮 Medianoche', light:'☀️ Claro', editPlayers:'✏️ Editar jugadores', reset:'Reiniciar partida',
+    setupTitle:'Configuración de partida nueva', setupDescription:'Ingresa a los jugadores <strong>en orden de turno</strong>. El <strong>primer jugador de la lista es quien reparte primero</strong> y repartirá la ronda de 3. Quien reparte rota a la izquierda automáticamente cada ronda.',
+    dealerNote:'Jugador 1 = quien reparte primero · agrega en orden de asientos en sentido horario · arrastra ⠿ para reordenar', start:'Comenzar partida',
+    dealer:'Reparte', roundShort:'Rda.', round:'Ronda', wild:'Comodín', players:'Jugadores',
+    addPlayer:'＋ Agregar jugador', removePlayer:'Eliminar jugador', needPlayers:'Se necesitan al menos 2 jugadores', validScore:'Ingresa una puntuación válida',
+    numpadHint:'La puntuación aparece en la celda · ⌫ para editar · mantén presionado para seleccionar todo', confirm:'Confirmar ✓', replaceScore:'Escribe para reemplazar toda la puntuación',
+    resetTitle:'Partida nueva', resetDescription:'¿Conservar los mismos jugadores o cambiarlos?', samePlayers:'Mismos jugadores ✓', changePlayers:'Cambiar jugadores', cancel:'Cancelar',
+    scoresCleared:'Puntuaciones borradas — mismos jugadores', playersUpdated:'Jugadores actualizados',
+    leaderboard:'🏆 Récords históricos', close:'Cerrar', clearRecords:'Borrar récords', clearConfirm:'¿Borrar todos los récords?',
+    noRecord:'Aún no hay récord', lowestFinal:'🥇 Menor puntuación final', highestFinal:'💀 Mayor puntuación final', highestHand:'🃏 Mayor mano individual', points:'pts',
+    rulesHtml:`<h3>♛ Cómo jugar Five Crowns</h3><div class="rules-section"><h4>Cómo empezar</h4><p>Elijan quién reparte. Esa persona baraja los dos mazos juntos y reparte <strong>3 cartas</strong> a cada jugador en la ronda 1. En cada ronda siguiente se reparte una carta más: 4 en la ronda 2, 5 en la ronda 3, hasta 13 en la ronda 11 (Reyes). Empieza quien está a la izquierda de quien repartió y el juego sigue en sentido horario. Quien reparte pasa a la izquierda en cada ronda.</p></div><hr class="rules-divider"><div class="rules-section"><h4>En cada turno</h4><p>Roba una carta de la parte superior del mazo o de la pila de descarte. Luego descarta una carta. Siempre terminas tu turno con la misma cantidad de cartas que recibiste.</p></div><hr class="rules-divider"><div class="rules-section"><h4>Grupos y escaleras</h4><ul><li><strong>Grupo:</strong> 3 o más cartas <strong>del mismo valor</strong> (de cualquier palo)</li><li><strong>Escalera:</strong> 3 o más cartas consecutivas <strong>del mismo palo</strong></li><li>Los comodines y los Jokers pueden sustituir cualquier carta en un grupo o escalera</li><li>No puedes jugar en los grupos o escaleras de otro jugador</li></ul></div><hr class="rules-divider"><div class="rules-section"><h4>Salir</h4><p>Cuando toda tu mano puede organizarse en grupos y/o escaleras, puedes <strong>salir</strong>: baja todas tus cartas en grupos y/o escaleras — usando exactamente la cantidad de cartas que recibiste — y después descarta tu última carta. Tras salir alguien, cada otro jugador recibe <strong>un turno más</strong> para mejorar su mano antes de anotar. Las cartas que no se puedan usar en un grupo o escalera cuentan en contra de la puntuación.</p></div><hr class="rules-divider"><div class="rules-section"><h4>Comodines</h4><p>El comodín cambia cada ronda según la cantidad de cartas repartidas: en la ronda 1 se reparten 3 cartas, así que <strong>los 3 son comodines</strong>. En la ronda 2 se reparten 4 cartas, así que <strong>los 4 son comodines</strong>. Esto continúa hasta la ronda 11, con 13 cartas, donde <strong>los Reyes son comodines</strong>. Los Jokers siempre son comodines.</p></div><hr class="rules-divider"><div class="rules-section"><h4>Puntuación</h4><ul><li>Las cartas usadas en grupos o escaleras completos <strong>no</strong> cuentan en contra de tu puntuación</li><li>Las cartas restantes cuentan así:</li><li>Cartas numéricas = valor indicado &nbsp;|&nbsp; J = 11 &nbsp;|&nbsp; Q = 12 &nbsp;|&nbsp; K = 13</li><li>Comodines de la ronda = <strong>20 puntos cada uno</strong></li><li>Jokers = <strong>50 puntos cada uno</strong></li></ul><p style="margin-top:6px;">Después de 11 rondas, gana quien tenga la <strong>menor puntuación total</strong>. En caso de empate, comparten la victoria o juegan un desempate de 6 cartas.</p></div><button class="rules-close-btn" id="rules-close-btn">Entendido — cerrar reglas</button>`,
+    rulesClose:'Entendido — cerrar reglas'
+  }
+};
+function t(key) { return COPY[language][key] || COPY.en[key] || key; }
+function wildLabel(round) { return language==='es' ? WILD_LABELS_ES[round] : WILD_LABELS[round]; }
 
 // ============================================================
 // DOM REFS
@@ -539,6 +597,45 @@ const startGameBtn      = document.getElementById('start-game-btn');
 const resetBtn          = document.getElementById('reset-btn');
 const themeToggle       = document.getElementById('theme-toggle');
 const reorderBtnHeader  = document.getElementById('reorder-btn-header');
+const drawer             = document.getElementById('app-drawer');
+const drawerScrim        = document.getElementById('drawer-scrim');
+
+function setText(id, value) { const el=document.getElementById(id); if(el) el.textContent=value; }
+function openDrawer() { drawer.classList.add('open'); drawerScrim.classList.add('open'); drawer.setAttribute('aria-hidden','false'); }
+function closeDrawer() { drawer.classList.remove('open'); drawerScrim.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); }
+function refreshControls() {
+  setText('sound-toggle-btn', soundEnabled ? t('soundOn') : t('soundOff'));
+  setText('theme-toggle', document.body.getAttribute('data-theme')==='light' ? t('midnight') : t('light'));
+}
+function applyLanguage() {
+  document.documentElement.lang=language;
+  setText('app-subtitle',t('subtitle')); setText('drawer-title',t('menu'));
+  setText('language-toggle',language==='en'?'Español':'English');
+  document.getElementById('language-toggle').setAttribute('aria-label',language==='en'?'Switch to Spanish':'Cambiar a inglés');
+  document.getElementById('drawer-open-btn').setAttribute('aria-label',t('openMenu'));
+  document.getElementById('drawer-close-btn').setAttribute('aria-label',t('closeMenu'));
+  drawer.setAttribute('aria-label',t('menu'));
+  setText('undo-btn',t('undo')); setText('rules-btn',t('rules')); setText('leaderboard-btn',t('records'));
+  setText('reorder-btn-header',t('editPlayers')); setText('reset-btn',t('reset'));
+  setText('setup-title',t('setupTitle')); document.getElementById('setup-description').innerHTML=t('setupDescription');
+  setText('dealer-note-text',t('dealerNote')); setText('start-game-btn',t('start'));
+  setText('leaderboard-heading',t('leaderboard')); setText('leaderboard-close-btn',t('close')); setText('leaderboard-clear-btn',t('clearRecords'));
+  setText('numpad-hint',t('numpadHint')); setText('confirm-score-btn',t('confirm'));
+  setText('numpad-round-prefix',t('round'));
+  setText('reset-modal-title',t('resetTitle')); setText('reset-modal-description',t('resetDescription'));
+  setText('btn-same-players',t('samePlayers')); setText('btn-change-players',t('changePlayers')); setText('btn-cancel-reset',t('cancel'));
+  setText('reorder-add-label',language==='es'?'Agregar jugador':'Add player'); setText('reorder-cancel-btn',t('cancel'));
+  document.getElementById('rules-container').innerHTML=t('rulesHtml');
+  document.getElementById('rules-close-btn').addEventListener('click',()=>document.getElementById('rules-modal').classList.remove('open'));
+  refreshControls();
+  if (state.players.length) { buildTable(); updateInfoBar(); }
+  else renderSetupPlayers();
+}
+
+document.getElementById('drawer-open-btn').addEventListener('click',openDrawer);
+document.getElementById('drawer-close-btn').addEventListener('click',closeDrawer);
+drawerScrim.addEventListener('click',closeDrawer);
+document.getElementById('language-toggle').addEventListener('click',()=>{ language=language==='en'?'es':'en'; applyLanguage(); saveState(); });
 
 // ============================================================
 // SETUP — PROGRESSIVE ROW REVEAL
@@ -561,7 +658,7 @@ function renderSetupPlayers(focusIndex) {
     const inp = document.createElement('input');
     inp.type = 'text';
     inp.value = setupSlots[i];
-    inp.placeholder = i === 0 ? 'Player 1 — Starting Dealer' : `Player ${i + 1}`;
+    inp.placeholder = i === 0 ? `${language==='es'?'Jugador':'Player'} 1 — ${language==='es'?'quien reparte primero':'Starting Dealer'}` : `${language==='es'?'Jugador':'Player'} ${i + 1}`;
     inp.maxLength = 14;
     inp.setAttribute('data-slot', i);
     inp.addEventListener('input', e => { setupSlots[i] = e.target.value.trim(); updateStartBtn(); });
@@ -579,7 +676,7 @@ function renderSetupPlayers(focusIndex) {
     removeBtn.textContent = '✕';
     removeBtn.addEventListener('click', e => {
       e.stopPropagation();
-      if (numSetupSlots <= 2) { showToast('Need at least 2 players'); return; }
+      if (numSetupSlots <= 2) { showToast(t('needPlayers')); return; }
       setupSlots.splice(i, 1); setupSlots.push('');
       numSetupSlots--;
       renderSetupPlayers();
@@ -596,7 +693,7 @@ function renderSetupPlayers(focusIndex) {
     const addBtn = document.createElement('button');
     addBtn.id = 'setup-add-player-btn';
     addBtn.className = 'setup-add-player-btn';
-    addBtn.textContent = '＋ Add Player';
+    addBtn.textContent = t('addPlayer');
     addBtn.addEventListener('click', () => {
       if (numSetupSlots >= MAX_PLAYERS) return;
       numSetupSlots++;
@@ -650,6 +747,7 @@ function initGame() {
   });
   state.currentRound = 0;
   state.gameOver = false;
+  scoreHistory = [];
 
   setupScreen.style.display = 'none';
   scoreScreen.style.display = 'block';
@@ -674,11 +772,11 @@ function buildTable() {
 
   // Header
   const thDealer = document.createElement('th');
-  thDealer.textContent = 'Dealer'; thDealer.className = 'col-dealer';
+  thDealer.textContent = t('dealer'); thDealer.className = 'col-dealer';
   headerRow.appendChild(thDealer);
 
   const thRound = document.createElement('th');
-  thRound.textContent = 'Rnd'; thRound.className = 'col-round';
+  thRound.textContent = t('roundShort'); thRound.className = 'col-round';
   headerRow.appendChild(thRound);
 
   state.players.forEach((p, pi) => {
@@ -732,7 +830,7 @@ function buildTable() {
   // Totals row
   const trTotals = document.createElement('tr');
   trTotals.className = 'totals-row'; trTotals.id = 'totals-row';
-  const tdTL = document.createElement('td'); tdTL.colSpan = 2; tdTL.className = 'label-cell'; tdTL.textContent = 'Total';
+  const tdTL = document.createElement('td'); tdTL.colSpan = 2; tdTL.className = 'label-cell'; tdTL.textContent = language==='es'?'Total':'Total';
   trTotals.appendChild(tdTL);
   state.players.forEach((_, pi) => {
     const td = document.createElement('td'); td.id = `total-${pi}`; td.textContent = '0';
@@ -743,7 +841,7 @@ function buildTable() {
   // Rank row
   const trRank = document.createElement('tr');
   trRank.className = 'rank-row'; trRank.id = 'rank-row';
-  const tdRL = document.createElement('td'); tdRL.colSpan = 2; tdRL.className = 'label-cell'; tdRL.textContent = 'Rank';
+  const tdRL = document.createElement('td'); tdRL.colSpan = 2; tdRL.className = 'label-cell'; tdRL.textContent = language==='es'?'Puesto':'Rank';
   trRank.appendChild(tdRL);
   state.players.forEach((_, pi) => {
     const td = document.createElement('td'); td.id = `rank-${pi}`; td.textContent = '—';
@@ -957,13 +1055,13 @@ function updateInfoBar() {
   if (!state.gameOver && state.currentRound < ROUNDS.length) {
     const round=ROUNDS[state.currentRound];
     const di=state.currentRound%state.players.length;
-    rc.innerHTML=`Round: <strong>${round}s</strong> &nbsp;·&nbsp; Dealer: <strong>${state.players[di].name}</strong>`;
-    wc.innerHTML=`Wild: <strong>${WILD_LABELS[round]}</strong>`;
+    rc.innerHTML=`${t('round')}: <strong>${round}s</strong> &nbsp;·&nbsp; ${t('dealer')}: <strong>${state.players[di].name}</strong>`;
+    wc.innerHTML=`${t('wild')}: <strong>${wildLabel(round)}</strong>`;
   } else if (state.gameOver) {
-    rc.innerHTML='<strong>Game Complete</strong>';
-    wc.innerHTML='<strong>Kings Wild 👑</strong>';
+    rc.innerHTML=`<strong>${language==='es'?'Partida terminada':'Game Complete'}</strong>`;
+    wc.innerHTML=`<strong>${language==='es'?'Reyes comodines 👑':'Kings Wild 👑'}</strong>`;
   }
-  pc.innerHTML=`Players: <strong>${state.players.length}</strong>`;
+  pc.innerHTML=`${t('players')}: <strong>${state.players.length}</strong>`;
 }
 
 // ============================================================
@@ -978,7 +1076,7 @@ function onCellClick(ri, pi) {
   if (state.gameOver) return;
   if (state.players[pi] && state.players[pi].dropped) return; // dropped player
   if (ri > state.currentRound) {
-    showToast(`Finish round ${ROUNDS[state.currentRound]}s first`);
+    showToast(language==='es'?`Termina primero la ronda de ${ROUNDS[state.currentRound]}`:`Finish round ${ROUNDS[state.currentRound]}s first`);
     return;
   }
   openNumpad(ri, pi);
@@ -1061,11 +1159,16 @@ function closeNumpad(clearHighlight = true) {
 
 function confirmScore() {
   const val = numpadValue === '' ? 0 : parseInt(numpadValue, 10);
-  if (isNaN(val) || val < 0) { showToast('Enter a valid score'); return; }
+  if (isNaN(val) || val < 0) { showToast(t('validScore')); return; }
 
   const ri = currentEditRound;
   const pi = currentEditPlayer;
 
+  const previous = state.scores[ri][pi];
+  if (previous !== val) {
+    scoreHistory.push({ri,pi,previous,currentRound:state.currentRound,gameOver:state.gameOver});
+    if (scoreHistory.length > 50) scoreHistory.shift();
+  }
   state.scores[ri][pi] = val;
 
   const td = document.getElementById(`cell-${ri}-${pi}`);
@@ -1089,6 +1192,17 @@ function confirmScore() {
   saveState();
 }
 
+function undoLastScore() {
+  const last = scoreHistory.pop();
+  if (!last) { showToast(t('noUndo')); return; }
+  state.scores[last.ri][last.pi] = last.previous;
+  state.currentRound = last.currentRound;
+  state.gameOver = last.gameOver;
+  document.getElementById('game-over-banner').style.display='none';
+  refreshTableDisplay(); updateInfoBar(); saveState(); showToast(t('undoDone'));
+}
+document.getElementById('undo-btn').addEventListener('click',()=>{ undoLastScore(); closeDrawer(); });
+
 
 function checkRoundComplete(ri) {
   const allScored = state.players.every((p, pi) => p.dropped || state.scores[ri][pi] !== null);
@@ -1097,7 +1211,7 @@ function checkRoundComplete(ri) {
   if (ri < ROUNDS.length - 1) {
     state.currentRound = ri + 1;
     const di = state.currentRound % state.players.length;
-    showToast(`Round ${ROUNDS[state.currentRound]}s — ${state.players[di].name} deals`);
+    showToast(language==='es'?`Ronda de ${ROUNDS[state.currentRound]} — reparte ${state.players[di].name}`:`Round ${ROUNDS[state.currentRound]}s — ${state.players[di].name} deals`);
     refreshTableDisplay();
     saveState();
   } else {
@@ -1143,7 +1257,7 @@ document.getElementById('numpad-title').addEventListener('click', () => {
     dblTapTimer = null;
     // Double tap detected
     selectAllMode = true;
-    showToast('Type to replace entire score');
+    showToast(t('replaceScore'));
   } else {
     dblTapTimer = setTimeout(() => { dblTapTimer = null; }, 350);
   }
@@ -1152,13 +1266,7 @@ document.getElementById('numpad-title').addEventListener('click', () => {
 // Backdrop close
 document.getElementById('numpad-modal').addEventListener('click', e => {
   if (e.target === document.getElementById('numpad-modal')) {
-    // Save whatever is currently typed before closing
-    if (currentEditRound !== null) {
-      const val = numpadValue === '' ? 0 : parseInt(numpadValue, 10);
-      if (!isNaN(val) && val >= 0) state.scores[currentEditRound][currentEditPlayer] = val;
-    }
-    closeNumpad();
-    refreshTableDisplay();
+    confirmScore();
   }
 });
 
@@ -1188,10 +1296,10 @@ function showGameOver() {
   const min = Math.min(...totals);
   const winners = state.players.filter((_,pi)=>totals[pi]===min).map(p=>p.name);
   const banner = document.getElementById('game-over-banner');
-  document.getElementById('winner-text').textContent = winners.length===1 ? `🏆 ${winners[0]} Wins!` : `🏆 It's a Tie!`;
+  document.getElementById('winner-text').textContent = winners.length===1 ? (language==='es'?`🏆 ¡${winners[0]} gana!`:`🏆 ${winners[0]} Wins!`) : (language==='es'?'🏆 ¡Empate!':`🏆 It's a Tie!`);
   document.getElementById('winner-sub').textContent = winners.length===1
-    ? `With ${min} total points — lowest score wins!`
-    : `${winners.join(' & ')} tied with ${min} points each.`;
+    ? (language==='es'?`Con ${min} puntos en total — ¡gana la menor puntuación!`:`With ${min} total points — lowest score wins!`)
+    : (language==='es'?`${winners.join(' y ')} empataron con ${min} puntos cada uno.`:`${winners.join(' & ')} tied with ${min} points each.`);
   banner.style.display = 'block';
   banner.scrollIntoView({behavior:'smooth',block:'center'});
   if(soundEnabled) setTimeout(playWinFanfare,400);
@@ -1224,13 +1332,13 @@ function openReorderModal(changePlayers = false) {
   const addRow   = document.getElementById('reorder-add-row');
 
   if (changePlayers) {
-    title.textContent    = 'Change Players';
-    subtitle.textContent = 'Edit names, drag to reorder, or add players. Player 1 deals first.';
-    applyBtn.textContent = 'Start New Game ✓';
+    title.textContent    = language==='es'?'Cambiar jugadores':'Change Players';
+    subtitle.textContent = language==='es'?'Edita nombres, arrastra para reordenar o agrega jugadores. El jugador 1 reparte primero.':'Edit names, drag to reorder, or add players. Player 1 deals first.';
+    applyBtn.textContent = language==='es'?'Comenzar partida nueva ✓':'Start New Game ✓';
   } else {
-    title.textContent    = 'Edit Players';
-    subtitle.textContent = 'Edit names, drag to reorder. Player 1 deals next round.';
-    applyBtn.textContent = 'Apply';
+    title.textContent    = language==='es'?'Editar jugadores':'Edit Players';
+    subtitle.textContent = language==='es'?'Edita nombres y arrastra para reordenar. El jugador 1 reparte la siguiente ronda.':'Edit names, drag to reorder. Player 1 deals next round.';
+    applyBtn.textContent = language==='es'?'Aplicar':'Apply';
   }
 
   // Show Add Player button only if no scores recorded AND under 7 players, OR in changePlayers mode
@@ -1260,12 +1368,12 @@ function renderReorderList() {
     nameEl.className = 'rr-edit';
     nameEl.value = p.name;
     nameEl.maxLength = 14;
-    nameEl.placeholder = `Player ${idx+1}`;
+    nameEl.placeholder = `${language==='es'?'Jugador':'Player'} ${idx+1}`;
     nameEl.addEventListener('input', e => { reorderList[idx].name = e.target.value.trim(); });
 
     const score = document.createElement('span');
     score.className = 'rr-score';
-    score.textContent = reorderChangePlayers ? '' : (p.dropped ? '(removed)' : `${p.total} pts`);
+    score.textContent = reorderChangePlayers ? '' : (p.dropped ? (language==='es'?'(eliminado)':'(removed)') : `${p.total} ${t('points')}`);
 
     // Remove button — always visible, min 2 active players
     const rrRemove = document.createElement('button');
@@ -1276,7 +1384,7 @@ function renderReorderList() {
       e.stopPropagation();
       // Count active (non-dropped) players remaining
       const activeCount = reorderList.filter(pl => !pl.dropped).length;
-      if (activeCount <= 2) { showToast('Need at least 2 players'); return; }
+      if (activeCount <= 2) { showToast(t('needPlayers')); return; }
 
       if (hasAnyScores() && !reorderChangePlayers) {
         // Mid-game normal reorder: mark as dropped rather than deleting
@@ -1290,7 +1398,7 @@ function renderReorderList() {
         document.getElementById('reorder-modal').classList.remove('open');
         buildTable();
         updateInfoBar();
-        showToast(`${removedName} removed from scoring`);
+        showToast(language==='es'?`${removedName} se eliminó de la puntuación`:`${removedName} removed from scoring`);
       } else {
         // Pre-game or changePlayers mode: actually remove from list
         reorderList.splice(idx, 1);
@@ -1338,7 +1446,7 @@ document.getElementById('reorder-apply-btn').addEventListener('click', () => {
   if (reorderChangePlayers) {
     // Validate: need at least 2 named players
     const named = reorderList.filter(p => p.name.length > 0);
-    if (named.length < 2) { showToast('Need at least 2 players'); return; }
+    if (named.length < 2) { showToast(t('needPlayers')); return; }
 
     // Full reset with new player list
     closeNumpad();
@@ -1353,7 +1461,8 @@ document.getElementById('reorder-apply-btn').addEventListener('click', () => {
     document.getElementById('game-over-banner').style.display = 'none';
     document.getElementById('reorder-modal').classList.remove('open');
     buildTable(); updateInfoBar();
-    showToast('New game started');
+    scoreHistory=[];
+    showToast(language==='es'?'Partida nueva iniciada':'New game started');
   } else {
     // Normal reorder — remap scores, preserve dropped, update names
     const inputEls = document.getElementById('reorder-list').querySelectorAll('input.rr-edit');
@@ -1366,7 +1475,8 @@ document.getElementById('reorder-apply-btn').addEventListener('click', () => {
     });
     state.players = newPlayers; state.scores = newScores;
     document.getElementById('reorder-modal').classList.remove('open');
-    buildTable(); updateInfoBar(); showToast('Players updated');
+    scoreHistory=[];
+    buildTable(); updateInfoBar(); showToast(t('playersUpdated'));
     saveState();
   }
 });
@@ -1416,10 +1526,11 @@ document.getElementById('btn-same-players').addEventListener('click', () => {
   });
   state.currentRound = 0;
   state.gameOver = false;
+  scoreHistory = [];
   document.getElementById('game-over-banner').style.display = 'none';
   buildTable();
   updateInfoBar();
-  showToast('Scores cleared — same players');
+  showToast(t('scoresCleared'));
 });
 
 // Change players — open the Order/Reorder modal in "change players" mode
@@ -1430,7 +1541,7 @@ document.getElementById('btn-change-players').addEventListener('click', () => {
 
 function resetGame() {
   closeNumpad();
-  state.players=[]; state.scores={}; state.currentRound=0; state.gameOver=false;
+  state.players=[]; state.scores={}; state.currentRound=0; state.gameOver=false; scoreHistory=[];
   scoreScreen.style.display='none';
   document.getElementById('game-over-banner').style.display='none';
   resetBtn.style.display='none';
@@ -1507,7 +1618,7 @@ function playSoundForScore(val, pi, ri) {
 document.getElementById('sound-toggle-btn').addEventListener('click', ()=>{
   soundEnabled = !soundEnabled;
   const btn = document.getElementById('sound-toggle-btn');
-  btn.textContent = soundEnabled ? '🔊' : '🔇';
+  btn.textContent = soundEnabled ? t('soundOn') : t('soundOff');
   btn.classList.toggle('muted', !soundEnabled);
   saveState();
 });
@@ -1525,7 +1636,7 @@ function saveState() {
       players: state.players, scores: state.scores,
       currentRound: state.currentRound, gameOver: state.gameOver,
       theme: document.body.getAttribute('data-theme') || 'midnight',
-      soundOn: soundEnabled
+      soundOn: soundEnabled, language, scoreHistory
     }));
   } catch(e){}
 }
@@ -1538,14 +1649,14 @@ function loadState() {
     if (!s.players || s.players.length < 2) return false;
     state.players=s.players; state.scores=s.scores;
     state.currentRound=s.currentRound??0; state.gameOver=s.gameOver||false;
+    language=s.language==='es'?'es':'en'; scoreHistory=Array.isArray(s.scoreHistory)?s.scoreHistory:[];
     if (s.theme==='light') {
       document.body.setAttribute('data-theme','light');
-      document.getElementById('theme-toggle').textContent='☀️ Light';
     }
     if (s.soundOn===false) {
       soundEnabled=false;
       const b=document.getElementById('sound-toggle-btn');
-      if(b){b.textContent='🔇';b.classList.add('muted');}
+      if(b){b.classList.add('muted');}
     }
     return true;
   } catch(e){ return false; }
@@ -1599,7 +1710,7 @@ function openLeaderboard() {
     const h4=document.createElement('h4'); h4.textContent=s.label; sec.appendChild(h4);
     const rec=lb[s.key];
     if(!rec){
-      const em=document.createElement('div');em.className='lb-empty';em.textContent='No record yet';sec.appendChild(em);
+      const em=document.createElement('div');em.className='lb-empty';em.textContent=t('noRecord');sec.appendChild(em);
     } else {
       const row=document.createElement('div');row.className='lb-entry';
       const nm=document.createElement('span');nm.className='lb-name';nm.textContent=rec.name;row.appendChild(nm);
@@ -1617,7 +1728,7 @@ document.getElementById('leaderboard-close-btn').addEventListener('click',()=>{
   document.getElementById('leaderboard-modal').classList.remove('open');
 });
 document.getElementById('leaderboard-clear-btn').addEventListener('click',()=>{
-  if(confirm('Clear all leaderboard records?')){localStorage.removeItem(LB_KEY);openLeaderboard();}
+  if(confirm(t('clearConfirm'))){localStorage.removeItem(LB_KEY);openLeaderboard();}
 });
 document.getElementById('leaderboard-modal').addEventListener('click',e=>{
   if(e.target===document.getElementById('leaderboard-modal'))
@@ -1629,8 +1740,9 @@ document.getElementById('leaderboard-modal').addEventListener('click',e=>{
 // ============================================================
 themeToggle.addEventListener('click', ()=>{
   const isLight = document.body.getAttribute('data-theme')==='light';
-  if (isLight) { document.body.removeAttribute('data-theme'); themeToggle.textContent='🔮 Midnight'; }
-  else { document.body.setAttribute('data-theme','light'); themeToggle.textContent='☀️ Light'; }
+  if (isLight) document.body.removeAttribute('data-theme');
+  else document.body.setAttribute('data-theme','light');
+  refreshControls();
   saveState();
 });
 
@@ -1666,7 +1778,7 @@ window.addEventListener('resize', ()=>{
     resetBtn.style.display       = 'flex';
     reorderBtnHeader.style.display = 'block';
     document.getElementById('leaderboard-btn').style.display = 'block';
-    buildTable(); updateInfoBar();
+    applyLanguage();
     if (state.gameOver) showGameOver();
     return;
   }
@@ -1674,7 +1786,7 @@ window.addEventListener('resize', ()=>{
   numSetupSlots=2;
   renderSetupPlayers(); updateStartBtn();
   document.body.setAttribute('data-theme','light');
-  themeToggle.textContent='☀️ Light';
+  applyLanguage();
 })();
 </script>
 
