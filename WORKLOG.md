@@ -235,5 +235,5 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 ### 2026-09-09 - Codex desktop - Five Crowns score correction and language controls
 - Completed: Added a persisted Undo-last-score history, moved reset and the former header controls into a closed-by-default right-side drawer, and made the drawer close when its outside scrim is clicked.
 - Completed: Added an English/Spanish switch that covers setup, in-game controls, score entry, records, reset/reorder dialogs, winner text, and rules; marked the app as notranslate so Chrome does not overwrite the selected language.
-- In progress: Publish the verified Five Crowns update to GitHub Pages and close the related Todoist item after the live page is verified.
-- Blockers/notes: Local Chrome testing verified the menu’s default/close behavior, Spanish display, and score-entry Undo. Unrelated Killer Burgers modifications were preserved and excluded from this task.
+- Completed: Pushed the isolated Five Crowns commit to `main`, waited for GitHub Pages, verified the live drawer and language toggle at `https://troyfowlermd.github.io/non-clinical/five-crowns.html`, and completed the related parent task plus its four verified Todoist subtasks.
+- Blockers/notes: Local Chrome testing verified score-entry Undo. Unrelated Killer Burgers modifications were preserved and excluded from this task.
