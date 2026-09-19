@@ -237,3 +237,8 @@ This file records completed Codex work sessions for Non-Clinical Tools. Append n
 - Completed: Added an English/Spanish switch that covers setup, in-game controls, score entry, records, reset/reorder dialogs, winner text, and rules; marked the app as notranslate so Chrome does not overwrite the selected language.
 - Completed: Pushed the isolated Five Crowns commit to `main`, waited for GitHub Pages, verified the live drawer and language toggle at `https://troyfowlermd.github.io/non-clinical/five-crowns.html`, and completed the related parent task plus its four verified Todoist subtasks.
 - Blockers/notes: Local Chrome testing verified score-entry Undo. Unrelated Killer Burgers modifications were preserved and excluded from this task.
+
+### 2026-09-19 - Codex - IT request #141 feedback wording
+- Completed: Updated the Sourdough Workbench feedback entry and modal labels to match the fleet request.
+- In progress: Publish and verify the live page.
+- Blockers/notes: Feedback submission routing and attachment handling are unchanged.
